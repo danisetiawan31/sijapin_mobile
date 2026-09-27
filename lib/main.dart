@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'core/config/app_config.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    const ProviderScope(
-      child: SiijapinApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: SiijapinApp()));
 }
 
 /// Root widget aplikasi SIIJAPIN Mobile
@@ -58,10 +55,7 @@ class SplashScreen extends StatelessWidget {
               SizedBox(height: 8),
               Text(
                 'RSUP Dr. Sitanala Tangerang',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
               ),
             ],
           ),

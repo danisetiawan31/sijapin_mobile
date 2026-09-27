@@ -5,11 +5,7 @@ import 'package:sijapin_mobile/main.dart';
 
 void main() {
   testWidgets('SiijapinApp bootstrap smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: SiijapinApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: SiijapinApp()));
 
     // Verifikasi branding RSUP Dr. Sitanala muncul di root app
     expect(find.text(AppConfig.appName), findsOneWidget);

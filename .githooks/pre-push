@@ -1,0 +1,33 @@
+#!/bin/sh
+# ==============================================================================
+# SIIJAPIN Mobile — Pre-Push Quality Gate Hook (RSUP Dr. Sitanala)
+# ==============================================================================
+
+echo "🛡️  [Pre-Push Gate] Menjalankan verifikasi kualitas kode sebelum push..."
+
+# 1. Cek Formatting
+echo "👉 1/3: Memeriksa kerapian format kode..."
+dart format --output=none --set-exit-if-changed .
+if [ $? -ne 0 ]; then
+  echo "❌ Push DIBATALKAN: Format kode belum rapi. Jalankan 'dart format .' sebelum push."
+  exit 1
+fi
+
+# 2. Cek Strict Linter
+echo "👉 2/3: Memeriksa linter ketat (flutter analyze)..."
+flutter analyze
+if [ $? -ne 0 ]; then
+  echo "❌ Push DIBATALKAN: Terdapat issue linter pada kode."
+  exit 1
+fi
+
+# 3. Cek Unit & Widget Tests
+echo "👉 3/3: Menjalankan seluruh automated test (flutter test)..."
+flutter test
+if [ $? -ne 0 ]; then
+  echo "❌ Push DIBATALKAN: Terdapat skenario test yang gagal."
+  exit 1
+fi
+
+echo "✅ [Pre-Push Gate] Seluruh pengujian lolos! Melanjutkan push ke remote..."
+exit 0

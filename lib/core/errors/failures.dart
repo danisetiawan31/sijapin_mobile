@@ -6,14 +6,14 @@ sealed class Result<S, F extends Failure> {
   bool get isError => this is Error<S, F>;
 
   S? get dataOrNull => switch (this) {
-        Success(data: final d) => d,
-        Error() => null,
-      };
+    Success(data: final d) => d,
+    Error() => null,
+  };
 
   F? get failureOrNull => switch (this) {
-        Success() => null,
-        Error(failure: final f) => f,
-      };
+    Success() => null,
+    Error(failure: final f) => f,
+  };
 }
 
 final class Success<S, F extends Failure> extends Result<S, F> {
@@ -37,22 +37,31 @@ abstract class Failure {
 
 /// Kegagalan koneksi fisik / DNS lookup
 class NetworkFailure extends Failure {
-  const NetworkFailure([super.message = 'Koneksi internet bermasalah. Periksa jaringan Anda.']);
+  const NetworkFailure([
+    super.message = 'Koneksi internet bermasalah. Periksa jaringan Anda.',
+  ]);
 }
 
 /// Sesi server CodeIgniter 3 kedaluwarsa (> 30 menit)
 class SessionExpiredFailure extends Failure {
-  const SessionExpiredFailure([super.message = 'Sesi Anda telah berakhir. Silakan masukkan kata sandi kembali.']);
+  const SessionExpiredFailure([
+    super.message =
+        'Sesi Anda telah berakhir. Silakan masukkan kata sandi kembali.',
+  ]);
 }
 
 /// Token anti-CSRF mismatch / expired
 class CsrfMismatchFailure extends Failure {
-  const CsrfMismatchFailure([super.message = 'Validasi keamanan form gagal. Silakan coba lagi.']);
+  const CsrfMismatchFailure([
+    super.message = 'Validasi keamanan form gagal. Silakan coba lagi.',
+  ]);
 }
 
 /// Kuota antrean poliklinik telah habis
 class QuotaExceededFailure extends Failure {
-  const QuotaExceededFailure([super.message = 'Kuota antrean poliklinik pada hari tersebut telah penuh.']);
+  const QuotaExceededFailure([
+    super.message = 'Kuota antrean poliklinik pada hari tersebut telah penuh.',
+  ]);
 }
 
 /// Kesalahan validasi form SIMRS
@@ -62,5 +71,8 @@ class ValidationFailure extends Failure {
 
 /// Gangguan database SIMRS live (HTTP 500/503)
 class ServerMaintenanceFailure extends Failure {
-  const ServerMaintenanceFailure([super.message = 'Server rumah sakit sedang pemeliharaan. Coba beberapa saat lagi.']);
+  const ServerMaintenanceFailure([
+    super.message =
+        'Server rumah sakit sedang pemeliharaan. Coba beberapa saat lagi.',
+  ]);
 }

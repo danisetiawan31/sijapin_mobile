@@ -16,9 +16,11 @@ class ApiConstants {
   // Step 1: Tetapkan Identitas Pasien (m_customer_member) ke Sesi
   static const String bookingInputPasien = 'Daftar_Kunj_Raja/input_pasien';
   // Step 2: Tetapkan Unit Poli & Tanggal Rencana Kunjungan ke Sesi
-  static const String bookingInputKunjungan = 'Daftar_Kunj_Raja/input_kunjungan';
+  static const String bookingInputKunjungan =
+      'Daftar_Kunj_Raja/input_kunjungan';
   // Step 3 & 4: Final Submit Transaksi & Terbitkan Tiket APM (t_daftar_rj)
-  static const String bookingInsertRajal = 'Daftar_Kunj_Raja/insert_daftar_rajal';
+  static const String bookingInsertRajal =
+      'Daftar_Kunj_Raja/insert_daftar_rajal';
   // Pembatalan Mandiri (Maksimal H-1 pukul 21:00 WIB)
   static const String bookingBatalAntrian = 'Daftar_Kunj_Raja/batal_antrian';
   // Riwayat Antrean Pasien
