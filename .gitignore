@@ -1,0 +1,89 @@
+# ==============================================================================
+# SIIJAPIN Mobile — Production .gitignore (RSUP Dr. Sitanala)
+# ==============================================================================
+
+# Knowledge Base & Obsidian Junction (Diabaikan untuk saat ini)
+# Catatan: Buka komentar di bawah jika nanti sudah siap di-push ke remote repository
+docs/
+**/.obsidian/
+
+# AI Agent Rules (Diabaikan untuk saat ini)
+AGENTS.md
+AGENTS.*.md
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Dart & Flutter Core
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+*.lcov
+
+# Android Specific & Signing Credentials (UU PDP)
+**/android/local.properties
+**/android/.gradle/
+**/android/captures/
+**/android/app/debug/
+**/android/app/profile/
+**/android/app/release/
+key.properties
+*.keystore
+*.jks
+
+# iOS Specific & Pods
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/**/GeneratedPluginRegistrant.*
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# IDE & Editor Configs
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Flutter Version Manager (FVM)
+.fvm/flutter_sdk
+.fvm/cache
+
+# Testing & Golden Test Artifacts
+test/**/failures/
+
+# Symbolication & Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Miscellaneous
+*.log
+*.class
+*.pyc
+*.swp
+.history
+.widget_preview/
