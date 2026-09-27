@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'core/config/app_config.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: SiijapinApp()));
+
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = AppConfig.sentryDsn;
+      options.tracesSampleRate = 1.0;
+      options.enableAutoSessionTracking = true;
+    },
+    appRunner: () => runApp(
+      const ProviderScope(child: SiijapinApp()),
+    ),
+  );
 }
 
 /// Root widget aplikasi SIIJAPIN Mobile
@@ -20,6 +31,9 @@ class SiijapinApp extends StatelessWidget {
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      navigatorObservers: [
+        SentryNavigatorObserver(),
+      ],
       home: const SplashScreen(),
     );
   }

@@ -23,6 +23,11 @@ Thumbs.db:encryptable
 [Dd]esktop.ini
 $RECYCLE.BIN/
 
+# GitNexus Code Intelligence Index & Local Scaffolding
+.gitnexus/
+.claude/
+CLAUDE.md
+
 # Dart & Flutter Core
 .dart_tool/
 .flutter-plugins
