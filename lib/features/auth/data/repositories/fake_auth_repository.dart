@@ -13,10 +13,7 @@ class FakeAuthRepository implements AuthRepository {
     required bool rememberMe,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    return const AuthResult(
-      success: true,
-      message: 'Login dummy berhasil.',
-    );
+    return const AuthResult(success: true, message: 'Login dummy berhasil.');
   }
 
   @override

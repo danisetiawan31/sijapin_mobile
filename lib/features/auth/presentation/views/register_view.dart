@@ -38,7 +38,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
 
   Future<void> _selectBirthDate() async {
     final now = DateTime.now();
-    final initialDate = _birthDate ?? DateTime(now.year - 18, now.month, now.day);
+    final initialDate =
+        _birthDate ?? DateTime(now.year - 18, now.month, now.day);
     final selected = await showDatePicker(
       context: context,
       firstDate: DateTime(1900),
@@ -62,23 +63,28 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
       return;
     }
     if (!_agreement) {
-      _showMessage('Setujui ketentuan layanan dan kebijakan privasi untuk melanjutkan.');
+      _showMessage(
+        'Setujui ketentuan layanan dan kebijakan privasi untuk melanjutkan.',
+      );
       return;
     }
 
     FocusScope.of(context).unfocus();
-    await ref.read(authControllerProvider.notifier).register(
-      fullName: _nameController.text.trim(),
-      phone: _phoneController.text.trim(),
-      email: _emailController.text.trim(),
-      birthDate: _birthDate!,
-      gender: _gender,
-      password: _passwordController.text,
-    );
+    await ref
+        .read(authControllerProvider.notifier)
+        .register(
+          fullName: _nameController.text.trim(),
+          phone: _phoneController.text.trim(),
+          email: _emailController.text.trim(),
+          birthDate: _birthDate!,
+          gender: _gender,
+          password: _passwordController.text,
+        );
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -87,7 +93,9 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
       if (!mounted) return;
       if (next.status == AuthSubmissionStatus.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pendaftaran dummy berhasil. Silakan masuk.')),
+          const SnackBar(
+            content: Text('Pendaftaran dummy berhasil. Silakan masuk.'),
+          ),
         );
         context.go('/login');
       }
@@ -103,7 +111,9 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 36),
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 36,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -112,7 +122,10 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                         const AuthBackButton(),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 7,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.brandCreamLinen,
                             borderRadius: BorderRadius.circular(999),
@@ -144,9 +157,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                         Expanded(
                           child: Text(
                             'Buat Akun Pasien',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ),
                       ],
@@ -169,7 +181,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               hint: 'Sesuai KTP',
                               icon: Icons.person_outline_rounded,
                               textInputAction: TextInputAction.next,
-                              validator: (value) => value == null || value.trim().isEmpty
+                              validator: (value) =>
+                                  value == null || value.trim().isEmpty
                                   ? 'Masukkan nama lengkap.'
                                   : null,
                             ),
@@ -181,7 +194,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               icon: Icons.phone_outlined,
                               keyboardType: TextInputType.phone,
                               textInputAction: TextInputAction.next,
-                              validator: (value) => value == null || value.trim().isEmpty
+                              validator: (value) =>
+                                  value == null || value.trim().isEmpty
                                   ? 'Masukkan nomor WhatsApp / HP.'
                                   : null,
                             ),
@@ -194,8 +208,12 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) return null;
-                                if (!value.contains('@')) return 'Format email belum benar.';
+                                if (value == null || value.trim().isEmpty) {
+                                  return null;
+                                }
+                                if (!value.contains('@')) {
+                                  return 'Format email belum benar.';
+                                }
                                 return null;
                               },
                             ),
@@ -207,11 +225,18 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               icon: Icons.calendar_today_outlined,
                               readOnly: true,
                               onTap: _selectBirthDate,
-                              suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded),
-                              validator: (_) => _birthDate == null ? 'Pilih tanggal lahir.' : null,
+                              suffixIcon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                              ),
+                              validator: (_) => _birthDate == null
+                                  ? 'Pilih tanggal lahir.'
+                                  : null,
                             ),
                             const SizedBox(height: 12),
-                            Text('Jenis Kelamin *', style: Theme.of(context).textTheme.labelLarge),
+                            Text(
+                              'Jenis Kelamin *',
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
                             const SizedBox(height: 6),
                             SegmentedButton<String>(
                               segments: const [
@@ -227,7 +252,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                                 ),
                               ],
                               selected: {_gender},
-                              onSelectionChanged: (selection) => setState(() => _gender = selection.first),
+                              onSelectionChanged: (selection) =>
+                                  setState(() => _gender = selection.first),
                               showSelectedIcon: false,
                             ),
                             const SizedBox(height: 12),
@@ -238,9 +264,14 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               textInputAction: TextInputAction.next,
                               helperText: 'Kombinasi minimal 6 huruf dan angka',
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Masukkan kata sandi.';
-                                if (value.length < 6) return 'Kata sandi minimal 6 karakter.';
-                                if (!RegExp(r'(?=.*[A-Za-z])(?=.*\d)').hasMatch(value)) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Masukkan kata sandi.';
+                                }
+                                if (value.length < 6) {
+                                  return 'Kata sandi minimal 6 karakter.';
+                                }
+                                if (!RegExp(r'(?=.*[A-Za-z])(?=.*\d)')
+                                    .hasMatch(value)) {
                                   return 'Gunakan kombinasi huruf dan angka.';
                                 }
                                 return null;
@@ -253,25 +284,40 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               hint: 'Ulangi kata sandi',
                               textInputAction: TextInputAction.done,
                               validator: (value) {
-                                if (value == null || value.isEmpty) return 'Konfirmasi kata sandi.';
-                                if (value != _passwordController.text) return 'Kata sandi belum sama.';
+                                if (value == null || value.isEmpty) {
+                                  return 'Konfirmasi kata sandi.';
+                                }
+                                if (value != _passwordController.text) {
+                                  return 'Kata sandi belum sama.';
+                                }
                                 return null;
                               },
                             ),
                             const SizedBox(height: 8),
-                            CheckboxListTile(
-                              value: _agreement,
-                              onChanged: (value) => setState(() => _agreement = value ?? false),
-                              contentPadding: EdgeInsets.zero,
-                              controlAffinity: ListTileControlAffinity.leading,
-                              dense: true,
-                              title: const Text(
-                                'Saya menyetujui Ketentuan Layanan & Kebijakan Privasi RSUP Dr. Sitanala',
+                            Material(
+                              color: Colors.transparent,
+                              child: CheckboxListTile(
+                                value: _agreement,
+                                onChanged: (value) =>
+                                    setState(() => _agreement = value ?? false),
+                                contentPadding: EdgeInsets.zero,
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                dense: true,
+                                title: const Text(
+                                  'Saya menyetujui Ketentuan Layanan & Kebijakan Privasi RSUP Dr. Sitanala',
+                                ),
                               ),
                             ),
-                            if (authState.status == AuthSubmissionStatus.error && authState.message != null) ...[
+
+                            if (authState.status ==
+                                    AuthSubmissionStatus.error &&
+                                authState.message != null) ...[
                               const SizedBox(height: 4),
-                              AuthStatusMessage(message: authState.message!, error: true),
+                              AuthStatusMessage(
+                                message: authState.message!,
+                                error: true,
+                              ),
                               const SizedBox(height: 12),
                             ],
                             AuthPrimaryButton(

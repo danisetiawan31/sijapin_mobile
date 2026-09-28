@@ -29,11 +29,13 @@ class _LoginViewState extends ConsumerState<LoginView> {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
-    await ref.read(authControllerProvider.notifier).login(
-      identifier: _identifierController.text.trim(),
-      password: _passwordController.text,
-      rememberMe: _rememberMe,
-    );
+    await ref
+        .read(authControllerProvider.notifier)
+        .login(
+          identifier: _identifierController.text.trim(),
+          password: _passwordController.text,
+          rememberMe: _rememberMe,
+        );
   }
 
   @override
@@ -41,9 +43,9 @@ class _LoginViewState extends ConsumerState<LoginView> {
     ref.listen(authControllerProvider, (previous, next) {
       if (!mounted) return;
       if (next.status == AuthSubmissionStatus.success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login dummy berhasil.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Login dummy berhasil.')));
         context.go('/profile');
       }
     });
@@ -58,7 +60,9 @@ class _LoginViewState extends ConsumerState<LoginView> {
             return SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 36),
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 36,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -66,9 +70,8 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     const SizedBox(height: 16),
                     Text(
                       'Selamat Datang',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -113,13 +116,19 @@ class _LoginViewState extends ConsumerState<LoginView> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: CheckboxListTile(
-                                    value: _rememberMe,
-                                    onChanged: (value) => setState(() => _rememberMe = value ?? false),
-                                    dense: true,
-                                    contentPadding: EdgeInsets.zero,
-                                    controlAffinity: ListTileControlAffinity.leading,
-                                    title: const Text('Ingat Saya'),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: CheckboxListTile(
+                                      value: _rememberMe,
+                                      onChanged: (value) => setState(
+                                        () => _rememberMe = value ?? false,
+                                      ),
+                                      dense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                      title: const Text('Ingat Saya'),
+                                    ),
                                   ),
                                 ),
                                 TextButton(
@@ -128,9 +137,14 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                 ),
                               ],
                             ),
-                            if (authState.status == AuthSubmissionStatus.error && authState.message != null) ...[
+                            if (authState.status ==
+                                    AuthSubmissionStatus.error &&
+                                authState.message != null) ...[
                               const SizedBox(height: 4),
-                              AuthStatusMessage(message: authState.message!, error: true),
+                              AuthStatusMessage(
+                                message: authState.message!,
+                                error: true,
+                              ),
                               const SizedBox(height: 12),
                             ],
                             AuthPrimaryButton(
@@ -146,23 +160,23 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     const SizedBox(height: 20),
                     Center(
                       child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        const Text('Belum memiliki akun? '),
-                        TextButton(
-                          onPressed: () => context.push('/register'),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          const Text('Belum memiliki akun? '),
+                          TextButton(
+                            onPressed: () => context.push('/register'),
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            child: const Text('Daftar di sini'),
                           ),
-                          child: const Text('Daftar di sini'),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 15),
                     const Center(

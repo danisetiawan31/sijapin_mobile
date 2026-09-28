@@ -24,7 +24,10 @@ class AuthControllerState {
   final AuthSubmissionStatus status;
   final String? message;
 
-  const AuthControllerState({this.status = AuthSubmissionStatus.idle, this.message});
+  const AuthControllerState({
+    this.status = AuthSubmissionStatus.idle,
+    this.message,
+  });
 
   AuthControllerState copyWith({
     AuthSubmissionStatus? status,

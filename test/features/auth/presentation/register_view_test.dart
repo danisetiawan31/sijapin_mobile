@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/features/auth/presentation/views/register_view.dart';
 
 void main() {
-  testWidgets('register view renders required registration controls', (tester) async {
+  testWidgets('register view renders required registration controls', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: RegisterView()),
-      ),
+      const ProviderScope(child: MaterialApp(home: RegisterView())),
     );
 
     expect(find.text('Buat Akun Pasien'), findsOneWidget);

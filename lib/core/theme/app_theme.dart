@@ -28,7 +28,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.brandCreamLinen,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.borderSubtle),
@@ -39,7 +42,10 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderFocus, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.borderFocus,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -47,7 +53,10 @@ class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.dangerCrimson, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.dangerCrimson,
+            width: 1.5,
+          ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(

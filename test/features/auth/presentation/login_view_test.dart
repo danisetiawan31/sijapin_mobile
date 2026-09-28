@@ -4,11 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/features/auth/presentation/views/login_view.dart';
 
 void main() {
-  testWidgets('login view renders required authentication controls', (tester) async {
+  testWidgets('login view renders required authentication controls', (
+    tester,
+  ) async {
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(home: LoginView()),
-      ),
+      const ProviderScope(child: MaterialApp(home: LoginView())),
     );
 
     expect(find.text('Selamat Datang'), findsOneWidget);

@@ -115,10 +115,14 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
         hintText: widget.hint,
         prefixIcon: const Icon(Icons.lock_outline_rounded, size: 19),
         suffixIcon: IconButton(
-          tooltip: _obscureText ? 'Tampilkan kata sandi' : 'Sembunyikan kata sandi',
+          tooltip: _obscureText
+              ? 'Tampilkan kata sandi'
+              : 'Sembunyikan kata sandi',
           onPressed: () => setState(() => _obscureText = !_obscureText),
           icon: Icon(
-            _obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            _obscureText
+                ? Icons.visibility_outlined
+                : Icons.visibility_off_outlined,
             size: 20,
           ),
         ),
@@ -152,7 +156,10 @@ class AuthPrimaryButton extends StatelessWidget {
         icon: loading
             ? const SizedBox.square(
                 dimension: 18,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
             : Icon(icon),
         label: Text(label),
@@ -178,7 +185,11 @@ class AuthSecurityBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.verified_user_outlined, size: 13, color: AppColors.clinicalTeal),
+          const Icon(
+            Icons.verified_user_outlined,
+            size: 13,
+            color: AppColors.clinicalTeal,
+          ),
           const SizedBox(width: 6),
           Text(text, style: Theme.of(context).textTheme.labelSmall),
         ],
@@ -227,7 +238,9 @@ class AuthStatusMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = error ? AppColors.dangerCrimson : AppColors.clinicalTeal;
-    final icon = error ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded;
+    final icon = error
+        ? Icons.error_outline_rounded
+        : Icons.check_circle_outline_rounded;
 
     return Container(
       padding: const EdgeInsets.all(12),

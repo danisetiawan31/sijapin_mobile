@@ -18,8 +18,14 @@ class AppRouter {
       initialLocation: '/splash',
       routes: [
         GoRoute(path: '/splash', builder: (_, _) => const SplashScreen()),
-        GoRoute(path: '/home', builder: (_, _) => const HomePlaceholderScreen()),
-        GoRoute(path: '/profile', builder: (_, _) => const ProfilePlaceholderScreen()),
+        GoRoute(
+          path: '/home',
+          builder: (_, _) => const HomePlaceholderScreen(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (_, _) => const ProfilePlaceholderScreen(),
+        ),
         GoRoute(path: '/login', builder: (_, _) => const LoginView()),
         GoRoute(path: '/register', builder: (_, _) => const RegisterView()),
       ],
@@ -75,9 +81,8 @@ class _SplashScreenState extends State<SplashScreen> {
                 const SizedBox(height: 16),
                 Text(
                   AppConfig.appName,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 const Text('RSUP Dr. Sitanala Tangerang'),
@@ -157,7 +162,6 @@ class _IntegrationPlaceholder extends StatelessWidget {
             children: [
               const Icon(Icons.construction_outlined, size: 48),
               const SizedBox(height: 16),
-              Text(title, style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 8),
               Text(message, textAlign: TextAlign.center),
               const SizedBox(height: 24),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/routing/app_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RouterTestHost extends StatelessWidget {
   final GoRouter router;
@@ -9,13 +10,18 @@ class RouterTestHost extends StatelessWidget {
   const RouterTestHost({super.key, required this.router});
 
   @override
+  // Widget build(BuildContext context) {
+  //   return MaterialApp.router(routerConfig: router);
+  // }
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: router);
+    return ProviderScope(child: MaterialApp.router(routerConfig: router));
   }
 }
 
 void main() {
-  testWidgets('router starts at splash and reaches Login then Register', (tester) async {
+  testWidgets('router starts at splash and reaches Login then Register', (
+    tester,
+  ) async {
     final router = AppRouter.create();
 
     await tester.pumpWidget(RouterTestHost(router: router));
