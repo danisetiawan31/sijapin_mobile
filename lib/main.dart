@@ -25,17 +25,46 @@ Future<void> main() async {
     (options) {
       options.dsn = AppConfig.sentryDsn;
       options.tracesSampleRate = 1.0;
-      options.enableAutoSessionTracking = true;
+      options.enableAutoSessionTracking = false;
     },
-    appRunner: () => runApp(
-      ProviderScope(
-        overrides: [
-          localStorageServiceProvider.overrideWithValue(localStorageService),
-          cookieManagerServiceProvider.overrideWithValue(cookieManagerService),
-        ],
-        child: const SiijapinApp(),
-      ),
-    ),
+    appRunner: () {
+      FlutterError.onError = (details) {
+        FlutterError.dumpErrorToConsole(details);
+        debugPrint('FLUTTER_ERROR_EX: ${details.exception}');
+        debugPrint('FLUTTER_STACK:\n${details.stack}');
+      };
+
+      ErrorWidget.builder = (FlutterErrorDetails details) {
+        return Material(
+          color: const Color(0xFF8B0000),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'ERROR:\n${details.exceptionAsString()}\n\nSTACK TRACE:\n${details.stack}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontFamily: 'monospace',
+                ),
+              ),
+            ),
+          ),
+        );
+      };
+
+      runApp(
+        ProviderScope(
+          overrides: [
+            localStorageServiceProvider.overrideWithValue(localStorageService),
+            cookieManagerServiceProvider.overrideWithValue(
+              cookieManagerService,
+            ),
+          ],
+          child: const SiijapinApp(),
+        ),
+      );
+    },
   );
 }
 
