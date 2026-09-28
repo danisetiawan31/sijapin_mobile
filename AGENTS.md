@@ -66,6 +66,13 @@ flowchart TD
 2. **Kepatuhan Dokumen Acuan**:
    * Dilarang mengasumsikan requirement yang tidak tertulis di berkas `docs/` atau spesifikasi fitur. Jika menemukan ambiguitas, wajib bertanya dan mengonfirmasi ke pengguna.
 
+3. **Feature Continuation Records**:
+   * Setelah membaca `AGENTS.md`, AI Agent WAJIB memeriksa `README.md` pada Development Documentation package untuk mengetahui apakah ada feature continuation record yang berlaku untuk fitur yang sedang disentuh.
+   * Jika ada, AI Agent WAJIB membaca continuation record tersebut sebelum membuat file baru, mengubah shared architecture, atau membuat komponen yang mungkin sudah tersedia.
+   * Untuk Authentication/Login/Register dan routing SIIJAPIN Mobile, continuation record saat ini adalah `SIIJAPIN_LOGIN_REGISTER_CHANGELOG_AND_TEAMMATE_HANDOFF.md`.
+   * Continuation record adalah catatan kelanjutan implementasi, bukan workflow baru dan bukan pengganti `AGENTS.md`, `DESIGN.md`, PRD, BACKLOG, ARCHITECTURE, kontrak API, atau SSOT lain yang lebih tinggi.
+   * Jangan membuat handoff/continuation document kedua untuk scope yang sama tanpa instruksi eksplisit; perbarui record yang sudah ada jika perubahan memang merupakan kelanjutan dari feature tersebut.
+
 ---
 
 ## 4. Batasan Mutlak AI Agent (Non-Negotiable Guardrails)
