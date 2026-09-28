@@ -9,6 +9,12 @@ void main() {
 
     expect(find.text(AppConfig.appName), findsOneWidget);
     expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
-    expect(find.text('Lanjut ke Aplikasi'), findsOneWidget);
+    expect(find.text('Memuat aplikasi...'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pump();
+
+    expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Login'), findsOneWidget);
   });
 }
