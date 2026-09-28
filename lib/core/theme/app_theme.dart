@@ -118,7 +118,7 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
-      // Bottom Navigation Bar
+      // Bottom Navigation Bar (Legacy M2 Fallback)
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceCard,
         selectedItemColor: AppColors.brandWarmBronze,
@@ -133,6 +133,36 @@ class AppTheme {
         ),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+      ),
+      // Material 3 Navigation Bar Theme (Standar Resmi)
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.surfaceCard,
+        indicatorColor: AppColors.brandGoldenCaramel.withValues(alpha: 0.15),
+        elevation: 3,
+        height: 72,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.brandGoldenCaramel,
+            );
+          }
+          return const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textMuted,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(
+              color: AppColors.brandGoldenCaramel,
+              size: 24,
+            );
+          }
+          return const IconThemeData(color: AppColors.textMuted, size: 24);
+        }),
       ),
       // Tipografi Resmi Sitanala
       textTheme: const TextTheme(
