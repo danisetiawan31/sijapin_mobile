@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -27,8 +29,32 @@ class AppRouter {
   }
 }
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  static const _minimumDisplayDuration = Duration(milliseconds: 1200);
+  Timer? _navigationTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _navigationTimer = Timer(_minimumDisplayDuration, () {
+      if (mounted) {
+        context.go('/home');
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _navigationTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,10 +82,9 @@ class SplashScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 const Text('RSUP Dr. Sitanala Tangerang'),
                 const SizedBox(height: 24),
-                FilledButton(
-                  onPressed: () => context.go('/home'),
-                  child: const Text('Lanjut ke Aplikasi'),
-                ),
+                const CircularProgressIndicator(),
+                const SizedBox(height: 12),
+                const Text('Memuat aplikasi...'),
               ],
             ),
           ),
@@ -79,12 +104,8 @@ class HomePlaceholderScreen extends StatelessWidget {
       message: 'Placeholder integrasi — implementasi Home dikerjakan oleh tim terkait.',
       actions: [
         FilledButton(
-          onPressed: () => context.go('/profile'),
-          child: const Text('Buka Profile'),
-        ),
-        OutlinedButton(
           onPressed: () => context.push('/login'),
-          child: const Text('Uji Login'),
+          child: const Text('Login'),
         ),
       ],
     );
