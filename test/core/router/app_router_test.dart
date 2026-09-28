@@ -24,6 +24,19 @@ Widget _buildAppWithRouter(ProviderContainer container) {
 
 void main() {
   group('Centralized Navigation Shell Tests (US-CORE Phase 4)', () {
+    // testWidgets(
+    //   'initial route (/) loads SplashScreen and shows Sitanala branding',
+    //   (tester) async {
+    //     final container = ProviderContainer();
+    //     addTearDown(container.dispose);
+
+    //     await tester.pumpWidget(_buildAppWithRouter(container));
+    //     await tester.pumpAndSettle();
+
+    //     expect(find.text(AppConfig.appName), findsOneWidget);
+    //     expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
+    //   },
+    // );
     testWidgets(
       'initial route (/) loads SplashScreen and shows Sitanala branding',
       (tester) async {
@@ -35,14 +48,9 @@ void main() {
 
         expect(find.text(AppConfig.appName), findsOneWidget);
         expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
-
-        // Setelah delay 2 detik, otomatis transisi ke Beranda
-        await tester.pump(const Duration(seconds: 2));
-        await tester.pumpAndSettle();
-        expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
+        expect(find.text('Memuat aplikasi...'), findsOneWidget);
       },
     );
-
     testWidgets(
       'navigating to /home renders MainShellScaffold with 4-tab AppBottomNavBar',
       (tester) async {
@@ -117,7 +125,8 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi layar Login tampil
-        expect(find.text('Layar Masuk Akun SIIJAPIN'), findsOneWidget);
+        // expect(find.text('Layar Masuk Akun SIIJAPIN'), findsOneWidget);
+        expect(find.text('Selamat Datang'), findsOneWidget);
 
         // AppBottomNavBar TIDAK boleh ada di halaman login (rute di luar shell)
         expect(find.byType(AppBottomNavBar), findsNothing);

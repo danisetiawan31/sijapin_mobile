@@ -68,7 +68,7 @@ Future<void> main() async {
   );
 }
 
-/// Root widget aplikasi SIIJAPIN Mobile dengan dukungan GoRouter
+/// Root widget aplikasi SIIJAPIN Mobile dengan dukungan GoRouter.
 class SiijapinApp extends ConsumerWidget {
   const SiijapinApp({super.key});
 
