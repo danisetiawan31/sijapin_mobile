@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-// import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -48,7 +47,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.loginPath,
         name: AppRoutes.loginName,
         parentNavigatorKey: _rootNavigatorKey,
-        // builder: (context, state) => const LoginScreen(),
         builder: (context, state) => const LoginView(),
       ),
       GoRoute(

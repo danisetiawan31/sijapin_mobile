@@ -4,31 +4,41 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/app_config.dart';
-// import '../../../../core/router/app_routes.dart';
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Layar inisial awal (Splash Screen) aplikasi SIIJAPIN Mobile.
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({
+    super.key,
+    this.delay = const Duration(milliseconds: 1200),
+    this.autoRedirect = true,
+  });
+
+  /// Durasi tampilan branding sebelum transisi ke beranda
+  final Duration delay;
+
+  /// Flag pengaktifan auto-redirect (dapat dinonaktifkan untuk pengujian unit/widget)
+  final bool autoRedirect;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  static const _minimumDisplayDuration = Duration(milliseconds: 1200);
-
   Timer? _navigationTimer;
 
   @override
   void initState() {
     super.initState();
 
-    _navigationTimer = Timer(_minimumDisplayDuration, () {
-      if (mounted) {
-        context.go('/home');
-      }
-    });
+    if (widget.autoRedirect) {
+      _navigationTimer = Timer(widget.delay, () {
+        if (mounted) {
+          context.go(AppRoutes.homePath);
+        }
+      });
+    }
   }
 
   @override

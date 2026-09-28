@@ -65,11 +65,6 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/login'),
-        icon: const Icon(Icons.login_rounded),
-        label: const Text('Login'),
-      ),
     );
   }
 }

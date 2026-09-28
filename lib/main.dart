@@ -9,8 +9,6 @@ import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
 
-export 'features/auth/presentation/screens/splash_screen.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

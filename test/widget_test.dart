@@ -16,6 +16,7 @@ void main() {
 
     // expect(find.text('Home'), findsOneWidget);
     expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
-    expect(find.text('Login'), findsOneWidget);
+    expect(find.text('Masuk'), findsOneWidget);
+    expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);
   });
 }

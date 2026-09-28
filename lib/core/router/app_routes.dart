@@ -7,8 +7,8 @@ abstract final class AppRoutes {
   static const String loginPath = '/login';
   static const String loginName = 'login';
 
-  static const registerPath = '/register';
-  static const registerName = 'register';
+  static const String registerPath = '/register';
+  static const String registerName = 'register';
 
   // 4 Tab Utama (Stateful Shell Route)
   static const String homePath = '/home';
