@@ -14,7 +14,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 1200));
     await tester.pump();
 
-    expect(find.text('Home'), findsOneWidget);
+    // expect(find.text('Home'), findsOneWidget);
+    expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
     expect(find.text('Login'), findsOneWidget);
   });
 }

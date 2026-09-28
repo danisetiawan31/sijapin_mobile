@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'core/config/app_config.dart';
-import 'core/routing/app_router.dart';
 import 'core/network/cookie_manager_service.dart';
 import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
@@ -40,26 +39,7 @@ Future<void> main() async {
   );
 }
 
-/// Root widget aplikasi SIIJAPIN Mobile.
-class SiijapinApp extends StatefulWidget {
-  const SiijapinApp({super.key});
-
-  @override
-  State<SiijapinApp> createState() => _SiijapinAppState();
-}
-
-class _SiijapinAppState extends State<SiijapinApp> {
-  late final router = AppRouter.create();
-
-  @override
-  void dispose() {
-    router.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-/// Root widget aplikasi SIIJAPIN Mobile dengan dukungan GoRouter
+/// Root widget aplikasi SIIJAPIN Mobile dengan dukungan GoRouter.
 class SiijapinApp extends ConsumerWidget {
   const SiijapinApp({super.key});
 
