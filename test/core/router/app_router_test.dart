@@ -30,10 +30,15 @@ void main() {
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
-        await tester.pumpAndSettle();
+        await tester.pump();
 
         expect(find.text(AppConfig.appName), findsOneWidget);
         expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
+
+        // Setelah delay 2 detik, otomatis transisi ke Beranda
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pumpAndSettle();
+        expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
       },
     );
 
