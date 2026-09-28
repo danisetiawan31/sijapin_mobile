@@ -7,8 +7,8 @@ void main() {
   testWidgets('SiijapinApp bootstrap smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(const ProviderScope(child: SiijapinApp()));
 
-    // Verifikasi branding RSUP Dr. Sitanala muncul di root app
     expect(find.text(AppConfig.appName), findsOneWidget);
     expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
+    expect(find.text('Lanjut ke Aplikasi'), findsOneWidget);
   });
 }
