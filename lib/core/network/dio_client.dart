@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../config/app_config.dart';
 import 'cookie_manager_service.dart';
@@ -79,3 +80,14 @@ class DioClient {
     );
   }
 }
+
+/// Provider Riverpod untuk CookieManagerService (Default inMemory jika tidak di-override)
+final cookieManagerServiceProvider = Provider<ICookieManagerService>((ref) {
+  return CookieManagerService.inMemory();
+});
+
+/// Provider Riverpod untuk DioClient terpusat
+final dioClientProvider = Provider<DioClient>((ref) {
+  final cookieManager = ref.watch(cookieManagerServiceProvider);
+  return DioClient(cookieManagerService: cookieManager);
+});
