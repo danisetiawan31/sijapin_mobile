@@ -105,6 +105,8 @@ sequenceDiagram
 
 ## 🎨 Design System: Palet Sitanala
 
+> *Panduan lengkap filosofi desain, tipografi, ergonomi, dan komponen UI dapat dilihat di [DESIGN.md](DESIGN.md).*
+
 | Token | Warna | Hex Code | Peruntukan Utama |
 | :--- | :---: | :--- | :--- |
 | `brandDarkEspresso` | 🟫 | `#1C140E` | Teks utama, judul, header kontras tinggi |
