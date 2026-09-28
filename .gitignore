@@ -7,9 +7,6 @@
 docs/
 **/.obsidian/
 
-# AI Agent Rules (Diabaikan untuk saat ini)
-AGENTS.md
-AGENTS.*.md
 
 # Operating System Files
 .DS_Store

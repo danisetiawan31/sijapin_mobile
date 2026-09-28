@@ -9,16 +9,11 @@ import 'core/theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = AppConfig.sentryDsn;
-      options.tracesSampleRate = 1.0;
-      options.enableAutoSessionTracking = true;
-    },
-    appRunner: () => runApp(
-      const ProviderScope(child: SiijapinApp()),
-    ),
-  );
+  await SentryFlutter.init((options) {
+    options.dsn = AppConfig.sentryDsn;
+    options.tracesSampleRate = 1.0;
+    options.enableAutoSessionTracking = true;
+  }, appRunner: () => runApp(const ProviderScope(child: SiijapinApp())));
 }
 
 /// Root widget aplikasi SIIJAPIN Mobile
@@ -31,9 +26,7 @@ class SiijapinApp extends StatelessWidget {
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      navigatorObservers: [
-        SentryNavigatorObserver(),
-      ],
+      navigatorObservers: [SentryNavigatorObserver()],
       home: const SplashScreen(),
     );
   }
