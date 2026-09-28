@@ -2,19 +2,23 @@ import 'package:dio/dio.dart';
 
 import '../config/app_config.dart';
 import 'cookie_manager_service.dart';
+import 'interceptors/csrf_interceptor.dart';
 import 'interceptors/session_expired_interceptor.dart';
 
 /// Client HTTP terpusat untuk komunikasi dengan backend CodeIgniter 3 RSUP Dr. Sitanala
 class DioClient {
   final Dio _dio;
   final ICookieManagerService cookieManagerService;
+  final CsrfInterceptor csrfInterceptor;
 
   DioClient({
     required this.cookieManagerService,
+    CsrfInterceptor? csrfInterceptor,
     Dio? dio,
     void Function()? onSessionExpired,
     List<Interceptor>? additionalInterceptors,
-  }) : _dio =
+  }) : csrfInterceptor = csrfInterceptor ?? CsrfInterceptor(),
+       _dio =
            dio ??
            Dio(
              BaseOptions(
@@ -33,6 +37,7 @@ class DioClient {
                },
              ),
            ) {
+    _dio.interceptors.add(this.csrfInterceptor);
     _dio.interceptors.add(cookieManagerService.cookieManager);
     _dio.interceptors.add(
       SessionExpiredInterceptor(onSessionExpired: onSessionExpired),

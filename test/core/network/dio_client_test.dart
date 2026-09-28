@@ -34,5 +34,15 @@ void main() {
       );
       expect(hasCookieManager, isTrue);
     });
+
+    test('should register CsrfInterceptor in interceptors', () {
+      final cookieService = CookieManagerService(CookieJar());
+      final client = DioClient(cookieManagerService: cookieService);
+
+      final hasCsrfInterceptor = client.dio.interceptors.any(
+        (i) => i == client.csrfInterceptor,
+      );
+      expect(hasCsrfInterceptor, isTrue);
+    });
   });
 }
