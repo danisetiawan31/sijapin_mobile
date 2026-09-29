@@ -81,10 +81,8 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                   icon: Icons.circle,
                   fontSize: 11,
                 ),
-                orElse: () => const AppBadge.neutral(
-                  label: 'Memuat...',
-                  fontSize: 11,
-                ),
+                orElse: () =>
+                    const AppBadge.neutral(label: 'Memuat...', fontSize: 11),
               ),
             ),
           ),
@@ -224,9 +222,7 @@ class _DayChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.brandDarkEspresso
-              : AppColors.surfaceCard,
+          color: isActive ? AppColors.brandDarkEspresso : AppColors.surfaceCard,
           borderRadius: BorderRadius.circular(9999),
           border: Border.all(
             color: isActive

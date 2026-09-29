@@ -42,8 +42,14 @@ void main() {
       final utcNight = DateTime.utc(2026, 9, 29, 23, 30);
       expect(DateFormatter.jamMenit(utcNight), equals('06:30'));
       expect(DateFormatter.jamMenitWib(utcNight), equals('06:30 WIB'));
-      expect(DateFormatter.tanggalPanjang(utcNight), equals('30 September 2026'));
-      expect(DateFormatter.hariTanggalPanjang(utcNight), equals('Rabu, 30 September 2026'));
+      expect(
+        DateFormatter.tanggalPanjang(utcNight),
+        equals('30 September 2026'),
+      );
+      expect(
+        DateFormatter.hariTanggalPanjang(utcNight),
+        equals('Rabu, 30 September 2026'),
+      );
     });
 
     test('DateFormatter.hariRelatif accurately uses WIB reference', () {
@@ -51,8 +57,14 @@ void main() {
       final today = AppDateTime.wibDateTime(2026, 9, 29, 14, 0);
       final tomorrow = AppDateTime.wibDateTime(2026, 9, 30, 8, 30);
 
-      expect(DateFormatter.hariRelatif(today, reference: refWib), equals('Hari ini'));
-      expect(DateFormatter.hariRelatif(tomorrow, reference: refWib), equals('Besok'));
+      expect(
+        DateFormatter.hariRelatif(today, reference: refWib),
+        equals('Hari ini'),
+      );
+      expect(
+        DateFormatter.hariRelatif(tomorrow, reference: refWib),
+        equals('Besok'),
+      );
     });
 
     test('Appointment.cancelDeadline correctly sets H-1 at 21:00 WIB', () {

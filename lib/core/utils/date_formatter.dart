@@ -69,7 +69,11 @@ class DateFormatter {
   static String hariRelatif(DateTime date, {DateTime? reference}) {
     final DateTime nowWib = AppDateTime.toWib(reference ?? AppDateTime.now());
     final DateTime targetWib = AppDateTime.toWib(date);
-    final DateTime target = DateTime(targetWib.year, targetWib.month, targetWib.day);
+    final DateTime target = DateTime(
+      targetWib.year,
+      targetWib.month,
+      targetWib.day,
+    );
     final DateTime today = DateTime(nowWib.year, nowWib.month, nowWib.day);
     final int selisih = target.difference(today).inDays;
     if (selisih == 0) return 'Hari ini';

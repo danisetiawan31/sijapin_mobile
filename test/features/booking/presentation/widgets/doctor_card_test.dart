@@ -14,16 +14,8 @@ void main() {
     gender: 'P',
     status: DoctorPracticeStatus.reguler,
     schedules: [
-      DoctorScheduleEntry(
-        day: 'Senin',
-        startTime: '08:00',
-        endTime: '12:00',
-      ),
-      DoctorScheduleEntry(
-        day: 'Rabu',
-        startTime: '13:00',
-        endTime: '16:00',
-      ),
+      DoctorScheduleEntry(day: 'Senin', startTime: '08:00', endTime: '12:00'),
+      DoctorScheduleEntry(day: 'Rabu', startTime: '13:00', endTime: '16:00'),
     ],
   );
 
@@ -34,11 +26,7 @@ void main() {
     gender: 'L',
     status: DoctorPracticeStatus.libur,
     schedules: [
-      DoctorScheduleEntry(
-        day: 'Kamis',
-        startTime: '09:00',
-        endTime: '12:00',
-      ),
+      DoctorScheduleEntry(day: 'Kamis', startTime: '09:00', endTime: '12:00'),
     ],
   );
 
@@ -72,39 +60,41 @@ void main() {
   }
 
   group('DoctorCard Widget Tests', () {
-    testWidgets('renders doctor name, specialization, badge, avatar, and schedules',
-        (tester) async {
-      await tester.pumpWidget(buildTestableDoctorCard(schedule: sampleDoctor));
+    testWidgets(
+      'renders doctor name, specialization, badge, avatar, and schedules',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestableDoctorCard(schedule: sampleDoctor),
+        );
 
-      // Verifikasi nama dan spesialisasi
-      expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
-      expect(find.text('Spesialis Penyakit Dalam'), findsOneWidget);
+        // Verifikasi nama dan spesialisasi
+        expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+        expect(find.text('Spesialis Penyakit Dalam'), findsOneWidget);
 
-      // Verifikasi specialty badge
-      expect(find.text('Penyakit Dalam'), findsOneWidget);
+        // Verifikasi specialty badge
+        expect(find.text('Penyakit Dalam'), findsOneWidget);
 
-      // Verifikasi avatar inisial EM dan gender P (Female icon)
-      expect(find.text('EM'), findsOneWidget);
-      expect(find.byIcon(Icons.female_rounded), findsOneWidget);
+        // Verifikasi avatar inisial EM dan gender P (Female icon)
+        expect(find.text('EM'), findsOneWidget);
+        expect(find.byIcon(Icons.female_rounded), findsOneWidget);
 
-      // Verifikasi jadwal
-      expect(find.text('Senin'), findsOneWidget);
-      expect(find.text('Rabu'), findsOneWidget);
-      expect(find.text('08:00 – 12:00 WIB'), findsOneWidget);
-      expect(find.text('13:00 – 16:00 WIB'), findsOneWidget);
+        // Verifikasi jadwal
+        expect(find.text('Senin'), findsOneWidget);
+        expect(find.text('Rabu'), findsOneWidget);
+        expect(find.text('08:00 – 12:00 WIB'), findsOneWidget);
+        expect(find.text('13:00 – 16:00 WIB'), findsOneWidget);
 
-      // Verifikasi status reguler & tombol pendaftaran
-      expect(find.text('Praktik Reguler'), findsOneWidget);
-      expect(find.text('Daftar Janji Temu'), findsOneWidget);
-    });
+        // Verifikasi status reguler & tombol pendaftaran
+        expect(find.text('Praktik Reguler'), findsOneWidget);
+        expect(find.text('Daftar Janji Temu'), findsOneWidget);
+      },
+    );
 
-    testWidgets('highlights schedule entry when activeDay matches',
-        (tester) async {
+    testWidgets('highlights schedule entry when activeDay matches', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        buildTestableDoctorCard(
-          schedule: sampleDoctor,
-          activeDay: 'Senin',
-        ),
+        buildTestableDoctorCard(schedule: sampleDoctor, activeDay: 'Senin'),
       );
 
       // Ikon penanda hari aktif muncul
@@ -112,30 +102,32 @@ void main() {
     });
 
     testWidgets(
-        'handles DoctorPracticeStatus.libur with warning badge and disabled button',
-        (tester) async {
-      bool actionTriggered = false;
+      'handles DoctorPracticeStatus.libur with warning badge and disabled button',
+      (tester) async {
+        bool actionTriggered = false;
 
-      await tester.pumpWidget(
-        buildTestableDoctorCard(
-          schedule: sampleDoctorLibur,
-          onActionPressed: () => actionTriggered = true,
-        ),
-      );
+        await tester.pumpWidget(
+          buildTestableDoctorCard(
+            schedule: sampleDoctorLibur,
+            onActionPressed: () => actionTriggered = true,
+          ),
+        );
 
-      // Verifikasi badge Libur / Cuti
-      expect(find.text('Libur / Cuti'), findsOneWidget);
+        // Verifikasi badge Libur / Cuti
+        expect(find.text('Libur / Cuti'), findsOneWidget);
 
-      // Verifikasi tombol berlabel Dokter Cuti dan tidak bisa ditekan
-      expect(find.text('Dokter Cuti'), findsOneWidget);
-      await tester.tap(find.text('Dokter Cuti'));
-      await tester.pumpAndSettle();
+        // Verifikasi tombol berlabel Dokter Cuti dan tidak bisa ditekan
+        expect(find.text('Dokter Cuti'), findsOneWidget);
+        await tester.tap(find.text('Dokter Cuti'));
+        await tester.pumpAndSettle();
 
-      expect(actionTriggered, isFalse);
-    });
+        expect(actionTriggered, isFalse);
+      },
+    );
 
-    testWidgets('triggers onActionPressed when regular doctor CTA is tapped',
-        (tester) async {
+    testWidgets('triggers onActionPressed when regular doctor CTA is tapped', (
+      tester,
+    ) async {
       bool actionTriggered = false;
 
       await tester.pumpWidget(
@@ -151,21 +143,24 @@ void main() {
       expect(actionTriggered, isTrue);
     });
 
-    testWidgets('supports custom actionLabel and selection highlight for DPJP selection',
-        (tester) async {
-      await tester.pumpWidget(
-        buildTestableDoctorCard(
-          schedule: sampleDoctor,
-          actionLabel: 'Pilih Dokter DPJP',
-          isSelected: true,
-        ),
-      );
+    testWidgets(
+      'supports custom actionLabel and selection highlight for DPJP selection',
+      (tester) async {
+        await tester.pumpWidget(
+          buildTestableDoctorCard(
+            schedule: sampleDoctor,
+            actionLabel: 'Pilih Dokter DPJP',
+            isSelected: true,
+          ),
+        );
 
-      expect(find.text('Pilih Dokter DPJP'), findsOneWidget);
-    });
+        expect(find.text('Pilih Dokter DPJP'), findsOneWidget);
+      },
+    );
 
-    testWidgets('triggers onTapCard when entire card is tapped',
-        (tester) async {
+    testWidgets('triggers onTapCard when entire card is tapped', (
+      tester,
+    ) async {
       bool cardTapped = false;
 
       await tester.pumpWidget(

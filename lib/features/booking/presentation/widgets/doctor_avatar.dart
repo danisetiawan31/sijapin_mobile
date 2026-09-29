@@ -25,7 +25,10 @@ class DoctorAvatar extends StatelessWidget {
 
   String _getInitials(String name) {
     final cleaned = name
-        .replaceAll(RegExp(r'^(dr\.|drg\.|dr\s+|drg\s+)', caseSensitive: false), '')
+        .replaceAll(
+          RegExp(r'^(dr\.|drg\.|dr\s+|drg\s+)', caseSensitive: false),
+          '',
+        )
         .trim();
     final parts = cleaned.split(' ');
     if (parts.length >= 2) {
@@ -106,10 +109,7 @@ class DoctorAvatar extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: badgeBgColor,
-              border: Border.all(
-                color: Colors.white,
-                width: 1.5,
-              ),
+              border: Border.all(color: Colors.white, width: 1.5),
             ),
             child: Center(
               child: Icon(

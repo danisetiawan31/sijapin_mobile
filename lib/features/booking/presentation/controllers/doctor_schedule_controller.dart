@@ -46,8 +46,8 @@ class SelectedDoctorDayNotifier extends Notifier<String> {
 
 final selectedDoctorDayProvider =
     NotifierProvider<SelectedDoctorDayNotifier, String>(
-  SelectedDoctorDayNotifier.new,
-);
+      SelectedDoctorDayNotifier.new,
+    );
 
 /// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 @riverpod

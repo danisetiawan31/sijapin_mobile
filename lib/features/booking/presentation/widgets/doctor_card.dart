@@ -50,8 +50,9 @@ class DoctorCard extends ConsumerWidget {
     final isLibur = schedule.status == DoctorPracticeStatus.libur;
 
     return AppCard(
-      variant:
-          isSelected ? AppCardVariant.highlighted : AppCardVariant.elevated,
+      variant: isSelected
+          ? AppCardVariant.highlighted
+          : AppCardVariant.elevated,
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(16),
       onTap: onTapCard,
@@ -124,13 +125,15 @@ class DoctorCard extends ConsumerWidget {
                       ...schedule.schedules.map((entry) {
                         final isEntryActiveDay =
                             currentActiveDay != 'Semua Hari' &&
-                                entry.day == currentActiveDay;
+                            entry.day == currentActiveDay;
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 6),
                           padding: isEntryActiveDay
                               ? const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4)
+                                  horizontal: 8,
+                                  vertical: 4,
+                                )
                               : EdgeInsets.zero,
                           decoration: isEntryActiveDay
                               ? BoxDecoration(
@@ -153,9 +156,7 @@ class DoctorCard extends ConsumerWidget {
                               const SizedBox(width: 8),
                               Text(
                                 entry.day,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
+                                style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       fontWeight: isEntryActiveDay
                                           ? FontWeight.w700
@@ -170,9 +171,7 @@ class DoctorCard extends ConsumerWidget {
                                 child: Text(
                                   entry.displayTime,
                                   textAlign: TextAlign.right,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: isEntryActiveDay
                                             ? AppColors.brandDarkEspresso
@@ -211,22 +210,25 @@ class DoctorCard extends ConsumerWidget {
 
               // CTA button
               AppPrimaryButton(
-                label: isLibur ? 'Dokter Cuti' : (actionLabel ?? 'Daftar Janji Temu'),
+                label: isLibur
+                    ? 'Dokter Cuti'
+                    : (actionLabel ?? 'Daftar Janji Temu'),
                 icon: isLibur ? null : actionIcon,
                 width: 160,
                 onPressed: isLibur
                     ? null
                     : (onActionPressed ??
-                        () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content:
-                                  Text('Buka pendaftaran untuk ${schedule.name}'),
-                              behavior: SnackBarBehavior.floating,
-                              backgroundColor: AppColors.brandDarkEspresso,
-                            ),
-                          );
-                        }),
+                          () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Buka pendaftaran untuk ${schedule.name}',
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: AppColors.brandDarkEspresso,
+                              ),
+                            );
+                          }),
               ),
             ],
           ),

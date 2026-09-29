@@ -40,7 +40,8 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
   Future<void> _selectBirthDate() async {
     final now = AppDateTime.now();
     final initialDate =
-        _birthDate ?? AppDateTime.wibDateTime(now.year - 18, now.month, now.day);
+        _birthDate ??
+        AppDateTime.wibDateTime(now.year - 18, now.month, now.day);
     final selected = await showDatePicker(
       context: context,
       firstDate: DateTime(1900),
