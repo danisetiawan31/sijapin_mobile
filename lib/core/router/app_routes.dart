@@ -22,4 +22,17 @@ abstract final class AppRoutes {
 
   static const String profilePath = '/profile';
   static const String profileName = 'profile';
+
+  // Modul Support & Informasi Publik (Epic 08)
+  static const String mcuCatalogPath = '/mcu';
+  static const String mcuCatalogName = 'mcu_catalog';
+
+  static const String complaintPath = '/support/complaint';
+  static const String complaintName = 'complaint';
+
+  static const String serviceStandardsPath = '/support/service-standards';
+  static const String serviceStandardsName = 'service_standards';
+
+  static const String bpjsFlowPath = '/support/bpjs-flow';
+  static const String bpjsFlowName = 'bpjs_flow';
 }
