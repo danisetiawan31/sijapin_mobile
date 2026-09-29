@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/app_colors.dart';
 
 /// Input field standar RSUP Dr. Sitanala — Konsisten dengan token DESIGN.md
 ///
@@ -92,7 +93,7 @@ class _AppTextFieldState extends State<AppTextField> {
                     TextSpan(
                       text: ' *',
                       style: TextStyle(
-                        color: Color(0xFFAA2D11), // AppColors.dangerCrimson
+                        color: AppColors.dangerCrimson,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

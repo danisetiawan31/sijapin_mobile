@@ -7,6 +7,7 @@ import 'core/network/cookie_manager_service.dart';
 import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_date_time.dart';
 
@@ -38,7 +39,7 @@ Future<void> main() async {
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Material(
-          color: const Color(0xFF8B0000),
+          color: AppColors.brandDarkEspresso,
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),

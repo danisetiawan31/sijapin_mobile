@@ -56,12 +56,10 @@ class DoctorAvatar extends StatelessWidget {
     final primaryColor = _isFemale
         ? AppColors.brandWarmBronze
         : AppColors.brandDarkEspresso;
-    final badgeBgColor = _isFemale
-        ? const Color(0xFFFDE8E8) // Soft Coral/Rose
-        : const Color(0xFFE6F4EA); // Soft Sage/Emerald
+    final badgeBgColor = AppColors.brandCreamLinen;
     final badgeIconColor = _isFemale
-        ? const Color(0xFFD9381E)
-        : AppColors.successEmerald;
+        ? AppColors.brandGoldenCaramel
+        : AppColors.clinicalTeal;
 
     return Stack(
       clipBehavior: Clip.none,

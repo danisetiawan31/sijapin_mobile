@@ -500,16 +500,16 @@ class _OpenQrButton extends StatelessWidget {
     return Semantics(
       button: true,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           borderRadius: radius,
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [AppColors.brandGoldenCaramel, AppColors.brandWarmBronze],
           ),
           boxShadow: [
             BoxShadow(
-              color: Color(0x4DAA7409),
+              color: AppColors.brandGoldenCaramel.withValues(alpha: 0.3),
               blurRadius: 12,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
