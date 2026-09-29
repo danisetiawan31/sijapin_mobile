@@ -22,7 +22,7 @@ class AppNavBarItem {
 ///
 /// Menghadirkan desain *tactile floating pill* berlatar putih dengan bayangan
 /// hangat (*warm ambient shadow*), indikator kapsul karamel keemasan, dan haptic feedback.
-/// Ikon menggunakan standar SSOT: Beranda, Janji Temu (Tiket), Dokter, dan Profil.
+/// Ikon menggunakan standar SSOT: Beranda, Janji Temu (Tiket), Jadwal, dan Profil.
 class AppBottomNavBar extends StatelessWidget {
   const AppBottomNavBar({
     super.key,
@@ -52,7 +52,7 @@ class AppBottomNavBar extends StatelessWidget {
       tooltip: 'Tiket & Janji Temu',
     ),
     AppNavBarItem(
-      label: 'Dokter',
+      label: 'Jadwal',
       icon: Icons.calendar_month_outlined,
       activeIcon: Icons.calendar_month_rounded,
       tooltip: 'Jadwal Poliklinik & Dokter',

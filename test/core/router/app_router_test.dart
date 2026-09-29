@@ -58,7 +58,7 @@ void main() {
         expect(find.byType(AppBottomNavBar), findsOneWidget);
         expect(find.text('Beranda'), findsOneWidget);
         expect(find.text('Janji Temu'), findsOneWidget);
-        expect(find.text('Dokter'), findsOneWidget);
+        expect(find.text('Jadwal'), findsOneWidget);
         expect(find.text('Profil'), findsOneWidget);
       },
     );
@@ -84,19 +84,16 @@ void main() {
         await tester.tap(
           find.descendant(of: navBar, matching: find.text('Janji Temu')),
         );
-        // Denyut antrean pada BookingScreen berjalan terus, jadi tidak memakai
+        // Titik berdenyut pada BookingScreen berjalan terus, jadi tidak memakai
         // pumpAndSettle yang akan menunggu animasi selesai.
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
-        expect(
-          find.text('Tiket antrean dan check-in Kiosk APM'),
-          findsOneWidget,
-        );
-        expect(find.text('MAT-014'), findsAtLeastNWidgets(1));
+        expect(find.text('Tiket Aktif'), findsOneWidget);
+        expect(find.text('Tiket Kunjungan Aktif'), findsOneWidget);
 
-        // Tap Tab 3: Dokter
+        // Tap Tab 3: Jadwal
         await tester.tap(
-          find.descendant(of: navBar, matching: find.text('Dokter')),
+          find.descendant(of: navBar, matching: find.text('Jadwal')),
         );
         await tester.pumpAndSettle();
         expect(find.text('Jadwal Praktik Poliklinik'), findsOneWidget);
