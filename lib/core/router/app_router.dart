@@ -8,6 +8,7 @@ import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/booking/presentation/screens/booking_screen.dart';
 import '../../features/booking/presentation/screens/doctor_schedule_screen.dart';
+import '../../features/profile/presentation/screens/medical_history_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/public_services/presentation/screens/home_screen.dart';
 import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
@@ -115,7 +116,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
 
-          // Tab 3: Jadwal Dokter
+// Tab 3: Jadwal Dokter
           StatefulShellBranch(
             navigatorKey: _shellNavigatorDoctors,
             routes: [
@@ -137,6 +138,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: AppRoutes.profileName,
                 pageBuilder: (context, state) =>
                     const NoTransitionPage(child: ProfileScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'medical-history',
+                    pageBuilder: (context, state) =>
+                        const NoTransitionPage(child: MedicalHistoryScreen()),
+                  ),
+                ],
               ),
             ],
           ),

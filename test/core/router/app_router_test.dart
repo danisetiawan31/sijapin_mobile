@@ -161,6 +161,25 @@ void main() {
     );
 
     testWidgets(
+      'navigating to /profile/medical-history renders MedicalHistoryScreen inside shell',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.medicalHistoryPath);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Riwayat Medis'), findsOneWidget);
+        expect(find.text('4 catatan rekam medis'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsOneWidget);
+      },
+    );
+
+    testWidgets(
       'navigating to /support/complaint renders ComplaintScreen outside shell without AppBottomNavBar',
       (tester) async {
         final container = ProviderContainer();
