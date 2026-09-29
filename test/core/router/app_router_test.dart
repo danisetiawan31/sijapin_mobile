@@ -76,24 +76,35 @@ void main() {
         router.go(AppRoutes.homePath);
         await tester.pumpAndSettle();
 
+        // Label tab dicari di dalam AppBottomNavBar agar tidak bentrok dengan
+        // teks layar (mis. "Dokter" pada detail tiket antrean).
+        final navBar = find.byType(AppBottomNavBar);
+
         // Tap Tab 2: Janji Temu
-        await tester.tap(find.text('Janji Temu'));
-        await tester.pumpAndSettle();
-        expect(find.text('Tiket & Janji Temu Pasien'), findsOneWidget);
+        await tester.tap(find.descendant(of: navBar, matching: find.text('Janji Temu')));
+        // Denyut antrean pada BookingScreen berjalan terus, jadi tidak memakai
+        // pumpAndSettle yang akan menunggu animasi selesai.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(
+          find.text('Tiket antrean dan check-in Kiosk APM'),
+          findsOneWidget,
+        );
+        expect(find.text('MAT-014'), findsAtLeastNWidgets(1));
 
         // Tap Tab 3: Dokter
-        await tester.tap(find.text('Dokter'));
+        await tester.tap(find.descendant(of: navBar, matching: find.text('Dokter')));
         await tester.pumpAndSettle();
         expect(find.text('Jadwal Praktik Poliklinik'), findsOneWidget);
 
         // Tap Tab 4: Profil
-        await tester.tap(find.text('Profil'));
+        await tester.tap(find.descendant(of: navBar, matching: find.text('Profil')));
         await tester.pumpAndSettle();
         expect(find.text('Profil Saya'), findsOneWidget);
         expect(find.text('Data Diri'), findsOneWidget);
 
         // Tap Tab 1: Kembali ke Beranda
-        await tester.tap(find.text('Beranda'));
+        await tester.tap(find.descendant(of: navBar, matching: find.text('Beranda')));
         await tester.pumpAndSettle();
         expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
       },
