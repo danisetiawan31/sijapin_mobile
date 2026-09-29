@@ -7,6 +7,7 @@ import 'core/network/cookie_manager_service.dart';
 import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -34,14 +35,14 @@ Future<void> main() async {
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Material(
-          color: const Color(0xFF8B0000),
+          color: AppColors.dangerCrimson,
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Text(
                 'ERROR:\n${details.exceptionAsString()}\n\nSTACK TRACE:\n${details.stack}',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 ),

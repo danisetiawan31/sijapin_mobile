@@ -112,7 +112,7 @@ class AppBottomNavBar extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.brandCreamLinen
-                            : Colors.transparent,
+                            : AppColors.transparent,
                         borderRadius: BorderRadius.circular(28),
                         border: isSelected
                             ? Border.all(
@@ -154,7 +154,7 @@ class AppBottomNavBar extends StatelessWidget {
                                           ? '99+'
                                           : badgeCount.toString(),
                                       style: const TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.textWhite,
                                         fontSize: 9,
                                         fontWeight: FontWeight.bold,
                                         height: 1,
