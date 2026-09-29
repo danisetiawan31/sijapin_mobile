@@ -101,5 +101,45 @@ void main() {
       expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
       expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
     });
+
+    testWidgets('tapping day filter chip filters doctors practicing on that day',
+        (tester) async {
+      await tester.pumpWidget(_buildDoctorScheduleScreen());
+      await tester.pumpAndSettle();
+
+      // Verifikasi chips hari operasional muncul
+      expect(find.text('Semua Hari'), findsOneWidget);
+      expect(find.text('Senin'), findsAtLeast(1));
+      expect(find.text('Selasa'), findsAtLeast(1));
+      expect(find.text('Kamis'), findsAtLeast(1));
+
+      // Tap chip 'Selasa' (dr. Era Medina praktik Selasa, dr. Hendra praktik Kamis & Jumat)
+      await tester.tap(find.text('Selasa').first);
+      await tester.pumpAndSettle();
+
+      // dr. Era Medina harus ada, dr. Hendra tidak ada
+      expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+      expect(find.text('dr. Hendra, Sp.M'), findsNothing);
+
+      // Tap chip 'Kamis' (dr. Hendra praktik Kamis, dr. Era Medina tidak)
+      await tester.tap(find.text('Kamis').first);
+      await tester.pumpAndSettle();
+
+      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+      expect(find.text('dr. Era Medina, Sp.PD'), findsNothing);
+    });
+
+    testWidgets('doctor avatar renders initials and gender indicators properly',
+        (tester) async {
+      await tester.pumpWidget(_buildDoctorScheduleScreen());
+      await tester.pumpAndSettle();
+
+      // dr. Era Medina (Wanita) -> inisial EM dan icon female
+      expect(find.text('EM'), findsOneWidget);
+      expect(find.byIcon(Icons.female_rounded), findsAtLeast(1));
+
+      // dr. Hendra (Pria) -> icon male
+      expect(find.byIcon(Icons.male_rounded), findsAtLeast(1));
+    });
   });
 }

@@ -12,6 +12,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
   Future<List<DoctorSchedule>> getDoctorSchedules({
     String? specialtyFilter,
     String? searchQuery,
+    String? dayFilter,
   }) async {
     // Simulasi delay jaringan
     await Future<void>.delayed(const Duration(milliseconds: 400));
@@ -32,6 +33,16 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
               specLower.contains('kebidanan');
         }
         return specLower.contains(filterLower);
+      }).toList();
+    }
+
+    // Filter berdasarkan hari operasional (Senin – Jumat)
+    if (dayFilter != null && dayFilter != 'Semua Hari') {
+      final dayLower = dayFilter.toLowerCase().trim();
+      filtered = filtered.where((d) {
+        return d.schedules.any(
+          (entry) => entry.day.toLowerCase().trim() == dayLower,
+        );
       }).toList();
     }
 
@@ -58,14 +69,15 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
     }
   }
 
-  /// Data sampel jadwal dokter — sesuai referensi visual (screenshot).
+  /// Data sampel jadwal dokter — sesuai referensi visual & database SIMRS Sitanala.
   List<DoctorSchedule> _getSampleSchedules() {
     return const <DoctorSchedule>[
-      // Dokter 1: dr. Era Medina, Sp.PD — Penyakit Dalam
+      // Dokter 1: dr. Era Medina, Sp.PD — Penyakit Dalam (Wanita)
       DoctorSchedule(
         id: 'doc_001',
         name: 'dr. Era Medina, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -82,11 +94,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
-      // Dokter 2: dr. Hendra, Sp.M — Mata
+      // Dokter 2: dr. Hendra, Sp.M — Mata (Pria)
       DoctorSchedule(
         id: 'doc_002',
         name: 'dr. Hendra, Sp.M',
         specialization: 'Spesialis Mata',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -103,11 +116,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
-      // Dokter 3: dr. Damas Hendriansyah, Sp.OG — Kebidanan & Obgyn
+      // Dokter 3: dr. Damas Hendriansyah, Sp.OG — Kebidanan & Obgyn (Pria)
       DoctorSchedule(
         id: 'doc_003',
         name: 'dr. Damas Hendriansyah, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -124,11 +138,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
-      // Tambahan dokter untuk menunjukkan scroll/list
+      // Dokter 4: dr. Rian Pramudita, Sp.THT — THT-KL (Pria)
       DoctorSchedule(
         id: 'doc_004',
         name: 'dr. Rian Pramudita, Sp.THT',
         specialization: 'Spesialis THT-KL',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -145,10 +160,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
+      // Dokter 5: dr. Anita Kusuma, Sp.M — Mata (Wanita)
       DoctorSchedule(
         id: 'doc_005',
         name: 'dr. Anita Kusuma, Sp.M',
         specialization: 'Spesialis Mata',
+        gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -165,10 +182,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
+      // Dokter 6: dr. Budi Santoso, Sp.A — Anak (Pria)
       DoctorSchedule(
         id: 'doc_006',
         name: 'dr. Budi Santoso, Sp.A',
         specialization: 'Spesialis Anak',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -185,19 +204,23 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
+      // Dokter 7: dr. Citra Dewi, Sp.PD — Penyakit Dalam (Wanita)
       DoctorSchedule(
         id: 'doc_007',
         name: 'dr. Citra Dewi, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.libur,
         schedules: <DoctorScheduleEntry>[],
       ),
 
+      // Dokter 8: dr. Eko Wibowo, Sp.OG — Kebidanan & Obgyn (Pria)
       DoctorSchedule(
         id: 'doc_008',
         name: 'dr. Eko Wibowo, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -214,10 +237,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
+      // Dokter 9: dr. Fitriani, Sp.M — Mata (Wanita)
       DoctorSchedule(
         id: 'doc_009',
         name: 'dr. Fitriani, Sp.M',
         specialization: 'Spesialis Mata',
+        gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -234,10 +259,12 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         ],
       ),
 
+      // Dokter 10: dr. Gunawan, Sp.A — Anak (Pria)
       DoctorSchedule(
         id: 'doc_010',
         name: 'dr. Gunawan, Sp.A',
         specialization: 'Spesialis Anak',
+        gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[

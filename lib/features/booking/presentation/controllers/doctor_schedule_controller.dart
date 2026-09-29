@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
@@ -33,6 +34,21 @@ class DoctorSearchQuery extends _$DoctorSearchQuery {
   }
 }
 
+/// Provider hari operasional yang sedang dipilih (Senin – Jumat / Semua Hari)
+class SelectedDoctorDayNotifier extends Notifier<String> {
+  @override
+  String build() => 'Semua Hari';
+
+  void setDay(String day) {
+    state = day;
+  }
+}
+
+final selectedDoctorDayProvider =
+    NotifierProvider<SelectedDoctorDayNotifier, String>(
+  SelectedDoctorDayNotifier.new,
+);
+
 /// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 @riverpod
 class DoctorScheduleList extends _$DoctorScheduleList {
@@ -41,10 +57,12 @@ class DoctorScheduleList extends _$DoctorScheduleList {
     final repo = ref.watch(doctorScheduleRepositoryProvider);
     final specialty = ref.watch(selectedDoctorSpecialtyProvider);
     final query = ref.watch(doctorSearchQueryProvider);
+    final day = ref.watch(selectedDoctorDayProvider);
 
     return repo.getDoctorSchedules(
       specialtyFilter: specialty == 'Semua Poli' ? null : specialty,
       searchQuery: query.trim().isEmpty ? null : query.trim(),
+      dayFilter: day == 'Semua Hari' ? null : day,
     );
   }
 
@@ -58,11 +76,17 @@ class DoctorScheduleList extends _$DoctorScheduleList {
     ref.read(selectedDoctorSpecialtyProvider.notifier).setSpecialty(specialty);
   }
 
-  /// Reset ke data awal (semua poli & pencarian kosong)
+  /// Helper untuk memfilter hari operasional (kompatibilitas & kemudahan akses)
+  void filterByDay(String day) {
+    ref.read(selectedDoctorDayProvider.notifier).setDay(day);
+  }
+
+  /// Reset ke data awal (semua poli, semua hari & pencarian kosong)
   void reset() {
     ref.read(doctorSearchQueryProvider.notifier).setQuery('');
     ref
         .read(selectedDoctorSpecialtyProvider.notifier)
         .setSpecialty('Semua Poli');
+    ref.read(selectedDoctorDayProvider.notifier).setDay('Semua Hari');
   }
 }

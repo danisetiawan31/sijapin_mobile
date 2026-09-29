@@ -6,6 +6,7 @@ class DoctorSchedule {
     required this.id,
     required this.name,
     required this.specialization,
+    this.gender = 'L',
     this.photoUrl,
     required this.schedules,
     required this.status,
@@ -20,7 +21,10 @@ class DoctorSchedule {
   /// Spesialisasi dokter, contoh: `Spesialis Penyakit Dalam`
   final String specialization;
 
-  /// URL foto dokter (opsional, gunakan inisial jika null)
+  /// Jenis kelamin dokter: `'L'` (Laki-laki) atau `'P'` (Perempuan)
+  final String gender;
+
+  /// URL foto dokter (opsional, gunakan inisial/avatar gender jika null)
   final String? photoUrl;
 
   /// Daftar jadwal praktik per hari
@@ -28,6 +32,12 @@ class DoctorSchedule {
 
   /// Status praktik: praktik reguler, libur, cuti, dll.
   final DoctorPracticeStatus status;
+
+  /// Apakah dokter berjenis kelamin pria
+  bool get isMale => gender.toUpperCase() == 'L';
+
+  /// Apakah dokter berjenis kelamin wanita
+  bool get isFemale => gender.toUpperCase() == 'P';
 }
 
 /// Entri jadwal praktik per hari.
