@@ -35,7 +35,10 @@ class HomeMcuCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF4FAF8), Color(0xFFE7F5F1)],
+              colors: [
+                AppColors.clinicalSurfaceLight,
+                AppColors.clinicalSurfaceAlt,
+              ],
             ),
             boxShadow: [
               BoxShadow(

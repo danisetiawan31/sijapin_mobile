@@ -27,6 +27,8 @@ class AppColors {
   static const Color clinicalTeal = Color(0xFF1B7369);
   static const Color clinicalContainer = Color(0xFFE8F4F2);
   static const Color clinicalBorder = Color(0xFFBCE0DA);
+  static const Color clinicalSurfaceLight = Color(0xFFF4FAF8);
+  static const Color clinicalSurfaceAlt = Color(0xFFE7F5F1);
 
   static const Color dangerCrimson = Color(0xFFAA2D11);
   static const Color dangerContainer = Color(0xFFFEF2F2);
