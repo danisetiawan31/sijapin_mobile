@@ -47,7 +47,7 @@ class DoctorAvatar extends StatelessWidget {
         radius: radius,
         backgroundColor: AppColors.brandCreamLinen,
         backgroundImage: NetworkImage(photoUrl!),
-        onBackgroundImageError: (_, __) {},
+        onBackgroundImageError: (exception, stackTrace) {},
         child: null,
       );
     }

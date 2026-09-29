@@ -6,7 +6,6 @@ import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
-import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/doctor_card.dart';
 

@@ -604,7 +604,7 @@ class _CancelActionRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Flexible(
+        const Flexible(
           child: Text(
             'Batas batal: H-1 s/d ${AppConfig.cancellationDeadlineHour}:00 ${AppConfig.timeZoneAbbr}',
             maxLines: 1,
