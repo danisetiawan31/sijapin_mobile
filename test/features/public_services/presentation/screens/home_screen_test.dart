@@ -9,9 +9,10 @@ void main() {
       (tester) async {
         await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
 
-        // 1. Verifikasi Header RS
-        expect(find.text('RSUP Dr. Sitanala'), findsOneWidget);
+        // 1. Verifikasi Header RS & Welcome Banner
+        expect(find.text('RSUP Dr. Sitanala'), findsWidgets);
         expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);
+        expect(find.text('Halo, 👋'), findsOneWidget);
 
         // 2. Verifikasi Judul Section 1
         expect(find.text('Layanan Poliklinik & Pasien'), findsOneWidget);
@@ -20,13 +21,13 @@ void main() {
         // 3. Verifikasi Hero Card Pendaftaran Rawat Jalan
         expect(find.text('Layanan Utama'), findsOneWidget);
         expect(find.text('Pendaftaran Rawat Jalan'), findsOneWidget);
-        expect(find.text('Daftar Poli'), findsOneWidget);
+        expect(find.text('Daftar Sekarang'), findsOneWidget);
 
         // 4. Verifikasi Bento Duo Cards
-        expect(find.textContaining('Ketersediaan'), findsOneWidget);
-        expect(find.textContaining('Jadwal'), findsOneWidget);
-        expect(find.text('18 Bed Kosong'), findsOneWidget);
-        expect(find.text('52 Dokter Aktif'), findsOneWidget);
+        expect(find.textContaining('Ketersediaan'), findsWidgets);
+        expect(find.text('Jadwal Dokter'), findsOneWidget);
+        expect(find.text('Lihat Ketersediaan'), findsOneWidget);
+        expect(find.text('Lihat Jadwal'), findsOneWidget);
 
         // Scroll ke bawah untuk melihat komponen berikutnya
         await tester.drag(

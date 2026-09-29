@@ -28,16 +28,14 @@ void main() {
         find.textContaining('Booking poli reguler & eksekutif'),
         findsOneWidget,
       );
-      expect(find.text('Terhubung SISRUTE & BPJS'), findsOneWidget);
-      expect(find.text('Daftar Poli'), findsOneWidget);
+      expect(find.text('Daftar Sekarang'), findsOneWidget);
 
-      // Verifikasi ikon kalender dan panah
-      expect(find.byIcon(Icons.edit_calendar_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
+      // Verifikasi ikon kalender dan chevron
+      expect(find.byIcon(Icons.calendar_month_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
 
       // Verifikasi tap trigger
-      await tester.tap(find.text('Daftar Poli'));
+      await tester.tap(find.text('Daftar Sekarang'));
       await tester.pumpAndSettle();
 
       expect(tapped, isTrue);

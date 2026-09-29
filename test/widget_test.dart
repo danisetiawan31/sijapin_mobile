@@ -18,5 +18,6 @@ void main() {
     expect(find.text('Layanan Poliklinik & Pasien'), findsOneWidget);
     expect(find.text('Masuk'), findsOneWidget);
     expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);
+    expect(find.text('Selamat Datang di RSUP Dr. Sitanala'), findsOneWidget);
   });
 }
