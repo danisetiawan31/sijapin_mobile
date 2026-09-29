@@ -55,6 +55,65 @@ class AppPrimaryButton extends StatelessWidget {
   }
 }
 
+/// Tombol Bahaya (Danger) — Danger Crimson RSUP Dr. Sitanala
+///
+/// Untuk aksi merusak seperti pembatalan janji temu (§7.A DESIGN.md):
+/// - `button-danger` #AA2D11 dengan teks putih (kontras ≥ 4.5:1)
+/// - Bentuk kapsul StadiumBorder dan tinggi minimal 48dp
+class AppDangerButton extends StatelessWidget {
+  const AppDangerButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.isLoading = false,
+    this.icon,
+    this.width = double.infinity,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isLoading;
+  final IconData? icon;
+  final double width;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.dangerCrimson,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.dangerCrimson.withValues(
+            alpha: 0.4,
+          ),
+        ),
+        onPressed: isLoading ? null : onPressed,
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 18),
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
 /// Tombol Sekunder (Outlined) — Palet Warm Bronze RSUP Dr. Sitanala
 ///
 /// Memenuhi standar aksesibilitas WCAG AA:

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -42,7 +43,8 @@ class BpjsFlowScreen extends StatelessWidget {
       description: 'Buka aplikasi SIIJAPIN Mobile, pilih menu Janji Temu / Pendaftaran. Masukkan nomor rujukan BPJS atau Surat Kontrol (SPRI), pilih Poliklinik dan Dokter DPJP.',
       icon: Icons.app_registration_rounded,
       badgeLabel: 'Booking Task 1',
-      importantNote: 'Pendaftaran ditutup H-1 pukul 14.00 WIB.',
+      importantNote:
+          'Pendaftaran ditutup H-1 pukul ${AppConfig.bpjsRegistrationCutoffHour}.00 ${AppConfig.timeZoneAbbr}.',
     ),
     BpjsFlowStep(
       stepNumber: 3,

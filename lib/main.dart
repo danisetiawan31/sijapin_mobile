@@ -10,9 +10,13 @@ import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_date_time.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi basis data zona waktu resmi RSUP Dr. Sitanala (WIB / Asia/Jakarta)
+  AppDateTime.initialize();
 
   // Konfigurasi status bar & navigasi agar menyatu 1 warna tanpa shadow/scrim
   SystemChrome.setSystemUIOverlayStyle(
@@ -49,7 +53,7 @@ Future<void> main() async {
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Material(
-          color: AppColors.dangerCrimson,
+          color: AppColors.brandDarkEspresso,
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
