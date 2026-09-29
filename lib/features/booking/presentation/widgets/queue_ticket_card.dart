@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
@@ -149,7 +150,7 @@ class _ScheduleRow extends StatelessWidget {
                 const PulseDot(color: AppColors.successEmerald, size: 8),
                 Flexible(
                   child: Text(
-                    '$hari, $jam WIB',
+                    '$hari, $jam ${AppConfig.timeZoneAbbr}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -603,9 +604,9 @@ class _CancelActionRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        const Flexible(
+        Flexible(
           child: Text(
-            'Batas batal: H-1 s/d 21:00 WIB',
+            'Batas batal: H-1 s/d ${AppConfig.cancellationDeadlineHour}:00 ${AppConfig.timeZoneAbbr}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,

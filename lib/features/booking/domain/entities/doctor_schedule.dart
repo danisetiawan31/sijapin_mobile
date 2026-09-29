@@ -1,3 +1,5 @@
+import 'package:sijapin_mobile/core/config/app_config.dart';
+
 /// Entitas jadwal praktik dokter spesialis & poliklinik.
 class DoctorSchedule {
   const DoctorSchedule({
@@ -46,7 +48,7 @@ class DoctorScheduleEntry {
   final String endTime;
 
   /// Format tampilan jam praktik, contoh: `07.30 – 12.00 WIB`
-  String get displayTime => '$startTime – $endTime WIB';
+  String get displayTime => '$startTime – $endTime ${AppConfig.timeZoneAbbr}';
 }
 
 /// Status praktik dokter.

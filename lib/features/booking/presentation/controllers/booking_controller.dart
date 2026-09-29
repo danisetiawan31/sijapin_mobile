@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sijapin_mobile/core/config/app_config.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 
 /// Data sementara sampai endpoint janji temu tersedia.
 final activeAppointmentProvider = Provider<Appointment?>((ref) {
-  final now = DateTime.now();
+  final now = AppDateTime.now();
   return Appointment(
     bookingCode: '260930014221',
     queueNumber: 'MAT-014',
@@ -11,8 +13,8 @@ final activeAppointmentProvider = Provider<Appointment?>((ref) {
     doctorName: 'dr. Hendra Prasetyo, Sp.M.',
     specialty: 'Spesialis Mata',
     clinic: 'Poli Mata',
-    scheduledDate: DateTime(now.year, now.month, now.day + 1, 9, 30),
-    scheduledTime: '09.30 WIB',
+    scheduledDate: AppDateTime.wibDateTime(now.year, now.month, now.day + 1, 9, 30),
+    scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
     estimatedMinutes: 15,
     nowServingNumber: 'MAT-011',
     remainingQueue: 3,
@@ -31,8 +33,8 @@ final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
       doctorName: 'dr. Hendra, Sp.M.',
       specialty: 'Spesialis Mata',
       clinic: 'Poli Mata',
-      scheduledDate: DateTime(2026, 9, 12, 9, 30),
-      scheduledTime: '09.30 WIB',
+      scheduledDate: AppDateTime.wibDateTime(2026, 9, 12, 9, 30),
+      scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
       estimatedMinutes: 0,
       nowServingNumber: 'MAT-008',
       remainingQueue: 0,
@@ -47,8 +49,8 @@ final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
       doctorName: 'dr. Era Medina, Sp.PD',
       specialty: 'Spesialis Penyakit Dalam',
       clinic: 'Poli Penyakit Dalam',
-      scheduledDate: DateTime(2026, 8, 4, 10, 0),
-      scheduledTime: '10.00 WIB',
+      scheduledDate: AppDateTime.wibDateTime(2026, 8, 4, 10, 0),
+      scheduledTime: '10.00 ${AppConfig.timeZoneAbbr}',
       estimatedMinutes: 0,
       nowServingNumber: 'PDI-006',
       remainingQueue: 0,
@@ -63,8 +65,8 @@ final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
       doctorName: 'dr. Rian Pramudita, Sp.THT',
       specialty: 'Spesialis THT-KL',
       clinic: 'Poli THT-KL',
-      scheduledDate: DateTime(2026, 7, 15, 8, 30),
-      scheduledTime: '08.30 WIB',
+      scheduledDate: AppDateTime.wibDateTime(2026, 7, 15, 8, 30),
+      scheduledTime: '08.30 ${AppConfig.timeZoneAbbr}',
       estimatedMinutes: 0,
       nowServingNumber: 'THT-004',
       remainingQueue: 0,

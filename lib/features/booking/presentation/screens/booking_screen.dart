@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/config/app_config.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -339,7 +340,7 @@ class _ApmCallout extends StatelessWidget {
                     SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        'Layanan Buka 06.30 WIB',
+                        'Layanan Buka ${AppConfig.admissionServiceOpenTime} ${AppConfig.timeZoneAbbr}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

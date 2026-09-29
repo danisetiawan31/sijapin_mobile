@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_date_time.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_widgets.dart';
 
@@ -37,9 +38,9 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
   }
 
   Future<void> _selectBirthDate() async {
-    final now = DateTime.now();
+    final now = AppDateTime.now();
     final initialDate =
-        _birthDate ?? DateTime(now.year - 18, now.month, now.day);
+        _birthDate ?? AppDateTime.wibDateTime(now.year - 18, now.month, now.day);
     final selected = await showDatePicker(
       context: context,
       firstDate: DateTime(1900),
