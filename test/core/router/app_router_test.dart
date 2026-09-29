@@ -139,5 +139,81 @@ void main() {
         expect(find.byType(AppBottomNavBar), findsNothing);
       },
     );
+
+    testWidgets(
+      'navigating to /mcu renders McuCatalogScreen outside shell without AppBottomNavBar',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.mcuCatalogPath);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Katalog Paket MCU'), findsOneWidget);
+        expect(find.text('Panduan Persiapan Puasa'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'navigating to /support/complaint renders ComplaintScreen outside shell without AppBottomNavBar',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.complaintPath);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Form Pengaduan Layanan'), findsOneWidget);
+        expect(find.text('Kanal Bantuan Resmi Kemenkes RI'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'navigating to /support/service-standards renders ServiceStandardsScreen outside shell',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.serviceStandardsPath);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Standar Pelayanan Publik'), findsOneWidget);
+        expect(find.text('Maklumat Pelayanan'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'navigating to /support/bpjs-flow renders BpjsFlowScreen outside shell',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.bpjsFlowPath);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Alur Pasien BPJS Kesehatan'), findsOneWidget);
+        expect(find.text('5 Langkah Berobat dengan BPJS'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
+      },
+    );
   });
 }
