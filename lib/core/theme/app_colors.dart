@@ -15,6 +15,7 @@ class AppColors {
 
   // Surface & Latar Belakang
   static const Color surfaceBg = Color(0xFFFAF8F5);
+  static const Color surfaceContainerLow = Color(0xFFF5F3F0);
   static const Color surfaceCard = Color(0xFFFFFFFF);
   static const Color surfaceOverlay = Color(0xFFFFFFFF);
 

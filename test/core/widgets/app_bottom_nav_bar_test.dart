@@ -23,7 +23,7 @@ void main() {
       // Verifikasi 4 label tampil
       expect(find.text('Beranda'), findsOneWidget);
       expect(find.text('Janji Temu'), findsOneWidget);
-      expect(find.text('Dokter'), findsOneWidget);
+      expect(find.text('Jadwal'), findsOneWidget);
       expect(find.text('Profil'), findsOneWidget);
 
       // Verifikasi ikon profil menggunakan person (bukan support_agent)
@@ -49,8 +49,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(tappedIndex, 1);
 
-      // Tap Tab 3: Dokter
-      await tester.tap(find.text('Dokter'));
+      // Tap Tab 3: Jadwal
+      await tester.tap(find.text('Jadwal'));
       await tester.pumpAndSettle();
       expect(tappedIndex, 2);
 
