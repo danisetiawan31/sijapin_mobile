@@ -89,7 +89,8 @@ void main() {
         // Tap Tab 4: Profil
         await tester.tap(find.text('Profil'));
         await tester.pumpAndSettle();
-        expect(find.text('Profil & Anggota Keluarga'), findsOneWidget);
+        expect(find.text('Profil Saya'), findsOneWidget);
+        expect(find.text('Data Diri'), findsOneWidget);
 
         // Tap Tab 1: Kembali ke Beranda
         await tester.tap(find.text('Beranda'));
