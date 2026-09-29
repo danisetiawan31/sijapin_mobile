@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
@@ -149,7 +150,7 @@ class _ScheduleRow extends StatelessWidget {
                 const PulseDot(color: AppColors.successEmerald, size: 8),
                 Flexible(
                   child: Text(
-                    '$hari, $jam WIB',
+                    '$hari, $jam ${AppConfig.timeZoneAbbr}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -499,16 +500,16 @@ class _OpenQrButton extends StatelessWidget {
     return Semantics(
       button: true,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           borderRadius: radius,
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: [AppColors.brandGoldenCaramel, AppColors.brandWarmBronze],
           ),
           boxShadow: [
             BoxShadow(
-              color: Color(0x4DAA7409),
+              color: AppColors.brandGoldenCaramel.withValues(alpha: 0.3),
               blurRadius: 12,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -605,7 +606,7 @@ class _CancelActionRow extends StatelessWidget {
         const SizedBox(width: 8),
         const Flexible(
           child: Text(
-            'Batas batal: H-1 s/d 21:00 WIB',
+            'Batas batal: H-1 s/d ${AppConfig.cancellationDeadlineHour}:00 ${AppConfig.timeZoneAbbr}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,

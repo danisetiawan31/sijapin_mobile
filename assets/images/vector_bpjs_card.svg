@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- BPJS Ambient Gradient -->
+    <radialGradient id="bpjsAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E0F5F0" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#E8F4F2" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FAF8F5" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Card Background Gradient -->
+    <linearGradient id="bpjsCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B7369"/>
+      <stop offset="60%" stop-color="#2A9D8F"/>
+      <stop offset="100%" stop-color="#145C54"/>
+    </linearGradient>
+
+    <!-- Golden Chip Gradient -->
+    <linearGradient id="chipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD89C"/>
+      <stop offset="50%" stop-color="#AA7409"/>
+      <stop offset="100%" stop-color="#825B0B"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow Filter -->
+    <filter id="bpjsShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#1C140E" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Ambient Background Aura -->
+  <circle cx="100" cy="100" r="90" fill="url(#bpjsAura)"/>
+
+  <!-- 2. Ground Shadow -->
+  <ellipse cx="100" cy="170" rx="65" ry="9" fill="#1C140E" opacity="0.07"/>
+
+  <!-- 3. Secondary Flow Card (Behind) -->
+  <g filter="url(#bpjsShadow)" opacity="0.6">
+    <rect x="58" y="44" width="104" height="66" rx="10" fill="#FFFFFF" stroke="#BCE0DA" stroke-width="1.2" transform="rotate(-6, 110, 77)"/>
+  </g>
+
+  <!-- 4. Primary BPJS Health Card (Front) -->
+  <g filter="url(#bpjsShadow)">
+    <!-- Main Card Body -->
+    <rect x="42" y="62" width="116" height="74" rx="12" fill="url(#bpjsCardGrad)" stroke="#FFFFFF" stroke-width="1"/>
+
+    <!-- Decorative Organic Security Wave (Watermark) -->
+    <path d="M 42 110 C 70 95, 100 135, 158 90 L 158 136 L 42 136 Z" fill="#FFFFFF" opacity="0.08"/>
+    <path d="M 42 80 C 80 120, 110 70, 158 115 L 158 136 L 42 136 Z" fill="#FFFFFF" opacity="0.05"/>
+
+    <!-- Golden Smart Card Chip -->
+    <rect x="56" y="80" width="18" height="15" rx="3" fill="url(#chipGrad)" stroke="#AA7409" stroke-width="0.8"/>
+    <line x1="56" y1="87" x2="74" y2="87" stroke="#614925" stroke-width="0.6"/>
+    <line x1="65" y1="80" x2="65" y2="95" stroke="#614925" stroke-width="0.6"/>
+
+    <!-- Contactless Signal Wave (Near Chip) -->
+    <path d="M 80 84 A 6 6 0 0 1 80 92" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+    <path d="M 83 82 A 9 9 0 0 1 83 94" fill="none" stroke="#FFFFFF" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Hospital / Health Cross Emblem in Top Right -->
+    <circle cx="140" cy="78" r="8" fill="#FFFFFF" opacity="0.9"/>
+    <path d="M 137 78 L 143 78 M 140 75 L 140 81" stroke="#1B7369" stroke-width="2.2" stroke-linecap="round"/>
+
+    <!-- Card Number Digits Lines (Embossed Look) -->
+    <rect x="56" y="104" width="20" height="3" rx="1.5" fill="#FFFFFF" opacity="0.9"/>
+    <rect x="80" y="104" width="20" height="3" rx="1.5" fill="#FFFFFF" opacity="0.9"/>
+    <rect x="104" y="104" width="20" height="3" rx="1.5" fill="#FFFFFF" opacity="0.9"/>
+
+    <!-- Patient Name Placeholder -->
+    <rect x="56" y="116" width="34" height="4" rx="2" fill="#E0F5F0" opacity="0.8"/>
+    <rect x="56" y="123" width="22" height="3" rx="1.5" fill="#BCE0DA" opacity="0.6"/>
+  </g>
+
+  <!-- 5. Verification / Rujukan Shield Badge (Bottom Right) -->
+  <g filter="url(#bpjsShadow)">
+    <circle cx="146" cy="138" r="16" fill="#FFFFFF" stroke="#BCE0DA" stroke-width="1.5"/>
+    <circle cx="146" cy="138" r="13" fill="#E8F4F2"/>
+    <!-- Shield Icon -->
+    <path d="M 146 129 L 153 132 C 153 140, 146 146, 146 146 C 146 146, 139 140, 139 132 Z" fill="#1B7369"/>
+    <path d="M 143 138 L 145 140 L 149 135" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- 6. Floating Sparkles & Health Motifs -->
+  <path d="M 36 60 L 42 60 M 39 57 L 39 63" stroke="#AA7409" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="162" cy="56" r="3" fill="#2A9D8F" opacity="0.6"/>
+  <circle cx="38" cy="136" r="3.5" fill="#BCE0DA"/>
+</svg>

@@ -1,3 +1,5 @@
+import 'app_date_time.dart';
+
 /// Format tanggal dalam bahasa Indonesia tanpa dependensi locale tambahan.
 ///
 /// Menghindari `intl` + `initializeDateFormatting` yang menambah inisialisasi
@@ -32,33 +34,47 @@ class DateFormatter {
 
   /// Contoh: `14 Agustus 1998`
   static String tanggalPanjang(DateTime date) {
-    return '${date.day} ${_bulan[date.month - 1]} ${date.year}';
+    final wib = AppDateTime.toWib(date);
+    return '${wib.day} ${_bulan[wib.month - 1]} ${wib.year}';
   }
 
   /// Contoh: `14 Agu 1998`
   static String tanggalPendek(DateTime date) {
-    final String namaBulan = _bulan[date.month - 1];
-    return '${date.day} ${namaBulan.substring(0, 3)} ${date.year}';
+    final wib = AppDateTime.toWib(date);
+    final String namaBulan = _bulan[wib.month - 1];
+    return '${wib.day} ${namaBulan.substring(0, 3)} ${wib.year}';
   }
 
   /// Contoh: `Senin, 14 Agustus 1998`
   static String hariTanggalPanjang(DateTime date) {
-    return '${_hari[date.weekday - 1]}, ${tanggalPanjang(date)}';
+    final wib = AppDateTime.toWib(date);
+    return '${_hari[wib.weekday - 1]}, ${tanggalPanjang(wib)}';
   }
 
   /// Jam dan menit dua digit, contoh: `08:30`.
   static String jamMenit(DateTime date) {
-    final String jam = date.hour.toString().padLeft(2, '0');
-    final String menit = date.minute.toString().padLeft(2, '0');
+    final wib = AppDateTime.toWib(date);
+    final String jam = wib.hour.toString().padLeft(2, '0');
+    final String menit = wib.minute.toString().padLeft(2, '0');
     return '$jam:$menit';
   }
 
+  /// Jam, menit dan zona waktu resmi, contoh: `08:30 WIB`.
+  static String jamMenitWib(DateTime date) {
+    return '${jamMenit(date)} ${AppDateTime.timeZoneAbbr}';
+  }
+
   /// Label hari relatif untuk tanggal kunjungan: `Hari ini`, `Besok`, atau nama
-  /// hari dalam seminggu bila lebih dari satu hari ke depan.
+  /// hari dalam seminggu bila lebih dari satu hari ke depan (berbasis zona WIB).
   static String hariRelatif(DateTime date, {DateTime? reference}) {
-    final DateTime now = reference ?? DateTime.now();
-    final DateTime target = DateTime(date.year, date.month, date.day);
-    final DateTime today = DateTime(now.year, now.month, now.day);
+    final DateTime nowWib = AppDateTime.toWib(reference ?? AppDateTime.now());
+    final DateTime targetWib = AppDateTime.toWib(date);
+    final DateTime target = DateTime(
+      targetWib.year,
+      targetWib.month,
+      targetWib.day,
+    );
+    final DateTime today = DateTime(nowWib.year, nowWib.month, nowWib.day);
     final int selisih = target.difference(today).inDays;
     if (selisih == 0) return 'Hari ini';
     if (selisih == 1) return 'Besok';
@@ -69,11 +85,12 @@ class DateFormatter {
   /// Umur pasien dalam tahun pada [reference], atau `null` bila tanggal lahir belum diisi.
   static int? umur({required DateTime? birthDate, DateTime? reference}) {
     if (birthDate == null) return null;
-    final DateTime now = reference ?? DateTime.now();
-    int tahun = now.year - birthDate.year;
+    final DateTime nowWib = AppDateTime.toWib(reference ?? AppDateTime.now());
+    final DateTime birthWib = AppDateTime.toWib(birthDate);
+    int tahun = nowWib.year - birthWib.year;
     final bool belumUlangTahun =
-        now.month < birthDate.month ||
-        (now.month == birthDate.month && now.day < birthDate.day);
+        nowWib.month < birthWib.month ||
+        (nowWib.month == birthWib.month && nowWib.day < birthWib.day);
     if (belumUlangTahun) tahun -= 1;
     return tahun < 0 ? null : tahun;
   }

@@ -2,24 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
-import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
-import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
+import 'package:sijapin_mobile/features/booking/presentation/widgets/doctor_card.dart';
 
 /// Tab 3: Jadwal Dokter Spesialis & Poliklinik
-class DoctorScheduleScreen extends ConsumerWidget {
+class DoctorScheduleScreen extends ConsumerStatefulWidget {
   const DoctorScheduleScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final scheduleState = ref.watch(doctorScheduleListProvider);
-    final schedulesAsync = scheduleState.schedules;
-    final selectedSpecialty = scheduleState.selectedSpecialty;
-    final searchController = TextEditingController();
+  ConsumerState<DoctorScheduleScreen> createState() =>
+      _DoctorScheduleScreenState();
+}
+
+class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialQuery = ref.read(doctorSearchQueryProvider);
+    _searchController = TextEditingController(text: initialQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final schedulesAsync = ref.watch(doctorScheduleListProvider);
+    final currentQuery = ref.watch(doctorSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBg,
@@ -27,13 +45,15 @@ class DoctorScheduleScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceBg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.brandDarkEspresso,
-          ),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.brandDarkEspresso,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -52,13 +72,17 @@ class DoctorScheduleScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: AppBadge.success(
-                label: '52 Dokter Aktif',
-                icon: Icons.circle,
-                fontSize: 11,
+              child: schedulesAsync.maybeWhen(
+                data: (list) => AppBadge.success(
+                  label: '${list.length} Dokter Aktif',
+                  icon: Icons.circle,
+                  fontSize: 11,
+                ),
+                orElse: () =>
+                    const AppBadge.neutral(label: 'Memuat...', fontSize: 11),
               ),
             ),
           ),
@@ -76,22 +100,32 @@ class DoctorScheduleScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: AppTextField(
                 label: 'Pencarian',
-                controller: searchController,
+                controller: _searchController,
                 hint: 'Cari nama dokter atau spesialis...',
                 prefixIcon: Icons.search_rounded,
+                suffixIcon: currentQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(doctorSearchQueryProvider.notifier)
+                              .setQuery('');
+                        },
+                      )
+                    : null,
                 onChanged: (value) {
-                  ref.read(doctorScheduleListProvider.notifier).search(value);
+                  ref.read(doctorSearchQueryProvider.notifier).setQuery(value);
                 },
               ),
             ),
 
+            // Day Filter Chips (Senin – Jumat)
+            const SizedBox(height: 38, child: _DayFilterChips()),
+            const SizedBox(height: 8),
+
             // Specialty Filter Chips
-            SizedBox(
-              height: 48,
-              child: _SpecialtyFilterChips(
-                selectedSpecialty: selectedSpecialty,
-              ),
-            ),
+            const SizedBox(height: 38, child: _SpecialtyFilterChips()),
 
             // Doctor Cards List
             Expanded(
@@ -110,7 +144,7 @@ class DoctorScheduleScreen extends ConsumerWidget {
                     itemCount: schedules.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (_, index) =>
-                        _DoctorCard(schedule: schedules[index]),
+                        DoctorCard(schedule: schedules[index]),
                   );
                 },
                 loading: () =>
@@ -132,11 +166,108 @@ class DoctorScheduleScreen extends ConsumerWidget {
   }
 }
 
+/// Day filter chips horizontal scroll (Senin – Jumat)
+class _DayFilterChips extends ConsumerWidget {
+  const _DayFilterChips();
+
+  static const List<String> _days = <String>[
+    'Semua Hari',
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final activeDay = ref.watch(selectedDoctorDayProvider);
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      scrollDirection: Axis.horizontal,
+      itemCount: _days.length,
+      separatorBuilder: (_, _) => const SizedBox(width: 8),
+      itemBuilder: (_, index) {
+        final day = _days[index];
+        final isActive = day == activeDay;
+        return _DayChip(
+          label: day,
+          isActive: isActive,
+          onTap: () {
+            ref.read(selectedDoctorDayProvider.notifier).setDay(day);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _DayChip extends StatelessWidget {
+  const _DayChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? AppColors.brandDarkEspresso : AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(9999),
+          border: Border.all(
+            color: isActive
+                ? AppColors.brandDarkEspresso
+                : AppColors.borderSubtle,
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandDarkEspresso.withValues(alpha: 0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isActive && label != 'Semua Hari') ...[
+              const Icon(
+                Icons.calendar_today_rounded,
+                size: 11,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 5),
+            ],
+            Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: isActive ? Colors.white : AppColors.textPrimary,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Specialty filter chips horizontal scroll
 class _SpecialtyFilterChips extends ConsumerWidget {
-  const _SpecialtyFilterChips({required this.selectedSpecialty});
-
-  final String selectedSpecialty;
+  const _SpecialtyFilterChips();
 
   static const List<String> _specialties = <String>[
     'Semua Poli',
@@ -149,6 +280,8 @@ class _SpecialtyFilterChips extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activeSpecialty = ref.watch(selectedDoctorSpecialtyProvider);
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       scrollDirection: Axis.horizontal,
@@ -156,14 +289,14 @@ class _SpecialtyFilterChips extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, index) {
         final specialty = _specialties[index];
-        final isActive = specialty == selectedSpecialty;
+        final isActive = specialty == activeSpecialty;
         return _FilterChip(
           label: specialty,
           isActive: isActive,
           onTap: () {
             ref
-                .read(doctorScheduleListProvider.notifier)
-                .filterBySpecialty(specialty);
+                .read(selectedDoctorSpecialtyProvider.notifier)
+                .setSpecialty(specialty);
           },
         );
       },
@@ -188,7 +321,6 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
@@ -219,192 +351,6 @@ class _FilterChip extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Doctor card matching the screenshot design
-class _DoctorCard extends StatelessWidget {
-  const _DoctorCard({required this.schedule});
-
-  final DoctorSchedule schedule;
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = _getInitials(schedule.name);
-    final specialtyBadge = _getSpecialtyBadge(schedule.specialization);
-
-    return AppCard.elevated(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row 1: Avatar + Name + Specialty badge
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: AppColors.brandCreamLinen,
-                backgroundImage: schedule.photoUrl != null
-                    ? NetworkImage(schedule.photoUrl!)
-                    : null,
-                child: schedule.photoUrl == null
-                    ? Text(
-                        initials,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.brandWarmBronze,
-                            ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              // Name & Specialization
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      schedule.name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.brandDarkEspresso,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      schedule.specialization,
-                      style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-              // Specialty badge
-              specialtyBadge,
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Row 2: Schedule panel
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.brandCreamLinen.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: Column(
-              children: [
-                ...schedule.schedules.map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time_rounded,
-                          size: 16,
-                          color: AppColors.textMuted,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          entry.day,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: AppColors.textPrimary,
-                              ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            entry.displayTime,
-                            textAlign: TextAlign.right,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: AppColors.textSecondary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Row 3: Status badge + CTA
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Praktik Reguler badge
-              if (schedule.status == DoctorPracticeStatus.reguler)
-                const AppBadge.success(
-                  label: 'Praktik Reguler',
-                  icon: Icons.circle,
-                  fontSize: 11,
-                )
-              else if (schedule.status == DoctorPracticeStatus.libur)
-                const AppBadge.warning(label: 'Libur / Cuti', fontSize: 11)
-              else
-                const AppBadge.neutral(label: 'Praktik Reguler', fontSize: 11),
-
-              // Daftar Janji Temu button
-              AppPrimaryButton(
-                label: 'Daftar Janji Temu',
-                icon: Icons.arrow_forward_rounded,
-                width: 160,
-                onPressed: () {
-                  // TODO: Navigate to booking flow with doctor context
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Buka pendaftaran untuk ${schedule.name}'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: AppColors.brandDarkEspresso,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getInitials(String name) {
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  }
-
-  Widget _getSpecialtyBadge(String specialization) {
-    // Map specialization to badge label
-    String badgeLabel;
-    if (specialization.contains('Penyakit Dalam')) {
-      badgeLabel = 'Penyakit Dalam';
-    } else if (specialization.contains('Mata')) {
-      badgeLabel = 'Poli Mata';
-    } else if (specialization.contains('Obstetri') ||
-        specialization.contains('Ginekologi')) {
-      badgeLabel = 'Kebidanan & Obgyn';
-    } else if (specialization.contains('THT')) {
-      badgeLabel = 'THT-KL';
-    } else if (specialization.contains('Anak')) {
-      badgeLabel = 'Poli Anak';
-    } else {
-      badgeLabel = specialization;
-    }
-
-    return AppBadge.neutral(label: badgeLabel, fontSize: 11);
   }
 }
 

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Header permanen (pinned) untuk layar Beranda SIIJAPIN Mobile.
+/// Header dinamis Beranda SIIJAPIN Mobile.
 ///
-/// Menampilkan identitas resmi RSUP Dr. Sitanala, akses notifikasi instan
-/// dengan indikator unread, dan tombol login / profil pasien yang selalu
-/// dapat dijangkau dari posisi scroll mana pun.
+/// Menampilkan sapaan kontekstual berdasarkan waktu, search pill interaktif
+/// untuk pencarian dokter/poliklinik/layanan, serta akses notifikasi dan
+/// tombol login / profil pasien yang selalu terjangkau.
 class HomeHeader extends StatelessWidget {
   const HomeHeader({
     super.key,
@@ -16,6 +17,7 @@ class HomeHeader extends StatelessWidget {
     this.onNotificationTap,
     this.onLoginTap,
     this.onProfileTap,
+    this.onSearchTap,
     this.showBottomDivider = true,
   });
 
@@ -37,6 +39,9 @@ class HomeHeader extends StatelessWidget {
   /// Callback saat tombol profil ditekan (mode terautentikasi).
   final VoidCallback? onProfileTap;
 
+  /// Callback saat search pill ditekan.
+  final VoidCallback? onSearchTap;
+
   /// Menampilkan garis pemisah halus di perbatasan bawah saat konten bergulir.
   final bool showBottomDivider;
 
@@ -48,8 +53,8 @@ class HomeHeader extends StatelessWidget {
         border: showBottomDivider
             ? Border(
                 bottom: BorderSide(
-                  color: AppColors.borderSubtle.withValues(alpha: 0.6),
-                  width: 1,
+                  color: AppColors.borderSubtle.withValues(alpha: 0.5),
+                  width: 0.5,
                 ),
               )
             : null,
@@ -57,21 +62,16 @@ class HomeHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          // Sisi Kiri: Logo Rumah Sakit & Identitas
-          _buildHospitalBrand(context),
+          // Sisi Kiri: Identitas Resmi RSUP Dr. Sitanala
+          Expanded(child: _buildHospitalIdentity()),
 
-          const Spacer(),
-
-          // Sisi Kanan: Lonceng Notifikasi & Tombol Masuk / Profil
+          // Sisi Kanan: Notifikasi & Tombol Masuk/Profil
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildNotificationButton(context),
+              _buildNotificationButton(),
               const SizedBox(width: 8),
-              if (isLoggedIn)
-                _buildProfileButton(context)
-              else
-                _buildLoginButton(context),
+              if (isLoggedIn) _buildProfileButton() else _buildLoginButton(),
             ],
           ),
         ],
@@ -79,27 +79,26 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildHospitalBrand(BuildContext context) {
+  Widget _buildHospitalIdentity() {
     return Semantics(
-      label: 'Identitas Resmi RSUP Dr. Sitanala Tangerang',
+      label: '${AppConstants.hospitalName}, ${AppConstants.hospitalTagline}',
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Logo RSUP Dr. Sitanala (Squircle Badge Emas)
+          // Logo RSUP Sitanala (Embossed Cross)
           Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
-              color: AppColors.brandCreamLinen,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.goldenSoftLinen.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(11),
               border: Border.all(
-                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.3),
+                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.35),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
-                  blurRadius: 4,
+                  color: AppColors.brandGoldenCaramel.withValues(alpha: 0.10),
+                  blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -107,68 +106,70 @@ class HomeHeader extends StatelessWidget {
             child: const Center(
               child: Icon(
                 Icons.local_hospital_rounded,
-                size: 22,
                 color: AppColors.brandGoldenCaramel,
+                size: 22,
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
 
-          // Teks Judul & Subjudul
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'RSUP Dr. Sitanala',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandDarkEspresso,
-                  letterSpacing: -0.2,
+          // Teks Identitas
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppConstants.hospitalName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.brandDarkEspresso,
+                    letterSpacing: -0.3,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Selamat Datang di SIIJAPIN',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                SizedBox(height: 1),
+                Text(
+                  AppConstants.hospitalTagline,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textMuted,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationButton(BuildContext context) {
+  Widget _buildNotificationButton() {
     return Semantics(
       button: true,
       label: hasUnreadNotifications
           ? 'Notifikasi, ada pemberitahuan baru'
           : 'Notifikasi',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onNotificationTap,
           borderRadius: BorderRadius.circular(20),
           child: Container(
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: AppColors.surfaceCard,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.borderSubtle, width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+              border: Border.all(
+                color: AppColors.borderSubtle.withValues(alpha: 0.6),
+                width: 0.8,
+              ),
             ),
             child: Stack(
               clipBehavior: Clip.none,
@@ -205,82 +206,29 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginButton(BuildContext context) {
+  Widget _buildLoginButton() {
     return Semantics(
       button: true,
       label: 'Masuk ke akun SIIJAPIN',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onLoginTap,
           borderRadius: BorderRadius.circular(999),
           child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppColors.goldenSoftLinen.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.4),
-                width: 1.2,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.account_circle_outlined,
-                  size: 18,
-                  color: AppColors.brandGoldenCaramel,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  'Masuk',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.brandGoldenCaramel,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileButton(BuildContext context) {
-    final displayName = userName ?? 'Pasien';
-    return Semantics(
-      button: true,
-      label: 'Profil $displayName',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onProfileTap,
-          borderRadius: BorderRadius.circular(999),
-          child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: AppColors.brandCreamLinen,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.3),
+                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.35),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
-                  blurRadius: 4,
+                  color: AppColors.brandGoldenCaramel.withValues(alpha: 0.12),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -295,6 +243,61 @@ class HomeHeader extends StatelessWidget {
                     color: AppColors.brandGoldenCaramel,
                     shape: BoxShape.circle,
                   ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.login_rounded,
+                      size: 13,
+                      color: AppColors.textWhite,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Masuk',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.brandDarkEspresso,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                const SizedBox(width: 2),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileButton() {
+    final displayName = userName ?? 'Pasien';
+    return Semantics(
+      button: true,
+      label: 'Profil $displayName',
+      child: Material(
+        color: AppColors.transparent,
+        child: InkWell(
+          onTap: onProfileTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Container(
+            height: 38,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: AppColors.clinicalContainer,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: AppColors.clinicalBorder, width: 1),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: AppColors.clinicalTeal,
+                    shape: BoxShape.circle,
+                  ),
                   child: Center(
                     child: Text(
                       displayName.isNotEmpty
@@ -303,12 +306,12 @@ class HomeHeader extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textWhite,
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 70),
                   child: Text(
@@ -316,11 +319,17 @@ class HomeHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.brandDarkEspresso,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.clinicalTealDeep,
                     ),
                   ),
+                ),
+                const SizedBox(width: 2),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 16,
+                  color: AppColors.clinicalTeal,
                 ),
               ],
             ),
