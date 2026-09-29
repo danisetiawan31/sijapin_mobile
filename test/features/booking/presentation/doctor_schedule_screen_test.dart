@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/doctor_schedule_screen.dart';
 
 Widget _buildDoctorScheduleScreen() {
@@ -27,7 +26,7 @@ void main() {
       // Verifikasi App Bar & Header
       expect(find.text('Jadwal Dokter'), findsOneWidget);
       expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
-      expect(find.text('52 Dokter Aktif'), findsOneWidget);
+      expect(find.textContaining('Dokter Aktif'), findsOneWidget);
 
       // Verifikasi Search Bar
       expect(find.text('Cari nama dokter atau spesialis...'), findsOneWidget);

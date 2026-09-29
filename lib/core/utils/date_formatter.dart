@@ -1,3 +1,5 @@
+import 'app_date_time.dart';
+
 /// Format tanggal dalam bahasa Indonesia tanpa dependensi locale tambahan.
 ///
 /// Menghindari `intl` + `initializeDateFormatting` yang menambah inisialisasi
@@ -54,9 +56,9 @@ class DateFormatter {
   }
 
   /// Label hari relatif untuk tanggal kunjungan: `Hari ini`, `Besok`, atau nama
-  /// hari dalam seminggu bila lebih dari satu hari ke depan.
+  /// hari dalam seminggu bila lebih dari satu hari ke depan (berbasis zona WIB).
   static String hariRelatif(DateTime date, {DateTime? reference}) {
-    final DateTime now = reference ?? DateTime.now();
+    final DateTime now = reference ?? AppDateTime.now();
     final DateTime target = DateTime(date.year, date.month, date.day);
     final DateTime today = DateTime(now.year, now.month, now.day);
     final int selisih = target.difference(today).inDays;
@@ -69,7 +71,7 @@ class DateFormatter {
   /// Umur pasien dalam tahun pada [reference], atau `null` bila tanggal lahir belum diisi.
   static int? umur({required DateTime? birthDate, DateTime? reference}) {
     if (birthDate == null) return null;
-    final DateTime now = reference ?? DateTime.now();
+    final DateTime now = reference ?? AppDateTime.now();
     int tahun = now.year - birthDate.year;
     final bool belumUlangTahun =
         now.month < birthDate.month ||

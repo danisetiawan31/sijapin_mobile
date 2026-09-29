@@ -8,9 +8,13 @@ import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_date_time.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi basis data zona waktu resmi RSUP Dr. Sitanala (WIB / Asia/Jakarta)
+  AppDateTime.initialize();
 
   // Inisialisasi basis data lokal Hive CE
   final localStorageService = LocalStorageService();

@@ -1,0 +1,53 @@
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+/// Utility terpusat untuk tanggal dan zona waktu resmi RSUP Dr. Sitanala (WIB - Asia/Jakarta).
+///
+/// Menghindari ketergantungan jam perangkat lokal yang berpotensi keliru / melompat hari
+/// saat pasien memesan tiket atau melihat jadwal dokter.
+class AppDateTime {
+  const AppDateTime._();
+
+  /// Nama zona waktu resmi RSUP Dr. Sitanala
+  static const String timeZoneName = 'Asia/Jakarta';
+
+  static bool _initialized = false;
+
+  /// Inisialisasi basis data zona waktu global aplikasi
+  static void initialize() {
+    if (_initialized) return;
+    tz.initializeTimeZones();
+    final location = tz.getLocation(timeZoneName);
+    tz.setLocalLocation(location);
+    _initialized = true;
+  }
+
+  /// Mengambil waktu saat ini dalam zona waktu Asia/Jakarta (WIB)
+  static DateTime now() {
+    if (!_initialized) initialize();
+    final location = tz.getLocation(timeZoneName);
+    return tz.TZDateTime.now(location);
+  }
+
+  /// Mengonversi [DateTime] apapun menjadi zona waktu Asia/Jakarta (WIB)
+  static DateTime toWib(DateTime dateTime) {
+    if (!_initialized) initialize();
+    final location = tz.getLocation(timeZoneName);
+    return tz.TZDateTime.from(dateTime, location);
+  }
+
+  /// Mengembalikan nama hari dalam Bahasa Indonesia untuk [dateTime] di zona WIB
+  static String namaHariWib(DateTime dateTime) {
+    const listHari = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
+    final wib = toWib(dateTime);
+    return listHari[wib.weekday - 1];
+  }
+}

@@ -73,13 +73,19 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
           ],
         ),
         actions: [
-          const Padding(
-            padding: EdgeInsets.only(right: 16),
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: AppBadge.success(
-                label: '52 Dokter Aktif',
-                icon: Icons.circle,
-                fontSize: 11,
+              child: schedulesAsync.maybeWhen(
+                data: (list) => AppBadge.success(
+                  label: '${list.length} Dokter Aktif',
+                  icon: Icons.circle,
+                  fontSize: 11,
+                ),
+                orElse: () => const AppBadge.neutral(
+                  label: 'Memuat...',
+                  fontSize: 11,
+                ),
               ),
             ),
           ),
