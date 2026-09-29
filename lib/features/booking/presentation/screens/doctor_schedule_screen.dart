@@ -11,13 +11,34 @@ import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
 
 /// Tab 3: Jadwal Dokter Spesialis & Poliklinik
-class DoctorScheduleScreen extends ConsumerWidget {
+class DoctorScheduleScreen extends ConsumerStatefulWidget {
   const DoctorScheduleScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DoctorScheduleScreen> createState() =>
+      _DoctorScheduleScreenState();
+}
+
+class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialQuery = ref.read(doctorSearchQueryProvider);
+    _searchController = TextEditingController(text: initialQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final schedulesAsync = ref.watch(doctorScheduleListProvider);
-    final searchController = TextEditingController();
+    final currentQuery = ref.watch(doctorSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBg,
@@ -25,13 +46,15 @@ class DoctorScheduleScreen extends ConsumerWidget {
         backgroundColor: AppColors.surfaceBg,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: AppColors.brandDarkEspresso,
-          ),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
+        leading: Navigator.of(context).canPop()
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.brandDarkEspresso,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            : null,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -74,17 +97,28 @@ class DoctorScheduleScreen extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: AppTextField(
                 label: 'Pencarian',
-                controller: searchController,
+                controller: _searchController,
                 hint: 'Cari nama dokter atau spesialis...',
                 prefixIcon: Icons.search_rounded,
+                suffixIcon: currentQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          ref
+                              .read(doctorSearchQueryProvider.notifier)
+                              .setQuery('');
+                        },
+                      )
+                    : null,
                 onChanged: (value) {
-                  ref.read(doctorScheduleListProvider.notifier).search(value);
+                  ref.read(doctorSearchQueryProvider.notifier).setQuery(value);
                 },
               ),
             ),
 
             // Specialty Filter Chips
-            SizedBox(height: 48, child: _SpecialtyFilterChips()),
+            const SizedBox(height: 48, child: _SpecialtyFilterChips()),
 
             // Doctor Cards List
             Expanded(
@@ -127,6 +161,8 @@ class DoctorScheduleScreen extends ConsumerWidget {
 
 /// Specialty filter chips horizontal scroll
 class _SpecialtyFilterChips extends ConsumerWidget {
+  const _SpecialtyFilterChips();
+
   static const List<String> _specialties = <String>[
     'Semua Poli',
     'Penyakit Dalam',
@@ -138,6 +174,8 @@ class _SpecialtyFilterChips extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activeSpecialty = ref.watch(selectedDoctorSpecialtyProvider);
+
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       scrollDirection: Axis.horizontal,
@@ -145,14 +183,14 @@ class _SpecialtyFilterChips extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, index) {
         final specialty = _specialties[index];
-        final isActive = specialty == 'Semua Poli'; // Default active
+        final isActive = specialty == activeSpecialty;
         return _FilterChip(
           label: specialty,
           isActive: isActive,
           onTap: () {
             ref
-                .read(doctorScheduleListProvider.notifier)
-                .filterBySpecialty(isActive ? 'Semua Poli' : specialty);
+                .read(selectedDoctorSpecialtyProvider.notifier)
+                .setSpecialty(specialty);
           },
         );
       },

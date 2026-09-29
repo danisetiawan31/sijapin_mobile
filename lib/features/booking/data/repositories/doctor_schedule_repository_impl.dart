@@ -21,9 +21,18 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
     // Filter berdasarkan spesialisasi
     var filtered = allSchedules;
     if (specialtyFilter != null && specialtyFilter != 'Semua Poli') {
-      filtered = filtered
-          .where((d) => d.specialization.contains(specialtyFilter))
-          .toList();
+      final filterLower = specialtyFilter.toLowerCase().trim();
+      filtered = filtered.where((d) {
+        final specLower = d.specialization.toLowerCase();
+        if (filterLower.contains('obgyn') ||
+            filterLower.contains('kebidanan')) {
+          return specLower.contains('obstetri') ||
+              specLower.contains('ginekologi') ||
+              specLower.contains('obgyn') ||
+              specLower.contains('kebidanan');
+        }
+        return specLower.contains(filterLower);
+      }).toList();
     }
 
     // Filter berdasarkan pencarian

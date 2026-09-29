@@ -11,75 +11,58 @@ DoctorScheduleRepository doctorScheduleRepository(Ref ref) {
   return const DoctorScheduleRepositoryImpl();
 }
 
-/// Provider daftar jadwal dokter dengan filter & pencarian
+/// Provider spesialisasi/poli yang sedang dipilih
+@riverpod
+class SelectedDoctorSpecialty extends _$SelectedDoctorSpecialty {
+  @override
+  String build() => 'Semua Poli';
+
+  void setSpecialty(String specialty) {
+    state = specialty;
+  }
+}
+
+/// Provider teks pencarian jadwal dokter
+@riverpod
+class DoctorSearchQuery extends _$DoctorSearchQuery {
+  @override
+  String build() => '';
+
+  void setQuery(String query) {
+    state = query;
+  }
+}
+
+/// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 @riverpod
 class DoctorScheduleList extends _$DoctorScheduleList {
   @override
   Future<List<DoctorSchedule>> build() async {
     final repo = ref.watch(doctorScheduleRepositoryProvider);
-    return repo.getDoctorSchedules();
+    final specialty = ref.watch(selectedDoctorSpecialtyProvider);
+    final query = ref.watch(doctorSearchQueryProvider);
+
+    return repo.getDoctorSchedules(
+      specialtyFilter: specialty == 'Semua Poli' ? null : specialty,
+      searchQuery: query.trim().isEmpty ? null : query.trim(),
+    );
   }
 
-  /// Mencari jadwal dokter berdasarkan query
-  Future<void> search(String query) async {
-    state = const AsyncLoading();
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(searchQuery: query);
-      state = AsyncData(result);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
+  /// Helper untuk mencari jadwal dokter (kompatibilitas & kemudahan akses)
+  void search(String query) {
+    ref.read(doctorSearchQueryProvider.notifier).setQuery(query);
   }
 
-  /// Memfilter jadwal dokter berdasarkan spesialisasi
-  Future<void> filterBySpecialty(String specialty) async {
-    state = const AsyncLoading();
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(
-        specialtyFilter: specialty,
-        searchQuery: _currentSearchQuery,
-      );
-      state = AsyncData(result);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
+  /// Helper untuk memfilter spesialisasi (kompatibilitas & kemudahan akses)
+  void filterBySpecialty(String specialty) {
+    ref.read(selectedDoctorSpecialtyProvider.notifier).setSpecialty(specialty);
   }
 
-  /// Menggabungkan pencarian dan filter
-  Future<void> searchAndFilter({String? query, String? specialty}) async {
-    state = const AsyncLoading();
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(
-        specialtyFilter: specialty,
-        searchQuery: query,
-      );
-      state = AsyncData(result);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
-  }
-
-  /// Query pencarian saat ini (disimpan untuk digabung dengan filter)
-  String _currentSearchQuery = '';
-
-  /// Memperbarui query pencarian internal
-  void setSearchQuery(String query) {
-    _currentSearchQuery = query;
-  }
-
-  /// Reset ke data awal (semua dokter)
-  Future<void> reset() async {
-    state = const AsyncLoading();
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules();
-      _currentSearchQuery = '';
-      state = AsyncData(result);
-    } catch (e, st) {
-      state = AsyncError(e, st);
-    }
+  /// Reset ke data awal (semua poli & pencarian kosong)
+  void reset() {
+    ref.read(doctorSearchQueryProvider.notifier).setQuery('');
+    ref
+        .read(selectedDoctorSpecialtyProvider.notifier)
+        .setSpecialty('Semua Poli');
   }
 }

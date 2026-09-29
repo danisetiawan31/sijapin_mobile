@@ -61,15 +61,132 @@ final class DoctorScheduleRepositoryProvider
 String _$doctorScheduleRepositoryHash() =>
     r'1629f99cccc4db591e013b166a8c8c4438a87907';
 
-/// Provider daftar jadwal dokter dengan filter & pencarian
+/// Provider spesialisasi/poli yang sedang dipilih
+
+@ProviderFor(SelectedDoctorSpecialty)
+final selectedDoctorSpecialtyProvider = SelectedDoctorSpecialtyProvider._();
+
+/// Provider spesialisasi/poli yang sedang dipilih
+final class SelectedDoctorSpecialtyProvider
+    extends $NotifierProvider<SelectedDoctorSpecialty, String> {
+  /// Provider spesialisasi/poli yang sedang dipilih
+  SelectedDoctorSpecialtyProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'selectedDoctorSpecialtyProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$selectedDoctorSpecialtyHash();
+
+  @$internal
+  @override
+  SelectedDoctorSpecialty create() => SelectedDoctorSpecialty();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$selectedDoctorSpecialtyHash() =>
+    r'0d6526d1dce1466650fefb518909e5c6f09e1980';
+
+/// Provider spesialisasi/poli yang sedang dipilih
+
+abstract class _$SelectedDoctorSpecialty extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Provider teks pencarian jadwal dokter
+
+@ProviderFor(DoctorSearchQuery)
+final doctorSearchQueryProvider = DoctorSearchQueryProvider._();
+
+/// Provider teks pencarian jadwal dokter
+final class DoctorSearchQueryProvider
+    extends $NotifierProvider<DoctorSearchQuery, String> {
+  /// Provider teks pencarian jadwal dokter
+  DoctorSearchQueryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'doctorSearchQueryProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$doctorSearchQueryHash();
+
+  @$internal
+  @override
+  DoctorSearchQuery create() => DoctorSearchQuery();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String>(value),
+    );
+  }
+}
+
+String _$doctorSearchQueryHash() => r'09b963420127aff2c9384fcc005ffc80439b159b';
+
+/// Provider teks pencarian jadwal dokter
+
+abstract class _$DoctorSearchQuery extends $Notifier<String> {
+  String build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<String, String>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<String, String>,
+              String,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 
 @ProviderFor(DoctorScheduleList)
 final doctorScheduleListProvider = DoctorScheduleListProvider._();
 
-/// Provider daftar jadwal dokter dengan filter & pencarian
+/// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 final class DoctorScheduleListProvider
     extends $AsyncNotifierProvider<DoctorScheduleList, List<DoctorSchedule>> {
-  /// Provider daftar jadwal dokter dengan filter & pencarian
+  /// Provider daftar jadwal dokter dengan filter & pencarian terpadu
   DoctorScheduleListProvider._()
     : super(
         from: null,
@@ -90,9 +207,9 @@ final class DoctorScheduleListProvider
 }
 
 String _$doctorScheduleListHash() =>
-    r'aeef2e75c28b0d65fafd2c14c74bd26ddcbbec92';
+    r'dd4314900a360e88268e62122e89604b69f11f52';
 
-/// Provider daftar jadwal dokter dengan filter & pencarian
+/// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 
 abstract class _$DoctorScheduleList
     extends $AsyncNotifier<List<DoctorSchedule>> {
