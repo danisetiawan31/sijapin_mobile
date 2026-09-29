@@ -11,10 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 /// - Indikator "Hasil Lab & Konsul Dokter"
 /// - Tombol aksi "Lihat Paket ➔"
 class HomeMcuCard extends StatelessWidget {
-  const HomeMcuCard({
-    super.key,
-    required this.onMcuTap,
-  });
+  const HomeMcuCard({super.key, required this.onMcuTap});
 
   /// Aksi saat kartu atau tombol "Lihat Paket" ditekan.
   final VoidCallback onMcuTap;
@@ -37,10 +34,7 @@ class HomeMcuCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.white,
-                AppColors.surfaceWarmAlt,
-              ],
+              colors: [AppColors.white, AppColors.surfaceWarmAlt],
             ),
             boxShadow: [
               BoxShadow(

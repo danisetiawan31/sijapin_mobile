@@ -120,7 +120,11 @@ class _ActionChipCard extends StatelessWidget {
                   color: AppColors.brandCreamLinen,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: AppColors.brandGoldenCaramel, size: 20),
+                child: Icon(
+                  icon,
+                  color: AppColors.brandGoldenCaramel,
+                  size: 20,
+                ),
               ),
               const SizedBox(height: 8),
               Text(

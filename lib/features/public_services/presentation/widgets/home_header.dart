@@ -59,9 +59,7 @@ class HomeHeader extends StatelessWidget {
       child: Row(
         children: [
           // Sisi Kiri: Logo Rumah Sakit & Identitas (Expanded agar responsif di layar kecil)
-          Expanded(
-            child: _buildHospitalBrand(context),
-          ),
+          Expanded(child: _buildHospitalBrand(context)),
           const SizedBox(width: 8),
 
           // Sisi Kanan: Lonceng Notifikasi & Tombol Masuk / Profil
@@ -227,10 +225,7 @@ class HomeHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.brandCreamLinen,
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: AppColors.borderSubtle,
-                width: 1,
-              ),
+              border: Border.all(color: AppColors.borderSubtle, width: 1),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),

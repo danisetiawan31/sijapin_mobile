@@ -194,9 +194,8 @@ class AuthSecurityBadge extends StatelessWidget {
           Flexible(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: AppColors.textSecondary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

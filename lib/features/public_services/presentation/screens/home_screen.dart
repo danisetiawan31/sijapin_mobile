@@ -134,7 +134,9 @@ class HomeScreen extends StatelessWidget {
                         showDialog<void>(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: const Text('Lokasi ${AppConstants.hospitalName}'),
+                            title: const Text(
+                              'Lokasi ${AppConstants.hospitalName}',
+                            ),
                             content: const Text(
                               '${AppConstants.hospitalAddress}\n\n${AppConstants.hospitalOperatingHours}',
                             ),
