@@ -141,5 +141,33 @@ void main() {
       // dr. Hendra (Pria) -> icon male
       expect(find.byIcon(Icons.male_rounded), findsAtLeast(1));
     });
+
+    testWidgets(
+        'combining search query and specialty filter maintains both states without resetting',
+        (tester) async {
+      await tester.pumpWidget(_buildDoctorScheduleScreen());
+      await tester.pumpAndSettle();
+
+      // Ketik 'Hendra' di kolom pencarian
+      final searchField = find.byType(TextField);
+      await tester.enterText(searchField, 'Hendra');
+      await tester.pumpAndSettle();
+
+      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+
+      // Pilih filter chip 'Mata'
+      await tester.tap(find.text('Mata'));
+      await tester.pumpAndSettle();
+
+      // dr. Hendra tetap tampil karena dia dokter Mata
+      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+
+      // Pilih filter chip 'Anak' (dr. Hendra bukan dokter Anak)
+      await tester.tap(find.text('Anak'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('dr. Hendra, Sp.M'), findsNothing);
+      expect(find.text('Tidak Ada Jadwal Dokter'), findsOneWidget);
+    });
   });
 }
