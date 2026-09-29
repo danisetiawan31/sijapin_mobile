@@ -295,7 +295,7 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                             ),
                             const SizedBox(height: 8),
                             Material(
-                              color: Colors.transparent,
+                              color: AppColors.transparent,
                               child: CheckboxListTile(
                                 value: _agreement,
                                 onChanged: (value) =>
@@ -354,7 +354,7 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                     const SizedBox(height: 9),
                     const Center(
                       child: AuthSecurityBadge(
-                        text: 'Data pribadi terlindungi sesuai UU PDP & Kemenkes RI',
+                        text: 'Data terlindungi sesuai UU PDP & Kemenkes RI',
                       ),
                     ),
                   ],
