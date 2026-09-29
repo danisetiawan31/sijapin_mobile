@@ -77,7 +77,7 @@ class AppBottomNavBar extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
         child: Container(
-          height: 68,
+          height: 56,
           decoration: BoxDecoration(
             color: AppColors.surfaceCard,
             borderRadius: BorderRadius.circular(36),
@@ -108,7 +108,7 @@ class AppBottomNavBar extends StatelessWidget {
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 220),
                       curve: Curves.easeInOut,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.brandCreamLinen
@@ -130,7 +130,7 @@ class AppBottomNavBar extends StatelessWidget {
                             children: [
                               Icon(
                                 isSelected ? item.activeIcon : item.icon,
-                                size: 22,
+                                size: 20,
                                 color: isSelected
                                     ? AppColors.brandGoldenCaramel
                                     : AppColors.textMuted,
@@ -171,7 +171,7 @@ class AppBottomNavBar extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 10,
                               fontWeight: isSelected
                                   ? FontWeight.w700
                                   : FontWeight.w500,
