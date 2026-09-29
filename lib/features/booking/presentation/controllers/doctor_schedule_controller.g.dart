@@ -68,7 +68,7 @@ final doctorScheduleListProvider = DoctorScheduleListProvider._();
 
 /// Provider daftar jadwal dokter dengan filter & pencarian
 final class DoctorScheduleListProvider
-    extends $AsyncNotifierProvider<DoctorScheduleList, List<DoctorSchedule>> {
+    extends $NotifierProvider<DoctorScheduleList, DoctorScheduleState> {
   /// Provider daftar jadwal dokter dengan filter & pencarian
   DoctorScheduleListProvider._()
     : super(
@@ -87,30 +87,32 @@ final class DoctorScheduleListProvider
   @$internal
   @override
   DoctorScheduleList create() => DoctorScheduleList();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DoctorScheduleState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DoctorScheduleState>(value),
+    );
+  }
 }
 
 String _$doctorScheduleListHash() =>
-    r'aeef2e75c28b0d65fafd2c14c74bd26ddcbbec92';
+    r'20aad3a5758016381a4fb40a8cdd2357315fe32a';
 
 /// Provider daftar jadwal dokter dengan filter & pencarian
 
-abstract class _$DoctorScheduleList
-    extends $AsyncNotifier<List<DoctorSchedule>> {
-  FutureOr<List<DoctorSchedule>> build();
+abstract class _$DoctorScheduleList extends $Notifier<DoctorScheduleState> {
+  DoctorScheduleState build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref =
-        this.ref
-            as $Ref<AsyncValue<List<DoctorSchedule>>, List<DoctorSchedule>>;
+    final ref = this.ref as $Ref<DoctorScheduleState, DoctorScheduleState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<List<DoctorSchedule>>,
-                List<DoctorSchedule>
-              >,
-              AsyncValue<List<DoctorSchedule>>,
+              AnyNotifier<DoctorScheduleState, DoctorScheduleState>,
+              DoctorScheduleState,
               Object?,
               Object?
             >;

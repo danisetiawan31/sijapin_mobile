@@ -4,6 +4,7 @@ class DoctorSchedule {
     required this.id,
     required this.name,
     required this.specialization,
+    required this.poli,
     this.photoUrl,
     required this.schedules,
     required this.status,
@@ -17,6 +18,10 @@ class DoctorSchedule {
 
   /// Spesialisasi dokter, contoh: `Spesialis Penyakit Dalam`
   final String specialization;
+
+  /// Poliklinik/poli tempat dokter praktik, contoh: `Penyakit Dalam`, `Mata`, `Kebidanan & Obgyn`
+  /// Digunakan untuk filter chip yang cocok dengan label UI.
+  final String poli;
 
   /// URL foto dokter (opsional, gunakan inisial jika null)
   final String? photoUrl;
