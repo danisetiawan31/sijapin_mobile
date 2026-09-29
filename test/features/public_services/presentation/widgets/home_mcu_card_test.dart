@@ -4,7 +4,7 @@ import 'package:sijapin_mobile/features/public_services/presentation/widgets/hom
 
 void main() {
   group('HomeMcuCard Widget Tests', () {
-    testWidgets('renders all labels, chips, and triggers onMcuTap on tap', (
+    testWidgets('renders all labels, badges, and triggers onMcuTap on tap', (
       tester,
     ) async {
       var mcuTapped = false;
@@ -29,16 +29,14 @@ void main() {
         findsOneWidget,
       );
 
-      // Verifikasi chip kategori
-      expect(find.text('💍 Pranikah'), findsOneWidget);
-      expect(find.text('💼 Eksekutif'), findsOneWidget);
-      expect(find.text('🧪 Bebas Narkoba'), findsOneWidget);
+      // Verifikasi elemen visual utama (Badge Plus)
+      expect(find.byIcon(Icons.add_rounded), findsOneWidget);
 
-      // Verifikasi footer dan tombol
-      expect(find.text('Hasil Lab & Konsul Dokter'), findsOneWidget);
+      // Verifikasi tombol Lihat Paket
       expect(find.text('Lihat Paket'), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
 
-      // Verifikasi tap
+      // Verifikasi tap pada tombol
       await tester.tap(find.text('Lihat Paket'));
       await tester.pumpAndSettle();
       expect(mcuTapped, isTrue);
