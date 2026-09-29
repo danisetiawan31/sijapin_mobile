@@ -10,6 +10,10 @@ import '../../features/booking/presentation/screens/booking_screen.dart';
 import '../../features/booking/presentation/screens/doctor_schedule_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/public_services/presentation/screens/home_screen.dart';
+import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
+import '../../features/support/presentation/screens/complaint_screen.dart';
+import '../../features/support/presentation/screens/mcu_catalog_screen.dart';
+import '../../features/support/presentation/screens/service_standards_screen.dart';
 import 'app_routes.dart';
 import 'main_shell_scaffold.dart';
 
@@ -54,6 +58,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.registerName,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const RegisterView(),
+      ),
+      GoRoute(
+        path: AppRoutes.mcuCatalogPath,
+        name: AppRoutes.mcuCatalogName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const McuCatalogScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.complaintPath,
+        name: AppRoutes.complaintName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ComplaintScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.serviceStandardsPath,
+        name: AppRoutes.serviceStandardsName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const ServiceStandardsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.bpjsFlowPath,
+        name: AppRoutes.bpjsFlowName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BpjsFlowScreen(),
       ),
       // Stateful Shell Route untuk 4 Tab Utama Persisten
       StatefulShellRoute.indexedStack(
