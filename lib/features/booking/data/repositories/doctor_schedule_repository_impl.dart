@@ -1,10 +1,10 @@
+import 'dart:async';
+
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
 
-/// Implementasi repository jadwal dokter dengan data lokal/sampel.
-///
-/// Mengikuti pola `FakeAuthRepository` — data dummy untuk slicing UI dan pengujian.
-/// Siap diganti dengan implementasi backend `Jadwal_Dokter` endpoint CI3.
+/// Implementasi repository jadwal dokter dengan data tiruan (mock data)
+/// yang disesuaikan dengan database SIMRS RSUP Dr. Sitanala Tangerang.
 class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
   const DoctorScheduleRepositoryImpl();
 
@@ -19,11 +19,14 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
 
     final allSchedules = _getSampleSchedules();
 
-    // Filter berdasarkan spesialisasi
+    // Filter berdasarkan poli (poliklinik) & spesialisasi
     var filtered = allSchedules;
     if (specialtyFilter != null && specialtyFilter != 'Semua Poli') {
       final filterLower = specialtyFilter.toLowerCase().trim();
       filtered = filtered.where((d) {
+        if (d.poli.isNotEmpty && d.poli.toLowerCase() == filterLower) {
+          return true;
+        }
         final specLower = d.specialization.toLowerCase();
         if (filterLower.contains('obgyn') ||
             filterLower.contains('kebidanan')) {
@@ -51,7 +54,8 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
       final query = searchQuery.toLowerCase().trim();
       filtered = filtered.where((d) {
         return d.name.toLowerCase().contains(query) ||
-            d.specialization.toLowerCase().contains(query);
+            d.specialization.toLowerCase().contains(query) ||
+            d.poli.toLowerCase().contains(query);
       }).toList();
     }
 
@@ -77,6 +81,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_001',
         name: 'dr. Era Medina, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        poli: 'Penyakit Dalam',
         gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -99,6 +104,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_002',
         name: 'dr. Hendra, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -121,6 +127,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_003',
         name: 'dr. Damas Hendriansyah, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        poli: 'Kebidanan & Obgyn',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -143,6 +150,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_004',
         name: 'dr. Rian Pramudita, Sp.THT',
         specialization: 'Spesialis THT-KL',
+        poli: 'THT-KL',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -165,6 +173,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_005',
         name: 'dr. Anita Kusuma, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -187,6 +196,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_006',
         name: 'dr. Budi Santoso, Sp.A',
         specialization: 'Spesialis Anak',
+        poli: 'Anak',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -209,6 +219,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_007',
         name: 'dr. Citra Dewi, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        poli: 'Penyakit Dalam',
         gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.libur,
@@ -220,6 +231,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_008',
         name: 'dr. Eko Wibowo, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        poli: 'Kebidanan & Obgyn',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -242,6 +254,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_009',
         name: 'dr. Fitriani, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         gender: 'P',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
@@ -264,6 +277,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_010',
         name: 'dr. Gunawan, Sp.A',
         specialization: 'Spesialis Anak',
+        poli: 'Anak',
         gender: 'L',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,

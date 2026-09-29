@@ -7,6 +7,7 @@ class DoctorSchedule {
     required this.name,
     required this.specialization,
     this.gender = 'L',
+    this.poli = '',
     this.photoUrl,
     required this.schedules,
     required this.status,
@@ -20,6 +21,9 @@ class DoctorSchedule {
 
   /// Spesialisasi dokter, contoh: `Spesialis Penyakit Dalam`
   final String specialization;
+
+  /// Poliklinik/poli tempat dokter praktik, contoh: `Penyakit Dalam`, `Mata`, `Kebidanan & Obgyn`
+  final String poli;
 
   /// Jenis kelamin dokter: `'L'` (Laki-laki) atau `'P'` (Perempuan)
   final String gender;
