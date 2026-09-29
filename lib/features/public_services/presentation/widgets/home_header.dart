@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Header permanen (pinned) untuk layar Beranda SIIJAPIN Mobile.
@@ -57,10 +58,11 @@ class HomeHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          // Sisi Kiri: Logo Rumah Sakit & Identitas
-          _buildHospitalBrand(context),
-
-          const Spacer(),
+          // Sisi Kiri: Logo Rumah Sakit & Identitas (Expanded agar responsif di layar kecil)
+          Expanded(
+            child: _buildHospitalBrand(context),
+          ),
+          const SizedBox(width: 8),
 
           // Sisi Kanan: Lonceng Notifikasi & Tombol Masuk / Profil
           Row(
@@ -83,15 +85,14 @@ class HomeHeader extends StatelessWidget {
     return Semantics(
       label: 'Identitas Resmi RSUP Dr. Sitanala Tangerang',
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
           // Logo RSUP Dr. Sitanala (Squircle Badge Emas)
           Container(
-            width: 42,
-            height: 42,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: AppColors.brandCreamLinen,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(11),
               border: Border.all(
                 color: AppColors.brandGoldenCaramel.withValues(alpha: 0.3),
                 width: 1.2,
@@ -107,37 +108,43 @@ class HomeHeader extends StatelessWidget {
             child: const Center(
               child: Icon(
                 Icons.local_hospital_rounded,
-                size: 22,
+                size: 20,
                 color: AppColors.brandGoldenCaramel,
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
 
-          // Teks Judul & Subjudul
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'RSUP Dr. Sitanala',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandDarkEspresso,
-                  letterSpacing: -0.2,
+          // Teks Judul & Subjudul (Flexible agar tidak overflow)
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  AppConstants.hospitalName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.brandDarkEspresso,
+                    letterSpacing: -0.2,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Selamat Datang di SIIJAPIN',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                SizedBox(height: 1),
+                Text(
+                  AppConstants.hospitalTagline,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -151,7 +158,7 @@ class HomeHeader extends StatelessWidget {
           ? 'Notifikasi, ada pemberitahuan baru'
           : 'Notifikasi',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onNotificationTap,
           borderRadius: BorderRadius.circular(20),
@@ -210,19 +217,19 @@ class HomeHeader extends StatelessWidget {
       button: true,
       label: 'Masuk ke akun SIIJAPIN',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onLoginTap,
           borderRadius: BorderRadius.circular(999),
           child: Container(
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            height: 36,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: AppColors.surfaceCard,
+              color: AppColors.brandCreamLinen,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.4),
-                width: 1.2,
+                color: AppColors.borderSubtle,
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
@@ -237,15 +244,15 @@ class HomeHeader extends StatelessWidget {
               children: [
                 Icon(
                   Icons.account_circle_outlined,
-                  size: 18,
+                  size: 17,
                   color: AppColors.brandGoldenCaramel,
                 ),
-                SizedBox(width: 6),
+                SizedBox(width: 4),
                 Text(
                   'Masuk',
                   style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.brandGoldenCaramel,
                   ),
                 ),
@@ -263,7 +270,7 @@ class HomeHeader extends StatelessWidget {
       button: true,
       label: 'Profil $displayName',
       child: Material(
-        color: Colors.transparent,
+        color: AppColors.transparent,
         child: InkWell(
           onTap: onProfileTap,
           borderRadius: BorderRadius.circular(999),
@@ -303,7 +310,7 @@ class HomeHeader extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textWhite,
                       ),
                     ),
                   ),
