@@ -87,7 +87,7 @@ class ProfileScreen extends ConsumerWidget {
                           subtitle: 'Rekam medis dan hasil pemeriksaan',
                           iconColor: AppColors.clinicalTeal,
                           onTap: () =>
-                              _showComingSoon(context, 'Riwayat Medis'),
+                              context.push(AppRoutes.medicalHistoryPath),
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
