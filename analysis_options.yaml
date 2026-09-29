@@ -7,6 +7,8 @@ analyzer:
     - "build/**"
     - "android/**"
     - "ios/**"
+    - macos/**
+    - linux/**
   language:
     strict-casts: true       # Tolak casting implisit dari dynamic ke tipe lain
     strict-inference: true   # Tolak inferensi variabel yang tidak jelas tipe datanya
