@@ -5,3 +5,4 @@ export 'home_header.dart';
 export 'home_mcu_card.dart';
 export 'home_quick_actions.dart';
 export 'home_registration_card.dart';
+export 'home_welcome_banner.dart';

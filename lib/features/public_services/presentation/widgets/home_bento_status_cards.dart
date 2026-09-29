@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
 
-/// Komponen Dua Kartu Bento Sejajar di Beranda:
-/// 1. Ketersediaan Kamar (status bed kosong rawat inap & ICU)
-/// 2. Jadwal Dokter (informasi poliklinik & dokter spesialis aktif)
+/// Bento Status Duo: Ketersediaan Kamar & Jadwal Dokter di Beranda.
 ///
-/// Mengadopsi desain resmi Google Stitch (project `projects/2575501304420738712`):
-/// - Dua kolom seimbang (Row + Expanded)
-/// - Indikator status live (Pill badge bernuansa hijau & krem coklat)
-/// - Ikon navigasi sudut kanan atas (arrow_outward)
+/// Mengadopsi desain seimbang & presisi:
+/// - Ukuran layout kedua kartu identik dan sejajar sempurna
+/// - Slot judul konsisten 42dp agar kartu Jadwal Dokter dan Ketersediaan Kamar setara
+/// - Latar belakang fotografis lembut (hospital bed & doctor portrait)
+/// - Squircle container untuk ikon medis utama
+/// - Tombol pill full-width "Lihat Ketersediaan >" & "Lihat Jadwal >"
 class HomeBentoStatusCards extends StatelessWidget {
   const HomeBentoStatusCards({
     super.key,
@@ -20,210 +20,244 @@ class HomeBentoStatusCards extends StatelessWidget {
     this.activeDoctorsCount = AppConstants.defaultActiveDoctors,
   });
 
-  /// Aksi saat kartu Ketersediaan Kamar ditekan.
   final VoidCallback onBedAvailabilityTap;
-
-  /// Aksi saat kartu Jadwal Dokter ditekan.
   final VoidCallback onDoctorScheduleTap;
-
-  /// Jumlah sisa tempat tidur kosong saat ini.
   final int availableBedsCount;
-
-  /// Jumlah dokter yang bertugas/aktif praktik hari ini.
   final int activeDoctorsCount;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Kartu Kiri: Ketersediaan Kamar
-        Expanded(
-          child: _BentoCard(
-            onTap: onBedAvailabilityTap,
-            icon: Icons.bed_rounded,
-            iconColor: AppColors.successEmerald,
-            iconBgColor: AppColors.successContainer,
-            iconBorderColor: AppColors.successBorder,
-            title: 'Ketersediaan\nKamar',
-            subtitle: 'Rawat inap & ICU',
-            badgeWidget: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.successContainer,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: AppColors.successBorder),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppColors.successEmerald,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    '$availableBedsCount Bed Kosong',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.successEmerald,
-                    ),
-                  ),
-                ],
-              ),
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Kartu Kiri: Ketersediaan Kamar
+          Expanded(
+            child: _PhotoBentoCard(
+              onTap: onBedAvailabilityTap,
+              semanticLabel:
+                  'Ketersediaan Kamar, Rawat inap & ICU, $availableBedsCount Bed Kosong',
+              icon: Icons.bed_rounded,
+              iconColor: AppColors.clinicalTeal,
+              iconBgColor: AppColors.clinicalContainer,
+              title: 'Ketersediaan\nKamar',
+              subtitle: 'Rawat inap & ICU',
+              backgroundImagePath: 'assets/images/bento_bed.png',
+              bgImageWidth: 115,
+              bgImageHeight: 110,
+              buttonLabel: 'Lihat Ketersediaan',
+              buttonBgColor: AppColors.clinicalContainer,
+              buttonTextColor: AppColors.clinicalTealDeep,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // Kartu Kanan: Jadwal Dokter
-        Expanded(
-          child: _BentoCard(
-            onTap: onDoctorScheduleTap,
-            icon: Icons.assignment_ind_rounded,
-            iconColor: AppColors.brandGoldenCaramel,
-            iconBgColor: AppColors.brandCreamLinen,
-            iconBorderColor: AppColors.borderSubtle,
-            title: 'Jadwal\nDokter',
-            subtitle: 'Cari spesialis & jam',
-            badgeWidget: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.brandCreamLinen,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: AppColors.borderSubtle),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.medical_services_outlined,
-                    size: 12,
-                    color: AppColors.brandWarmBronze,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '$activeDoctorsCount Dokter Aktif',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.brandDeepChocolate,
-                    ),
-                  ),
-                ],
-              ),
+          const SizedBox(width: 12),
+
+          // Kartu Kanan: Jadwal Dokter (Ukuran & Layout diselaraskan penuh)
+          Expanded(
+            child: _PhotoBentoCard(
+              onTap: onDoctorScheduleTap,
+              semanticLabel:
+                  'Jadwal Dokter, Cari spesialis & jam praktik, $activeDoctorsCount Dokter Aktif',
+              icon: Icons.person_rounded,
+              iconColor: AppColors.brandGoldenCaramel,
+              iconBgColor: AppColors.goldenSoftLinen,
+              title: 'Jadwal Dokter',
+              subtitle: 'Cari spesialis & jam praktik',
+              backgroundImagePath: 'assets/images/bento_doctor.png',
+              bgImageWidth: 85,
+              bgImageHeight: 110,
+              buttonLabel: 'Lihat Jadwal',
+              buttonBgColor: AppColors.brandCreamLinen,
+              buttonTextColor: AppColors.brandDeepChocolate,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _BentoCard extends StatelessWidget {
-  const _BentoCard({
+class _PhotoBentoCard extends StatelessWidget {
+  const _PhotoBentoCard({
     required this.onTap,
+    required this.semanticLabel,
     required this.icon,
     required this.iconColor,
     required this.iconBgColor,
-    required this.iconBorderColor,
     required this.title,
     required this.subtitle,
-    required this.badgeWidget,
+    required this.backgroundImagePath,
+    required this.bgImageWidth,
+    required this.bgImageHeight,
+    required this.buttonLabel,
+    required this.buttonBgColor,
+    required this.buttonTextColor,
   });
 
   final VoidCallback onTap;
+  final String semanticLabel;
   final IconData icon;
   final Color iconColor;
   final Color iconBgColor;
-  final Color iconBorderColor;
   final String title;
   final String subtitle;
-  final Widget badgeWidget;
+  final String backgroundImagePath;
+  final double bgImageWidth;
+  final double bgImageHeight;
+  final String buttonLabel;
+  final Color buttonBgColor;
+  final Color buttonTextColor;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surfaceCard,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderSubtle),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      child: Material(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          splashColor: iconColor.withValues(alpha: 0.08),
+          highlightColor: iconBgColor.withValues(alpha: 0.3),
+          child: Ink(
+            height: double.infinity,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.borderSubtle.withValues(alpha: 0.8),
+                width: 1,
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Baris Ikon + Tombol Panah
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.brandDarkEspresso.withValues(alpha: 0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Stack(
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: iconBgColor,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: iconBorderColor),
+                  // Gambar Fotografis Halus di Sudut Kanan Atas
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    width: bgImageWidth,
+                    height: bgImageHeight,
+                    child: IgnorePointer(
+                      child: Image.asset(
+                        backgroundImagePath,
+                        fit: BoxFit.contain,
+                        alignment: Alignment.topRight,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
+                      ),
                     ),
-                    child: Icon(icon, color: iconColor, size: 20),
                   ),
-                  const Icon(
-                    Icons.north_east_rounded,
-                    size: 18,
-                    color: AppColors.textMuted,
+
+                  // Konten Utama Bento Card
+                  Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Ikon Squircle
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: iconBgColor,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Center(
+                                child: Icon(icon, color: iconColor, size: 24),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+
+                            // Judul Kartu (Konsisten 42dp agar tinggi kedua kartu identik dan rata)
+                            SizedBox(
+                              height: 42,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  title,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.brandDarkEspresso,
+                                    height: 1.25,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Subjudul
+                            Text(
+                              subtitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Tombol Aksi Full-Width Pill
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 7.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: buttonBgColor,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  buttonLabel,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: buttonTextColor,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.chevron_right_rounded,
+                                size: 15,
+                                color: buttonTextColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              // Judul & Subjudul
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.brandDarkEspresso,
-                  height: 1.25,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 11.5,
-                  color: AppColors.textMuted,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Garis Pemisah & Badge Status
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(top: 10),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: AppColors.borderSubtle),
-                  ),
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: badgeWidget,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

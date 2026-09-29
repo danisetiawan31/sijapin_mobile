@@ -20,4 +20,19 @@ class AppConstants {
   // Metrik Default Beranda
   static const int defaultAvailableBeds = 18;
   static const int defaultActiveDoctors = 52;
+
+  // Beranda Dinamis & Sapaan
+  static const String welcomeGreeting = 'Halo, 👋';
+  static const String welcomeTitle = 'Selamat Datang di RSUP Dr. Sitanala';
+  static const String welcomeSubtitle =
+      'Kami siap membantu Anda mendapatkan layanan kesehatan terbaik.';
+  static const String quickActionsTitle = 'Bantuan & Informasi Cepat';
+  static const String quickActionsSubtitle =
+      'Akses mudah untuk segala kebutuhan Anda';
+  static const String searchHint = 'Cari dokter, poliklinik, atau layanan...';
+  static const String greetingMorning = 'Selamat Pagi';
+  static const String greetingAfternoon = 'Selamat Siang';
+  static const String greetingEvening = 'Selamat Sore';
+  static const String greetingNight = 'Selamat Malam';
+  static const String greetingSuffix = 'Ada yang bisa kami bantu?';
 }

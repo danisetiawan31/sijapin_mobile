@@ -46,11 +46,24 @@ class AppColors {
   static const Color goldenTextDark = Color(0xFF775D2D);
   static const Color shadowWarm = Color(0xFF735106);
 
+  // Klinis Segar — Mengimbangi dominasi karamel hangat
+  static const Color clinicalTealLight = Color(0xFF2A9D8F);
+  static const Color clinicalMint = Color(0xFFE0F5F0);
+  static const Color clinicalMintDark = Color(0xFFB2E0D6);
+  static const Color clinicalTealDeep = Color(0xFF145C54);
+
+  // Gradien Hero & Surface Premium
+  static const Color heroGradientStart = Color(0xFF493306);
+  static const Color heroGradientEnd = Color(0xFF2C1810);
+  static const Color surfaceFrost = Color(0xFFF5F7F8);
+  static const Color surfaceElevated = Color(0xFFFFFEFC);
+
   // Tipografi & Teks
   static const Color textPrimary = Color(0xFF1C140E);
   static const Color textSecondary = Color(0xFF5C5046);
   static const Color textMuted = Color(0xFF8C7E74);
   static const Color textWhite = Color(0xFFFFFFFF);
+  static const Color textOnDark = Color(0xFFF5EDE3);
 
   // Garis Tepi & Pemisah
   static const Color borderSubtle = Color(0xFFEAE2D8);

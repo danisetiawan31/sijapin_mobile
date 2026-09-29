@@ -29,7 +29,7 @@ class HomeMcuCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppColors.brandSoftSand.withValues(alpha: 0.6),
+              color: AppColors.borderSubtle.withValues(alpha: 0.8),
             ),
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
@@ -47,29 +47,10 @@ class HomeMcuCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Baris Atas: Ikon Lingkaran + Info Paket
+              // Baris Atas: Konten Teks + Ilustrasi Stetoskop / MCU
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppColors.goldenSoftLinen,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.brandGoldenCaramel.withValues(
-                          alpha: 0.35,
-                        ),
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.medical_services_outlined,
-                      color: AppColors.brandGoldenCaramel,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,13 +59,18 @@ class HomeMcuCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 9,
-                            vertical: 3,
+                            vertical: 3.5,
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.goldenSoftContainer.withValues(
-                              alpha: 0.65,
+                              alpha: 0.55,
                             ),
                             borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: AppColors.brandGoldenCaramel.withValues(
+                                alpha: 0.25,
+                              ),
+                            ),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
@@ -106,13 +92,14 @@ class HomeMcuCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         const Text(
                           'Paket Medical Check Up (MCU)',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 15.5,
                             fontWeight: FontWeight.w800,
                             color: AppColors.brandDarkEspresso,
+                            letterSpacing: -0.2,
                           ),
                         ),
                         const SizedBox(height: 3),
@@ -125,6 +112,34 @@ class HomeMcuCard extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Ilustrasi MCU Medis di Sisi Kanan
+                  Container(
+                    width: 68,
+                    height: 68,
+                    decoration: BoxDecoration(
+                      color: AppColors.clinicalContainer.withValues(alpha: 0.5),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.clinicalBorder.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.asset(
+                      'assets/images/mcu_illustration.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Center(
+                          child: Icon(
+                            Icons.medical_services_outlined,
+                            color: AppColors.clinicalTeal,
+                            size: 30,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -147,7 +162,8 @@ class HomeMcuCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   border: Border(
                     top: BorderSide(
-                      color: AppColors.borderSubtle.withValues(alpha: 0.8),
+                      color: AppColors.borderSubtle.withValues(alpha: 0.7),
+                      width: 0.8,
                     ),
                   ),
                 ),
@@ -178,13 +194,17 @@ class HomeMcuCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.brandCreamLinen,
+                        color: AppColors.clinicalTeal,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(
-                          color: AppColors.brandGoldenCaramel.withValues(
-                            alpha: 0.4,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.clinicalTeal.withValues(
+                              alpha: 0.2,
+                            ),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
-                        ),
+                        ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -192,16 +212,16 @@ class HomeMcuCard extends StatelessWidget {
                           Text(
                             'Lihat Paket',
                             style: TextStyle(
-                              fontSize: 11,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.brandGoldenCaramel,
+                              color: AppColors.white,
                             ),
                           ),
                           SizedBox(width: 4),
                           Icon(
-                            Icons.arrow_forward_rounded,
-                            size: 13,
-                            color: AppColors.brandGoldenCaramel,
+                            Icons.chevron_right_rounded,
+                            size: 15,
+                            color: AppColors.white,
                           ),
                         ],
                       ),
