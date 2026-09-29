@@ -30,9 +30,9 @@ void main() {
       );
       expect(find.text('Daftar Sekarang'), findsOneWidget);
 
-      // Verifikasi ikon kalender dan chevron
+      // Verifikasi ikon kalender dan tombol panah
       expect(find.byIcon(Icons.calendar_month_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.chevron_right_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
 
       // Verifikasi tap trigger
       await tester.tap(find.text('Daftar Sekarang'));

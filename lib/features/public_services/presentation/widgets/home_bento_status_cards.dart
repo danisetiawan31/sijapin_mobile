@@ -43,8 +43,9 @@ class HomeBentoStatusCards extends StatelessWidget {
               title: 'Ketersediaan\nKamar',
               subtitle: 'Rawat inap & ICU',
               backgroundImagePath: 'assets/images/bento_bed.png',
-              bgImageWidth: 115,
+              bgImageWidth: 120,
               bgImageHeight: 110,
+              bgImageRightOffset: -14,
               buttonLabel: 'Lihat Ketersediaan',
               buttonBgColor: AppColors.clinicalContainer,
               buttonTextColor: AppColors.clinicalTealDeep,
@@ -64,8 +65,9 @@ class HomeBentoStatusCards extends StatelessWidget {
               title: 'Jadwal Dokter',
               subtitle: 'Cari spesialis & jam praktik',
               backgroundImagePath: 'assets/images/bento_doctor.png',
-              bgImageWidth: 85,
+              bgImageWidth: 90,
               bgImageHeight: 110,
+              bgImageRightOffset: -12,
               buttonLabel: 'Lihat Jadwal',
               buttonBgColor: AppColors.brandCreamLinen,
               buttonTextColor: AppColors.brandDeepChocolate,
@@ -89,6 +91,7 @@ class _PhotoBentoCard extends StatelessWidget {
     required this.backgroundImagePath,
     required this.bgImageWidth,
     required this.bgImageHeight,
+    this.bgImageRightOffset = -10.0,
     required this.buttonLabel,
     required this.buttonBgColor,
     required this.buttonTextColor,
@@ -104,6 +107,7 @@ class _PhotoBentoCard extends StatelessWidget {
   final String backgroundImagePath;
   final double bgImageWidth;
   final double bgImageHeight;
+  final double bgImageRightOffset;
   final String buttonLabel;
   final Color buttonBgColor;
   final Color buttonTextColor;
@@ -142,10 +146,10 @@ class _PhotoBentoCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               child: Stack(
                 children: [
-                  // Gambar Fotografis Halus di Sudut Kanan Atas
+                  // Gambar Fotografis Halus di Sudut Kanan Atas (Digeser ke Kanan)
                   Positioned(
                     top: 0,
-                    right: 0,
+                    right: bgImageRightOffset,
                     width: bgImageWidth,
                     height: bgImageHeight,
                     child: IgnorePointer(

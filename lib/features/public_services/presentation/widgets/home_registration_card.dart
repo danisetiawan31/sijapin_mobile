@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/constants/app_vectors.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Kartu Pahlawan (Hero Card) Pendaftaran Rawat Jalan di Beranda.
 ///
-/// Mengadopsi desain elegan non-AI slop:
-/// - Watermark dedaunan botani alami di sudut atas kanan & bawah kiri
-/// - Squircle container mint dengan ikon kalender medis
-/// - Badge pill "Layanan Utama"
-/// - Tipografi presisi dengan hierarki tinggi
-/// - Tombol pill "Daftar Sekarang >" berwarna hijau toska tua yang berwibawa
+/// Mengadopsi pattern elegan dan modern yang selaras dengan kartu MCU:
+/// - Baris atas: Badge kalender toska + pill "Layanan Utama" di kiri, dan badge jadwal terverifikasi di kanan
+/// - Tipografi hierarki tinggi: Judul tebal & subjudul terpadu yang mudah dibaca
+/// - Tombol pill "Daftar Sekarang ➔" selaras di sisi kiri bawah subjudul (F-pattern)
+/// - Sisi kanan: Ilustrasi registrasi klinis vektor 2D/3D dengan ShaderMask fade halus tanpa watermark dedaunan
 class HomeRegistrationCard extends StatelessWidget {
   const HomeRegistrationCard({super.key, required this.onRegisterTap});
 
@@ -26,22 +27,27 @@ class HomeRegistrationCard extends StatelessWidget {
         splashColor: AppColors.clinicalTeal.withValues(alpha: 0.08),
         highlightColor: AppColors.clinicalContainer.withValues(alpha: 0.3),
         child: Ink(
+          width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.white,
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: AppColors.borderSubtle.withValues(alpha: 0.8),
-              width: 1,
+              color: AppColors.clinicalBorder.withValues(alpha: 0.65),
+              width: 1.2,
+            ),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFF4FAF8), Color(0xFFE7F5F1)],
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
+                color: AppColors.clinicalTeal.withValues(alpha: 0.05),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
               BoxShadow(
-                color: AppColors.clinicalTeal.withValues(alpha: 0.02),
-                blurRadius: 6,
+                color: AppColors.brandDarkEspresso.withValues(alpha: 0.03),
+                blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
@@ -50,165 +56,186 @@ class HomeRegistrationCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(22),
             child: Stack(
               children: [
-                // Watermark Dedaunan Botani Sudut Atas Kanan
+                // Ilustrasi Vektor Registrasi Klinis di Sisi Kanan dengan Mask Halus
                 Positioned(
                   top: 0,
                   right: 0,
-                  width: 95,
-                  height: 95,
-                  child: IgnorePointer(
-                    child: Image.asset(
-                      'assets/images/leaves_tr.png',
-                      fit: BoxFit.contain,
-                      alignment: Alignment.topRight,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
-                    ),
-                  ),
-                ),
-
-                // Watermark Dedaunan Botani Sudut Bawah Kiri
-                Positioned(
                   bottom: 0,
-                  left: 0,
-                  width: 95,
-                  height: 75,
+                  width: 155,
                   child: IgnorePointer(
-                    child: Image.asset(
-                      'assets/images/leaves_bl.png',
-                      fit: BoxFit.contain,
-                      alignment: Alignment.bottomLeft,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+                    child: ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                          colors: [
+                            Colors.transparent,
+                            Colors.white,
+                            Colors.white,
+                          ],
+                          stops: [0.0, 0.40, 1.0],
+                        ).createShader(bounds);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: SvgPicture.asset(
+                        AppVectors.outpatientRegistration,
+                        fit: BoxFit.contain,
+                        alignment: const Alignment(0.65, 0.0),
+                      ),
                     ),
                   ),
                 ),
 
-                // Konten Utama Kartu
+                // Konten Teks dan Aksi Utama (Sisi Kiri Kartu)
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
-                    vertical: 18,
+                    vertical: 16,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Baris Atas: Ikon Kalender Klinis & Badge Layanan Utama
+                      // Baris Atas: Badge Ikon Kalender dan Pill "Layanan Utama"
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Kontainer Ikon Kalender Medis (Squircle Mint)
+                          // Bulatan Toska dengan Ikon Kalender Medis
                           Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.clinicalContainer.withValues(
-                                alpha: 0.75,
-                              ),
-                              borderRadius: BorderRadius.circular(16),
+                            width: 32,
+                            height: 32,
+                            decoration: const BoxDecoration(
+                              color: AppColors.clinicalTeal,
+                              shape: BoxShape.circle,
                             ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.calendar_month_rounded,
-                                color: AppColors.clinicalTeal,
-                                size: 26,
-                              ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.calendar_month_rounded,
+                              size: 18,
+                              color: AppColors.white,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
 
-                          // Badge Pill "Layanan Utama"
+                          // Pill Badge "Layanan Utama"
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4.5,
+                              horizontal: 10,
+                              vertical: 5,
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.clinicalContainer.withValues(
-                                alpha: 0.85,
+                                alpha: 0.9,
                               ),
                               borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: const Text(
-                              'Layanan Utama',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.clinicalTealDeep,
-                                letterSpacing: 0.1,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Judul Pendaftaran Rawat Jalan
-                      const Text(
-                        'Pendaftaran Rawat Jalan',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.brandDarkEspresso,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-
-                      // Subjudul Deskripsi
-                      const Text(
-                        'Booking poli reguler & eksekutif BPJS / Umum tanpa perlu antre panjang di loket registrasi.',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          color: AppColors.textSecondary,
-                          height: 1.45,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Baris Aksi Bawah: Tombol "Daftar Sekarang >" di Kanan Bawah
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.clinicalTeal,
-                            borderRadius: BorderRadius.circular(999),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.clinicalTeal.withValues(
-                                  alpha: 0.25,
+                              border: Border.all(
+                                color: AppColors.clinicalBorder.withValues(
+                                  alpha: 0.8,
                                 ),
-                                blurRadius: 10,
-                                offset: const Offset(0, 3),
+                                width: 1,
                               ),
-                            ],
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 18,
-                              vertical: 9,
                             ),
-                            child: Row(
+                            child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                Icon(
+                                  Icons.verified_user_rounded,
+                                  size: 13,
+                                  color: AppColors.clinicalTeal,
+                                ),
+                                SizedBox(width: 5),
                                 Text(
-                                  'Daftar Sekarang',
+                                  'Layanan Utama',
                                   style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textWhite,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.clinicalTealDeep,
                                     letterSpacing: 0.1,
                                   ),
-                                ),
-                                SizedBox(width: 4),
-                                Icon(
-                                  Icons.chevron_right_rounded,
-                                  color: AppColors.textWhite,
-                                  size: 16,
                                 ),
                               ],
                             ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Judul Pendaftaran Rawat Jalan
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.sizeOf(context).width > 400
+                              ? 240
+                              : MediaQuery.sizeOf(context).width * 0.56,
+                        ),
+                        child: const Text(
+                          'Pendaftaran Rawat Jalan',
+                          style: TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.brandDarkEspresso,
+                            letterSpacing: -0.3,
+                            height: 1.25,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+
+                      // Subjudul Deskripsi
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.sizeOf(context).width > 400
+                              ? 230
+                              : MediaQuery.sizeOf(context).width * 0.54,
+                        ),
+                        child: const Text(
+                          'Booking poli reguler & eksekutif BPJS / Umum tanpa antre di loket',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textSecondary,
+                            height: 1.35,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Tombol Pill "Daftar Sekarang ➔"
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.clinicalTeal,
+                          borderRadius: BorderRadius.circular(999),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.clinicalTeal.withValues(
+                                alpha: 0.28,
+                              ),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Daftar Sekarang',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.white,
+                                letterSpacing: 0.1,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Icon(
+                              Icons.arrow_forward_rounded,
+                              size: 15,
+                              color: AppColors.white,
+                            ),
+                          ],
                         ),
                       ),
                     ],
