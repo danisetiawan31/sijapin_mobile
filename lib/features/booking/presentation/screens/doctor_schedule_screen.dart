@@ -16,7 +16,9 @@ class DoctorScheduleScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final schedulesAsync = ref.watch(doctorScheduleListProvider);
+    final scheduleState = ref.watch(doctorScheduleListProvider);
+    final schedulesAsync = scheduleState.schedules;
+    final selectedSpecialty = scheduleState.selectedSpecialty;
     final searchController = TextEditingController();
 
     return Scaffold(
@@ -84,7 +86,12 @@ class DoctorScheduleScreen extends ConsumerWidget {
             ),
 
             // Specialty Filter Chips
-            SizedBox(height: 48, child: _SpecialtyFilterChips()),
+            SizedBox(
+              height: 48,
+              child: _SpecialtyFilterChips(
+                selectedSpecialty: selectedSpecialty,
+              ),
+            ),
 
             // Doctor Cards List
             Expanded(
@@ -127,6 +134,10 @@ class DoctorScheduleScreen extends ConsumerWidget {
 
 /// Specialty filter chips horizontal scroll
 class _SpecialtyFilterChips extends ConsumerWidget {
+  const _SpecialtyFilterChips({required this.selectedSpecialty});
+
+  final String selectedSpecialty;
+
   static const List<String> _specialties = <String>[
     'Semua Poli',
     'Penyakit Dalam',
@@ -145,14 +156,14 @@ class _SpecialtyFilterChips extends ConsumerWidget {
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, index) {
         final specialty = _specialties[index];
-        final isActive = specialty == 'Semua Poli'; // Default active
+        final isActive = specialty == selectedSpecialty;
         return _FilterChip(
           label: specialty,
           isActive: isActive,
           onTap: () {
             ref
                 .read(doctorScheduleListProvider.notifier)
-                .filterBySpecialty(isActive ? 'Semua Poli' : specialty);
+                .filterBySpecialty(specialty);
           },
         );
       },
@@ -177,6 +188,7 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
