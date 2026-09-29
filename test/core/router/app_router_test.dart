@@ -96,7 +96,8 @@ void main() {
           find.descendant(of: navBar, matching: find.text('Jadwal')),
         );
         await tester.pumpAndSettle();
-        expect(find.text('Jadwal Praktik Poliklinik'), findsOneWidget);
+        expect(find.text('Jadwal Dokter'), findsOneWidget);
+        expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
 
         // Tap Tab 4: Profil
         await tester.tap(

@@ -1,0 +1,249 @@
+import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
+import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
+
+/// Implementasi repository jadwal dokter dengan data lokal/sampel.
+///
+/// Mengikuti pola `FakeAuthRepository` — data dummy untuk slicing UI dan pengujian.
+/// Siap diganti dengan implementasi backend `Jadwal_Dokter` endpoint CI3.
+class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
+  const DoctorScheduleRepositoryImpl();
+
+  @override
+  Future<List<DoctorSchedule>> getDoctorSchedules({
+    String? specialtyFilter,
+    String? searchQuery,
+  }) async {
+    // Simulasi delay jaringan
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+
+    final allSchedules = _getSampleSchedules();
+
+    // Filter berdasarkan spesialisasi
+    var filtered = allSchedules;
+    if (specialtyFilter != null && specialtyFilter != 'Semua Poli') {
+      filtered = filtered
+          .where((d) => d.specialization.contains(specialtyFilter))
+          .toList();
+    }
+
+    // Filter berdasarkan pencarian
+    if (searchQuery != null && searchQuery.trim().isNotEmpty) {
+      final query = searchQuery.toLowerCase().trim();
+      filtered = filtered.where((d) {
+        return d.name.toLowerCase().contains(query) ||
+            d.specialization.toLowerCase().contains(query);
+      }).toList();
+    }
+
+    return filtered;
+  }
+
+  @override
+  Future<DoctorSchedule?> getDoctorScheduleById(String id) async {
+    await Future<void>.delayed(const Duration(milliseconds: 200));
+    final allSchedules = _getSampleSchedules();
+    try {
+      return allSchedules.firstWhere((d) => d.id == id);
+    } on StateError {
+      return null;
+    }
+  }
+
+  /// Data sampel jadwal dokter — sesuai referensi visual (screenshot).
+  List<DoctorSchedule> _getSampleSchedules() {
+    return const <DoctorSchedule>[
+      // Dokter 1: dr. Era Medina, Sp.PD — Penyakit Dalam
+      DoctorSchedule(
+        id: 'doc_001',
+        name: 'dr. Era Medina, Sp.PD',
+        specialization: 'Spesialis Penyakit Dalam',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Selasa',
+            startTime: '07.30',
+            endTime: '12.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Rabu',
+            startTime: '07.30',
+            endTime: '12.00',
+          ),
+        ],
+      ),
+
+      // Dokter 2: dr. Hendra, Sp.M — Mata
+      DoctorSchedule(
+        id: 'doc_002',
+        name: 'dr. Hendra, Sp.M',
+        specialization: 'Spesialis Mata',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Kamis',
+            startTime: '08.30',
+            endTime: '12.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Jumat',
+            startTime: '08.30',
+            endTime: '11.30',
+          ),
+        ],
+      ),
+
+      // Dokter 3: dr. Damas Hendriansyah, Sp.OG — Kebidanan & Obgyn
+      DoctorSchedule(
+        id: 'doc_003',
+        name: 'dr. Damas Hendriansyah, Sp.OG',
+        specialization: 'Spesialis Obstetri & Ginekologi',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Senin',
+            startTime: '08.00',
+            endTime: '13.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Kamis',
+            startTime: '08.00',
+            endTime: '13.00',
+          ),
+        ],
+      ),
+
+      // Tambahan dokter untuk menunjukkan scroll/list
+      DoctorSchedule(
+        id: 'doc_004',
+        name: 'dr. Rian Pramudita, Sp.THT',
+        specialization: 'Spesialis THT-KL',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Senin',
+            startTime: '09.00',
+            endTime: '13.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Rabu',
+            startTime: '09.00',
+            endTime: '13.00',
+          ),
+        ],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_005',
+        name: 'dr. Anita Kusuma, Sp.M',
+        specialization: 'Spesialis Mata',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Selasa',
+            startTime: '08.00',
+            endTime: '11.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Kamis',
+            startTime: '08.00',
+            endTime: '11.00',
+          ),
+        ],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_006',
+        name: 'dr. Budi Santoso, Sp.A',
+        specialization: 'Spesialis Anak',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Rabu',
+            startTime: '08.30',
+            endTime: '12.30',
+          ),
+          DoctorScheduleEntry(
+            day: 'Jumat',
+            startTime: '08.30',
+            endTime: '12.30',
+          ),
+        ],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_007',
+        name: 'dr. Citra Dewi, Sp.PD',
+        specialization: 'Spesialis Penyakit Dalam',
+        photoUrl: null,
+        status: DoctorPracticeStatus.libur,
+        schedules: <DoctorScheduleEntry>[],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_008',
+        name: 'dr. Eko Wibowo, Sp.OG',
+        specialization: 'Spesialis Obstetri & Ginekologi',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Selasa',
+            startTime: '13.00',
+            endTime: '17.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Kamis',
+            startTime: '13.00',
+            endTime: '17.00',
+          ),
+        ],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_009',
+        name: 'dr. Fitriani, Sp.M',
+        specialization: 'Spesialis Mata',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Senin',
+            startTime: '07.30',
+            endTime: '11.30',
+          ),
+          DoctorScheduleEntry(
+            day: 'Rabu',
+            startTime: '07.30',
+            endTime: '11.30',
+          ),
+        ],
+      ),
+
+      DoctorSchedule(
+        id: 'doc_010',
+        name: 'dr. Gunawan, Sp.A',
+        specialization: 'Spesialis Anak',
+        photoUrl: null,
+        status: DoctorPracticeStatus.reguler,
+        schedules: <DoctorScheduleEntry>[
+          DoctorScheduleEntry(
+            day: 'Selasa',
+            startTime: '13.00',
+            endTime: '16.00',
+          ),
+          DoctorScheduleEntry(
+            day: 'Jumat',
+            startTime: '13.00',
+            endTime: '16.00',
+          ),
+        ],
+      ),
+    ];
+  }
+}
