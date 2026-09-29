@@ -11,75 +11,142 @@ DoctorScheduleRepository doctorScheduleRepository(Ref ref) {
   return const DoctorScheduleRepositoryImpl();
 }
 
+/// State class untuk DoctorScheduleList
+class DoctorScheduleState {
+  const DoctorScheduleState({
+    required this.schedules,
+    this.selectedSpecialty = 'Semua Poli',
+    this.searchQuery = '',
+    this.isFetching = false,
+  });
+
+  final AsyncValue<List<DoctorSchedule>> schedules;
+  final String selectedSpecialty;
+  final String searchQuery;
+  final bool isFetching;
+
+  DoctorScheduleState copyWith({
+    AsyncValue<List<DoctorSchedule>>? schedules,
+    String? selectedSpecialty,
+    String? searchQuery,
+    bool? isFetching,
+  }) {
+    return DoctorScheduleState(
+      schedules: schedules ?? this.schedules,
+      selectedSpecialty: selectedSpecialty ?? this.selectedSpecialty,
+      searchQuery: searchQuery ?? this.searchQuery,
+      isFetching: isFetching ?? this.isFetching,
+    );
+  }
+}
+
 /// Provider daftar jadwal dokter dengan filter & pencarian
 @riverpod
 class DoctorScheduleList extends _$DoctorScheduleList {
+  int _requestId = 0;
+
   @override
-  Future<List<DoctorSchedule>> build() async {
-    final repo = ref.watch(doctorScheduleRepositoryProvider);
-    return repo.getDoctorSchedules();
+  DoctorScheduleState build() {
+    // Trigger initial load after the provider is created
+    Future.microtask(() => loadInitial());
+
+    return const DoctorScheduleState(
+      schedules: AsyncLoading(),
+      selectedSpecialty: 'Semua Poli',
+      searchQuery: '',
+      isFetching: false,
+    );
+  }
+
+  /// Load initial data
+  Future<void> loadInitial() async {
+    final repo = ref.read(doctorScheduleRepositoryProvider);
+    try {
+      final result = await repo.getDoctorSchedules();
+      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
+    } catch (e, st) {
+      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
+    }
   }
 
   /// Mencari jadwal dokter berdasarkan query
   Future<void> search(String query) async {
-    state = const AsyncLoading();
+    final id = ++_requestId;
+    state = state.copyWith(searchQuery: query, isFetching: true);
     try {
       final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(searchQuery: query);
-      state = AsyncData(result);
+      final result = await repo.getDoctorSchedules(
+        specialtyFilter: state.selectedSpecialty == 'Semua Poli'
+            ? null
+            : state.selectedSpecialty,
+        searchQuery: query,
+      );
+      if (id != _requestId) return; // stale request
+      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (id != _requestId) return;
+      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
     }
   }
 
   /// Memfilter jadwal dokter berdasarkan spesialisasi
   Future<void> filterBySpecialty(String specialty) async {
-    state = const AsyncLoading();
+    final id = ++_requestId;
+    state = state.copyWith(selectedSpecialty: specialty, isFetching: true);
     try {
       final repo = ref.read(doctorScheduleRepositoryProvider);
       final result = await repo.getDoctorSchedules(
-        specialtyFilter: specialty,
-        searchQuery: _currentSearchQuery,
+        specialtyFilter: specialty == 'Semua Poli' ? null : specialty,
+        searchQuery: state.searchQuery,
       );
-      state = AsyncData(result);
+      if (id != _requestId) return; // stale request
+      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (id != _requestId) return;
+      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
     }
   }
 
   /// Menggabungkan pencarian dan filter
   Future<void> searchAndFilter({String? query, String? specialty}) async {
-    state = const AsyncLoading();
+    final id = ++_requestId;
+    state = state.copyWith(
+      searchQuery: query ?? state.searchQuery,
+      selectedSpecialty: specialty ?? state.selectedSpecialty,
+      isFetching: true,
+    );
     try {
       final repo = ref.read(doctorScheduleRepositoryProvider);
       final result = await repo.getDoctorSchedules(
-        specialtyFilter: specialty,
-        searchQuery: query,
+        specialtyFilter: (specialty ?? state.selectedSpecialty) == 'Semua Poli'
+            ? null
+            : (specialty ?? state.selectedSpecialty),
+        searchQuery: query ?? state.searchQuery,
       );
-      state = AsyncData(result);
+      if (id != _requestId) return; // stale request
+      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (id != _requestId) return;
+      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
     }
-  }
-
-  /// Query pencarian saat ini (disimpan untuk digabung dengan filter)
-  String _currentSearchQuery = '';
-
-  /// Memperbarui query pencarian internal
-  void setSearchQuery(String query) {
-    _currentSearchQuery = query;
   }
 
   /// Reset ke data awal (semua dokter)
   Future<void> reset() async {
-    state = const AsyncLoading();
+    final id = ++_requestId;
+    state = state.copyWith(
+      selectedSpecialty: 'Semua Poli',
+      searchQuery: '',
+      isFetching: true,
+    );
     try {
       final repo = ref.read(doctorScheduleRepositoryProvider);
       final result = await repo.getDoctorSchedules();
-      _currentSearchQuery = '';
-      state = AsyncData(result);
+      if (id != _requestId) return;
+      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      if (id != _requestId) return;
+      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
     }
   }
 }
