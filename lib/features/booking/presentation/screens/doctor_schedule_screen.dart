@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
-import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
-import 'package:sijapin_mobile/features/booking/presentation/widgets/doctor_avatar.dart';
+import 'package:sijapin_mobile/features/booking/presentation/widgets/doctor_card.dart';
 
 /// Tab 3: Jadwal Dokter Spesialis & Poliklinik
 class DoctorScheduleScreen extends ConsumerStatefulWidget {
@@ -148,7 +147,7 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                     itemCount: schedules.length,
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (_, index) =>
-                        _DoctorCard(schedule: schedules[index]),
+                        DoctorCard(schedule: schedules[index]),
                   );
                 },
                 loading: () =>
@@ -357,222 +356,6 @@ class _FilterChip extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-/// Doctor card matching the screenshot design & SSOT Sitanala
-class _DoctorCard extends ConsumerWidget {
-  const _DoctorCard({required this.schedule});
-
-  final DoctorSchedule schedule;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final activeDay = ref.watch(selectedDoctorDayProvider);
-    final specialtyBadge = _getSpecialtyBadge(schedule.specialization);
-
-    return AppCard.elevated(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Row 1: Gender-based Avatar + Name + Specialty badge
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Avatar ilustrasi medis berbasis gender & inisial Sitanala
-              DoctorAvatar(
-                name: schedule.name,
-                gender: schedule.gender,
-                photoUrl: schedule.photoUrl,
-                radius: 28,
-              ),
-              const SizedBox(width: 12),
-              // Name & Specialization
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      schedule.name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.brandDarkEspresso,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      schedule.specialization,
-                      style: Theme.of(context).textTheme.bodyMedium
-                          ?.copyWith(color: AppColors.textSecondary),
-                    ),
-                  ],
-                ),
-              ),
-              // Specialty badge
-              specialtyBadge,
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Row 2: Schedule panel
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.brandCreamLinen.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.borderSubtle),
-            ),
-            child: schedule.schedules.isEmpty
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
-                      'Tidak ada jadwal praktik aktif saat ini.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  )
-                : Column(
-                    children: [
-                      ...schedule.schedules.map((entry) {
-                        final isEntryActiveDay =
-                            activeDay != 'Semua Hari' && entry.day == activeDay;
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          padding: isEntryActiveDay
-                              ? const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4)
-                              : EdgeInsets.zero,
-                          decoration: isEntryActiveDay
-                              ? BoxDecoration(
-                                  color: AppColors.brandGoldenCaramel
-                                      .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(8),
-                                )
-                              : null,
-                          child: Row(
-                            children: [
-                              Icon(
-                                isEntryActiveDay
-                                    ? Icons.event_available_rounded
-                                    : Icons.access_time_rounded,
-                                size: 16,
-                                color: isEntryActiveDay
-                                    ? AppColors.brandWarmBronze
-                                    : AppColors.textMuted,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                entry.day,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: isEntryActiveDay
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: isEntryActiveDay
-                                          ? AppColors.brandDarkEspresso
-                                          : AppColors.textPrimary,
-                                    ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  entry.displayTime,
-                                  textAlign: TextAlign.right,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(
-                                        color: isEntryActiveDay
-                                            ? AppColors.brandDarkEspresso
-                                            : AppColors.textSecondary,
-                                        fontWeight: isEntryActiveDay
-                                            ? FontWeight.w700
-                                            : FontWeight.w400,
-                                      ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Row 3: Status badge + CTA
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Praktik Reguler badge
-              if (schedule.status == DoctorPracticeStatus.reguler)
-                const AppBadge.success(
-                  label: 'Praktik Reguler',
-                  icon: Icons.circle,
-                  fontSize: 11,
-                )
-              else if (schedule.status == DoctorPracticeStatus.libur)
-                const AppBadge.warning(label: 'Libur / Cuti', fontSize: 11)
-              else
-                const AppBadge.neutral(label: 'Praktik Reguler', fontSize: 11),
-
-              // Daftar Janji Temu button
-              AppPrimaryButton(
-                label: schedule.status == DoctorPracticeStatus.libur
-                    ? 'Dokter Cuti'
-                    : 'Daftar Janji Temu',
-                icon: Icons.arrow_forward_rounded,
-                width: 160,
-                onPressed: schedule.status == DoctorPracticeStatus.libur
-                    ? null
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content:
-                                Text('Buka pendaftaran untuk ${schedule.name}'),
-                            behavior: SnackBarBehavior.floating,
-                            backgroundColor: AppColors.brandDarkEspresso,
-                          ),
-                        );
-                      },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _getSpecialtyBadge(String specialization) {
-    // Map specialization to badge label
-    String badgeLabel;
-    if (specialization.contains('Penyakit Dalam')) {
-      badgeLabel = 'Penyakit Dalam';
-    } else if (specialization.contains('Mata')) {
-      badgeLabel = 'Poli Mata';
-    } else if (specialization.contains('Obstetri') ||
-        specialization.contains('Ginekologi')) {
-      badgeLabel = 'Kebidanan & Obgyn';
-    } else if (specialization.contains('THT')) {
-      badgeLabel = 'THT-KL';
-    } else if (specialization.contains('Anak')) {
-      badgeLabel = 'Poli Anak';
-    } else {
-      badgeLabel = specialization;
-    }
-
-    return AppBadge.neutral(label: badgeLabel, fontSize: 11);
   }
 }
 
