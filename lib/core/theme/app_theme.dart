@@ -10,6 +10,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       scaffoldBackgroundColor: AppColors.surfaceBg,
+      fontFamily: 'Plus Jakarta Sans',
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.brandWarmBronze,
         primary: AppColors.brandWarmBronze,
@@ -23,6 +24,14 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: true,
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.brandGoldenCaramel,
+          foregroundColor: Colors.white,
+          minimumSize: const Size(48, 52),
+          shape: const StadiumBorder(),
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceCard,

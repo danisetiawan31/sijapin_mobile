@@ -5,6 +5,7 @@ import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/router/app_router.dart';
 import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
+import 'package:sijapin_mobile/core/widgets/app_bottom_nav_bar.dart';
 
 Widget _buildAppWithRouter(ProviderContainer container) {
   return UncontrolledProviderScope(
@@ -30,15 +31,15 @@ void main() {
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
-        await tester.pumpAndSettle();
+        await tester.pump();
 
         expect(find.text(AppConfig.appName), findsOneWidget);
         expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
+        expect(find.text('Memuat aplikasi...'), findsOneWidget);
       },
     );
-
     testWidgets(
-      'navigating to /home renders MainShellScaffold with 4-tab NavigationBar',
+      'navigating to /home renders MainShellScaffold with 4-tab AppBottomNavBar',
       (tester) async {
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -53,8 +54,8 @@ void main() {
         // Verifikasi layar Beranda tampil
         expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
 
-        // Verifikasi NavigationBar Material 3 dengan 4 Tab tampil
-        expect(find.byType(NavigationBar), findsOneWidget);
+        // Verifikasi AppBottomNavBar dengan 4 Tab tampil
+        expect(find.byType(AppBottomNavBar), findsOneWidget);
         expect(find.text('Beranda'), findsOneWidget);
         expect(find.text('Janji Temu'), findsOneWidget);
         expect(find.text('Dokter'), findsOneWidget);
@@ -98,7 +99,7 @@ void main() {
     );
 
     testWidgets(
-      'navigating to /login renders outside shell without NavigationBar',
+      'navigating to /login renders outside shell without AppBottomNavBar',
       (tester) async {
         final container = ProviderContainer();
         addTearDown(container.dispose);
@@ -111,10 +112,31 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi layar Login tampil
-        expect(find.text('Layar Masuk Akun SIIJAPIN'), findsOneWidget);
+        expect(find.text('Selamat Datang'), findsOneWidget);
 
-        // NavigationBar TIDAK boleh ada di halaman login (rute di luar shell)
-        expect(find.byType(NavigationBar), findsNothing);
+        // AppBottomNavBar TIDAK boleh ada di halaman login (rute di luar shell)
+        expect(find.byType(AppBottomNavBar), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'navigating to /register renders outside shell without AppBottomNavBar',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.registerPath);
+        await tester.pumpAndSettle();
+
+        // Verifikasi layar Register tampil
+        expect(find.text('Buat Akun Pasien'), findsOneWidget);
+
+        // AppBottomNavBar TIDAK boleh ada di halaman register (rute di luar shell)
+        expect(find.byType(AppBottomNavBar), findsNothing);
       },
     );
   });

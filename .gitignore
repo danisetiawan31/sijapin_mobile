@@ -89,3 +89,13 @@ app.*.map.json
 *.swp
 .history
 .widget_preview/
+zip_flutter_packages.sh
+*.zip
+zip_dev_doc.sh
+zip_ai_workflow.sh
+zip_all.sh
+
+.kotlin/
+
+# AI Agent Governance (Lokal masing-masing developer)
+AGENTS.md
