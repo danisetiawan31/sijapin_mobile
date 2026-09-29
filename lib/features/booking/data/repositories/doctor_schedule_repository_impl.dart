@@ -18,12 +18,10 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
 
     final allSchedules = _getSampleSchedules();
 
-    // Filter berdasarkan spesialisasi
+    // Filter berdasarkan poli (poliklinik)
     var filtered = allSchedules;
     if (specialtyFilter != null && specialtyFilter != 'Semua Poli') {
-      filtered = filtered
-          .where((d) => d.specialization.contains(specialtyFilter))
-          .toList();
+      filtered = filtered.where((d) => d.poli == specialtyFilter).toList();
     }
 
     // Filter berdasarkan pencarian
@@ -31,7 +29,8 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
       final query = searchQuery.toLowerCase().trim();
       filtered = filtered.where((d) {
         return d.name.toLowerCase().contains(query) ||
-            d.specialization.toLowerCase().contains(query);
+            d.specialization.toLowerCase().contains(query) ||
+            d.poli.toLowerCase().contains(query);
       }).toList();
     }
 
@@ -57,6 +56,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_001',
         name: 'dr. Era Medina, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        poli: 'Penyakit Dalam',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -78,6 +78,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_002',
         name: 'dr. Hendra, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -99,6 +100,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_003',
         name: 'dr. Damas Hendriansyah, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        poli: 'Kebidanan & Obgyn',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -120,6 +122,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_004',
         name: 'dr. Rian Pramudita, Sp.THT',
         specialization: 'Spesialis THT-KL',
+        poli: 'THT-KL',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -140,6 +143,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_005',
         name: 'dr. Anita Kusuma, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -160,6 +164,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_006',
         name: 'dr. Budi Santoso, Sp.A',
         specialization: 'Spesialis Anak',
+        poli: 'Anak',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -180,6 +185,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_007',
         name: 'dr. Citra Dewi, Sp.PD',
         specialization: 'Spesialis Penyakit Dalam',
+        poli: 'Penyakit Dalam',
         photoUrl: null,
         status: DoctorPracticeStatus.libur,
         schedules: <DoctorScheduleEntry>[],
@@ -189,6 +195,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_008',
         name: 'dr. Eko Wibowo, Sp.OG',
         specialization: 'Spesialis Obstetri & Ginekologi',
+        poli: 'Kebidanan & Obgyn',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -209,6 +216,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_009',
         name: 'dr. Fitriani, Sp.M',
         specialization: 'Spesialis Mata',
+        poli: 'Mata',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
@@ -229,6 +237,7 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
         id: 'doc_010',
         name: 'dr. Gunawan, Sp.A',
         specialization: 'Spesialis Anak',
+        poli: 'Anak',
         photoUrl: null,
         status: DoctorPracticeStatus.reguler,
         schedules: <DoctorScheduleEntry>[
