@@ -5,11 +5,11 @@ import '../../../../core/theme/app_colors.dart';
 
 /// Grid 4 Tombol Aksi Cepat Bantuan & Informasi di Beranda.
 ///
-/// Mengadopsi desain resmi Google Stitch & Mockup Acuan:
-/// - 1. Pengaduan Pasien (Aksen Clinical Teal)
-/// - 2. Standar Layanan RS (Aksen Golden Caramel)
-/// - 3. Alur Rujukan BPJS (Aksen Success Emerald)
-/// - 4. Lokasi & Peta RSUP Dr. Sitanala (Aksen Warning Amber)
+/// Desain modern & ramah mengacu pada referensi klinis RSUP Dr. Sitanala:
+/// - 1. Pengaduan Pasien (Clipboard Checklist - Mint & Teal)
+/// - 2. Standar Layanan RS (Dokumen Pelayanan - Pastel Peach & Orange)
+/// - 3. Alur Rujukan BPJS (Perisai Verifikasi - Soft Emerald)
+/// - 4. Lokasi & Peta RSUP (Pin Navigasi - Golden Cream & Amber)
 class HomeQuickActions extends StatelessWidget {
   const HomeQuickActions({
     super.key,
@@ -49,15 +49,16 @@ class HomeQuickActions extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+
         // Baris 4 Kartu Aksi Cepat
         Row(
           children: [
             Expanded(
               child: _ActionChipCard(
                 label: 'Pengaduan',
-                icon: Icons.chat_bubble_outline_rounded,
+                icon: Icons.assignment_rounded,
                 iconColor: AppColors.clinicalTeal,
-                iconBgColor: AppColors.clinicalContainer,
+                iconBgColor: const Color(0xFFE2F4F0),
                 onTap: onComplaintTap,
               ),
             ),
@@ -65,29 +66,29 @@ class HomeQuickActions extends StatelessWidget {
             Expanded(
               child: _ActionChipCard(
                 label: 'Standar\nLayanan',
-                icon: Icons.description_outlined,
-                iconColor: AppColors.brandGoldenCaramel,
-                iconBgColor: AppColors.goldenSoftLinen,
+                icon: Icons.article_rounded,
+                iconColor: const Color(0xFFEA580C),
+                iconBgColor: const Color(0xFFFFEEE3),
                 onTap: onServiceStandardsTap,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _ActionChipCard(
-                label: 'Alur\nBPJS',
-                icon: Icons.verified_user_outlined,
-                iconColor: AppColors.successEmerald,
-                iconBgColor: AppColors.successContainer,
+                label: 'Alur BPJS',
+                icon: Icons.verified_user_rounded,
+                iconColor: const Color(0xFF15803D),
+                iconBgColor: const Color(0xFFE6F5EC),
                 onTap: onBpjsFlowTap,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
               child: _ActionChipCard(
-                label: 'Lokasi\nRS',
-                icon: Icons.location_on_outlined,
-                iconColor: AppColors.warningAmber,
-                iconBgColor: AppColors.warningContainer,
+                label: 'Lokasi RS',
+                icon: Icons.location_on_rounded,
+                iconColor: const Color(0xFFD97706),
+                iconBgColor: const Color(0xFFFFF6E5),
                 onTap: onHospitalLocationTap,
               ),
             ),
@@ -116,23 +117,31 @@ class _ActionChipCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.surfaceCard,
-      borderRadius: BorderRadius.circular(14),
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(20),
+        splashColor: iconColor.withValues(alpha: 0.10),
+        highlightColor: iconBgColor.withValues(alpha: 0.35),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppColors.borderSubtle.withValues(alpha: 0.8),
+              color: AppColors.borderSubtle.withValues(alpha: 0.45),
+              width: 0.9,
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.brandDarkEspresso.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: AppColors.brandDarkEspresso.withValues(alpha: 0.035),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+              BoxShadow(
+                color: iconColor.withValues(alpha: 0.03),
+                blurRadius: 14,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -141,25 +150,31 @@ class _ActionChipCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: iconBgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Center(child: Icon(icon, color: iconColor, size: 21)),
+                child: Center(child: Icon(icon, color: iconColor, size: 24)),
               ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandDarkEspresso,
-                  height: 1.25,
+              const SizedBox(height: 9),
+              SizedBox(
+                height: 30,
+                child: Center(
+                  child: Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.brandDarkEspresso,
+                      height: 1.2,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
                 ),
               ),
             ],

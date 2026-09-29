@@ -68,7 +68,7 @@ class HomeScreen extends StatelessWidget {
                     bottom: 16,
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // Banner Sapaan Ramah & Identitas (Mockup Acuan)
                       const HomeWelcomeBanner(),
