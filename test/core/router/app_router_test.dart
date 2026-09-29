@@ -81,7 +81,9 @@ void main() {
         final navBar = find.byType(AppBottomNavBar);
 
         // Tap Tab 2: Janji Temu
-        await tester.tap(find.descendant(of: navBar, matching: find.text('Janji Temu')));
+        await tester.tap(
+          find.descendant(of: navBar, matching: find.text('Janji Temu')),
+        );
         // Denyut antrean pada BookingScreen berjalan terus, jadi tidak memakai
         // pumpAndSettle yang akan menunggu animasi selesai.
         await tester.pump();
@@ -93,18 +95,24 @@ void main() {
         expect(find.text('MAT-014'), findsAtLeastNWidgets(1));
 
         // Tap Tab 3: Dokter
-        await tester.tap(find.descendant(of: navBar, matching: find.text('Dokter')));
+        await tester.tap(
+          find.descendant(of: navBar, matching: find.text('Dokter')),
+        );
         await tester.pumpAndSettle();
         expect(find.text('Jadwal Praktik Poliklinik'), findsOneWidget);
 
         // Tap Tab 4: Profil
-        await tester.tap(find.descendant(of: navBar, matching: find.text('Profil')));
+        await tester.tap(
+          find.descendant(of: navBar, matching: find.text('Profil')),
+        );
         await tester.pumpAndSettle();
         expect(find.text('Profil Saya'), findsOneWidget);
         expect(find.text('Data Diri'), findsOneWidget);
 
         // Tap Tab 1: Kembali ke Beranda
-        await tester.tap(find.descendant(of: navBar, matching: find.text('Beranda')));
+        await tester.tap(
+          find.descendant(of: navBar, matching: find.text('Beranda')),
+        );
         await tester.pumpAndSettle();
         expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
       },
