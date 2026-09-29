@@ -89,12 +89,15 @@ class HomeHeader extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: AppColors.clinicalContainer,
+              color: AppColors.goldenSoftLinen.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(11),
-              border: Border.all(color: AppColors.clinicalBorder, width: 1.2),
+              border: Border.all(
+                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.35),
+                width: 1.2,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.clinicalTeal.withValues(alpha: 0.08),
+                  color: AppColors.brandGoldenCaramel.withValues(alpha: 0.10),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -103,7 +106,7 @@ class HomeHeader extends StatelessWidget {
             child: const Center(
               child: Icon(
                 Icons.local_hospital_rounded,
-                color: AppColors.clinicalTeal,
+                color: AppColors.brandGoldenCaramel,
                 size: 22,
               ),
             ),
@@ -216,13 +219,16 @@ class HomeHeader extends StatelessWidget {
             height: 38,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: AppColors.clinicalContainer,
+              color: AppColors.goldenSoftLinen.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.clinicalBorder, width: 1),
+              border: Border.all(
+                color: AppColors.brandGoldenCaramel.withValues(alpha: 0.35),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.clinicalTeal.withValues(alpha: 0.06),
-                  blurRadius: 6,
+                  color: AppColors.brandGoldenCaramel.withValues(alpha: 0.12),
+                  blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -234,7 +240,7 @@ class HomeHeader extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: const BoxDecoration(
-                    color: AppColors.clinicalTeal,
+                    color: AppColors.brandGoldenCaramel,
                     shape: BoxShape.circle,
                   ),
                   child: const Center(
@@ -251,7 +257,8 @@ class HomeHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.clinicalTealDeep,
+                    color: AppColors.brandDarkEspresso,
+                    letterSpacing: 0.1,
                   ),
                 ),
                 const SizedBox(width: 2),

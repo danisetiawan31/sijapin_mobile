@@ -5,7 +5,8 @@ import '../../../../core/theme/app_colors.dart';
 
 /// Banner Sambutan Hangat di Beranda:
 /// "Halo, 👋 Selamat Datang di RSUP Dr. Sitanala"
-/// dengan ilustrasi ramah dokter dan nuansa gradien klinis segar.
+/// dengan nuansa gradien Golden Caramel & Soft Sand khas RSUP Dr. Sitanala yang hangat,
+/// ramah, dan bercahaya.
 class HomeWelcomeBanner extends StatelessWidget {
   const HomeWelcomeBanner({super.key, this.userName});
 
@@ -21,47 +22,59 @@ class HomeWelcomeBanner extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.brandGoldenCaramelDark.withValues(alpha: 0.4),
+          width: 1,
+        ),
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [AppColors.clinicalTeal, AppColors.clinicalTealLight],
+          colors: [
+            AppColors.brandGoldenCaramelDark,
+            AppColors.brandGoldenCaramel,
+          ],
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.clinicalTeal.withValues(alpha: 0.18),
+            color: AppColors.brandGoldenCaramelDark.withValues(alpha: 0.22),
             blurRadius: 16,
             offset: const Offset(0, 5),
+          ),
+          BoxShadow(
+            color: AppColors.brandDarkEspresso.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Stack(
         clipBehavior: Clip.antiAlias,
         children: [
-          // Background ambient rings
+          // Cincin aura ambient di latar belakang
           Positioned(
-            right: -20,
-            bottom: -20,
+            right: -25,
+            bottom: -25,
             child: IgnorePointer(
               child: Container(
-                width: 140,
-                height: 140,
+                width: 150,
+                height: 150,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.white.withValues(alpha: 0.08),
+                  color: AppColors.white.withValues(alpha: 0.12),
                 ),
               ),
             ),
           ),
           Positioned(
-            right: 40,
-            top: -30,
+            right: 35,
+            top: -35,
             child: IgnorePointer(
               child: Container(
-                width: 100,
-                height: 100,
+                width: 110,
+                height: 110,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: AppColors.white.withValues(alpha: 0.06),
+                  color: AppColors.white.withValues(alpha: 0.08),
                 ),
               ),
             ),
@@ -83,7 +96,7 @@ class HomeWelcomeBanner extends StatelessWidget {
                         greetingName,
                         style: TextStyle(
                           fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.white.withValues(alpha: 0.95),
                           letterSpacing: 0.2,
                         ),
@@ -105,7 +118,7 @@ class HomeWelcomeBanner extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w400,
-                          color: AppColors.white.withValues(alpha: 0.88),
+                          color: AppColors.white.withValues(alpha: 0.90),
                           height: 1.35,
                         ),
                       ),
@@ -114,7 +127,7 @@ class HomeWelcomeBanner extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
 
-                // Sisi Kanan: Ilustrasi Avatar Dokter
+                // Sisi Kanan: Ilustrasi Avatar Dokter dengan Frame Putih Bersih
                 Container(
                   width: 82,
                   height: 82,
@@ -124,7 +137,7 @@ class HomeWelcomeBanner extends StatelessWidget {
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.brandDarkEspresso.withValues(
-                          alpha: 0.15,
+                          alpha: 0.18,
                         ),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
@@ -137,11 +150,11 @@ class HomeWelcomeBanner extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          color: AppColors.clinicalMint,
+                          color: AppColors.goldenSoftLinen,
                           child: const Icon(
                             Icons.health_and_safety_rounded,
                             size: 42,
-                            color: AppColors.clinicalTeal,
+                            color: AppColors.brandGoldenCaramel,
                           ),
                         );
                       },
