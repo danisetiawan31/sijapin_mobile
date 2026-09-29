@@ -14,6 +14,9 @@ class Appointment {
     required this.nowServingNumber,
     required this.remainingQueue,
     this.status = AppointmentStatus.upcoming,
+    this.patientRelation,
+    this.medicalRecord,
+    this.cancelNote,
   });
 
   /// Kodebooking 13 digit numerik untuk discan di Kiosk APM.
@@ -37,6 +40,18 @@ class Appointment {
   final String nowServingNumber;
   final int remainingQueue;
   final AppointmentStatus status;
+
+  /// Hubungan pasien dengan pemilik akun: `Diri Sendiri` atau `Keluarga`.
+  final String? patientRelation;
+
+  /// Nomor rekam medis tersamar, contoh: `0456**`.
+  final String? medicalRecord;
+
+  /// Alasan pembatalan, contoh: `Dibatalkan oleh pasien (H-1)`.
+  final String? cancelNote;
+
+  bool get isCompleted => status == AppointmentStatus.completed;
+  bool get isCancelled => status == AppointmentStatus.cancelled;
 
   /// Batas pembatalan H-1 pukul 21.00 WIB.
   DateTime get cancelDeadline {
@@ -71,6 +86,9 @@ class Appointment {
       nowServingNumber: nowServingNumber ?? this.nowServingNumber,
       remainingQueue: remainingQueue ?? this.remainingQueue,
       status: status ?? this.status,
+      patientRelation: patientRelation,
+      medicalRecord: medicalRecord,
+      cancelNote: cancelNote,
     );
   }
 }
