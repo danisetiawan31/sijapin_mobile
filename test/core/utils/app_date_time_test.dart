@@ -90,5 +90,28 @@ void main() {
       expect(deadline.minute, equals(AppConfig.cancellationDeadlineMinute));
       expect(deadline.timeZoneOffset.inHours, equals(7));
     });
+
+    test('Appointment.cancelDeadline handles month boundary correctly (e.g. Oct 1 -> Sep 30)', () {
+      final appointment = Appointment(
+        bookingCode: '261001014221',
+        queueNumber: 'MAT-014',
+        patientName: 'Rhesa',
+        doctorName: 'dr. Hendra',
+        specialty: 'Mata',
+        clinic: 'Poli Mata',
+        scheduledDate: AppDateTime.wibDateTime(2026, 10, 1, 9, 30),
+        scheduledTime: '09.30 WIB',
+        estimatedMinutes: 15,
+        nowServingNumber: 'MAT-011',
+        remainingQueue: 3,
+      );
+
+      final deadline = appointment.cancelDeadline;
+      expect(deadline.year, equals(2026));
+      expect(deadline.month, equals(9));
+      expect(deadline.day, equals(30));
+      expect(deadline.hour, equals(23));
+      expect(deadline.minute, equals(59));
+    });
   });
 }
