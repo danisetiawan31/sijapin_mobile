@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/biometrics/biometric_controller.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/passcode/passcode_controller.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/user_profile.dart';
 import '../controllers/profile_controller.dart';
+import '../widgets/passcode_setup_sheet.dart';
 import '../widgets/profile_identity_card.dart';
 import '../widgets/profile_menu_card.dart';
 
@@ -25,6 +28,18 @@ class ProfileScreen extends ConsumerWidget {
       profileControllerProvider.notifier,
     );
     final UserProfile? user = state.user;
+    final BiometricState biometric =
+        ref.watch(biometricControllerProvider).asData?.value ??
+        const BiometricState();
+    final BiometricController biometricController = ref.read(
+      biometricControllerProvider.notifier,
+    );
+    final PasscodeState passcode =
+        ref.watch(passcodeControllerProvider).asData?.value ??
+        const PasscodeState();
+    final PasscodeController passcodeController = ref.read(
+      passcodeControllerProvider.notifier,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBg,
@@ -70,6 +85,43 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
+                          icon: Icons.fingerprint_rounded,
+                          label: 'Kunci Biometrik (Sidik Jari / Face ID)',
+                          subtitle: 'Masuk Cepat dan aman ke Aplikasi',
+                          onTap: () => _handleBiometricToggle(
+                            context,
+                            biometric,
+                            biometricController,
+                            !biometric.enabled,
+                          ),
+                          trailing: Switch.adaptive(
+                            key: const ValueKey('biometric-switch'),
+                            value: biometric.enabled,
+                            activeThumbColor: AppColors.brandGoldenCaramel,
+                            onChanged: (bool value) => _handleBiometricToggle(
+                              context,
+                              biometric,
+                              biometricController,
+                              value,
+                            ),
+                          ),
+                        ),
+                        const ProfileMenuDivider(),
+                        ProfileMenuItem(
+                          icon: Icons.pin_rounded,
+                          label: 'Kode Kunci (PIN)',
+                          subtitle: passcode.hasPasscode
+                              ? 'Fallback saat biometrik gagal'
+                              : 'Belum dibuat',
+                          iconColor: AppColors.brandWarmBronze,
+                          onTap: () => _handlePasscodeTap(
+                            context,
+                            passcodeController,
+                            passcode.hasPasscode,
+                          ),
+                        ),
+                        const ProfileMenuDivider(),
+                        ProfileMenuItem(
                           icon: Icons.group_outlined,
                           label: 'Anggota Keluarga',
                           subtitle: 'Kelola profil keluarga terdaftar',
@@ -104,6 +156,7 @@ class ProfileScreen extends ConsumerWidget {
                             !state.appointmentReminder,
                           ),
                           trailing: Switch.adaptive(
+                            key: const ValueKey('reminder-switch'),
                             value: state.appointmentReminder,
                             activeThumbColor: AppColors.brandGoldenCaramel,
                             onChanged: controller.setAppointmentReminder,
@@ -308,6 +361,55 @@ void _showAppSnack(BuildContext context, String message) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
+}
+
+/// Memproses toggle Kunci Biometrik. Mengaktifkan wajib mengonfirmasi dengan
+/// biometrik sistem (dialog native Android/iOS) terlebih dahulu.
+Future<void> _handleBiometricToggle(
+  BuildContext context,
+  BiometricState biometric,
+  BiometricController controller,
+  bool value,
+) async {
+  if (value && !biometric.available) {
+    _showAppSnack(context, 'Perangkat Anda tidak mendukung biometrik.');
+    return;
+  }
+
+  final bool ok = value
+      ? await controller.enableWithAuthentication()
+      : await controller.disable();
+
+  if (!context.mounted) return;
+
+  if (ok) {
+    _showAppSnack(
+      context,
+      value
+          ? 'Kunci biometrik aktif. Gunakan Sidik Jari / Face ID saat masuk.'
+          : 'Kunci biometrik dinonaktifkan.',
+    );
+  } else {
+    _showAppSnack(
+      context,
+      'Autentikasi biometrik gagal. Kunci biometrik tetap nonaktif.',
+    );
+  }
+}
+
+/// Membuka pengaturan Kode Kunci (PIN) fallback biometrik.
+Future<void> _handlePasscodeTap(
+  BuildContext context,
+  PasscodeController controller,
+  bool hasPasscode,
+) async {
+  final bool changed = await showPasscodeSetupSheet(
+    context,
+    controller: controller,
+    hasPasscode: hasPasscode,
+  );
+  if (!changed || !context.mounted) return;
+  _showAppSnack(context, 'Pengaturan Kode Kunci disimpan.');
 }
 
 /// Membuka aplikasi panggilan dengan nomor hotline rumah sakit sudah terisi.

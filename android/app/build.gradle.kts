@@ -20,6 +20,7 @@ android {
         applicationId = "com.example.sijapin_mobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // minSdk 23 dibutuhkan oleh plugin local_auth (biometrik sistem).
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION

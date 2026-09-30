@@ -21,6 +21,10 @@ class AppConstants {
   static const int defaultAvailableBeds = 18;
   static const int defaultActiveDoctors = 52;
 
+  // Kesegaran Data Ketersediaan Kamar (Keputusan Q5)
+  // Selisih pembaruan di bawah ambang ini dilabeli "Real-time".
+  static const int bedDataFreshnessMinutes = 5;
+
   // Beranda Dinamis & Sapaan
   static const String welcomeGreeting = 'Halo, 👋';
   static const String welcomeTitle = 'Selamat Datang di RSUP Dr. Sitanala';

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../controllers/bed_availability_controller.dart';
 import '../widgets/home_widgets.dart';
 
 /// Tab 1: Beranda Layanan Publik & Informasi RSUP Dr. Sitanala.
@@ -15,11 +17,20 @@ import '../widgets/home_widgets.dart';
 /// - Status Bento dengan metrik besar dan live dot
 /// - Quick actions dalam format pill chips berwarna
 /// - Banner darurat IGD yang compact
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Jumlah bed live untuk kartu bento; fallback ke konstanta sebelum data tiba.
+    final int availableBeds = ref
+        .watch(bedAvailabilityListProvider.select((s) => s.summary))
+        .when(
+          data: (summary) => summary.availableBeds,
+          loading: () => AppConstants.defaultAvailableBeds,
+          error: (_, _) => AppConstants.defaultAvailableBeds,
+        );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -128,16 +139,9 @@ class HomeScreen extends StatelessWidget {
 
                       // Status Bento: Kamar & Dokter
                       HomeBentoStatusCards(
-                        onBedAvailabilityTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Informasi Kamar: 18 Bed Kosong (VIP, Kelas 1, 2, 3)',
-                              ),
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                        },
+                        availableBedsCount: availableBeds,
+                        onBedAvailabilityTap: () =>
+                            context.push(AppRoutes.bedAvailabilityPath),
                         onDoctorScheduleTap: () =>
                             context.go(AppRoutes.doctorsPath),
                       ),

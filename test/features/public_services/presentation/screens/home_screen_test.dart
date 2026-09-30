@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/features/public_services/presentation/controllers/bed_availability_controller.dart';
 import 'package:sijapin_mobile/features/public_services/presentation/screens/home_screen.dart';
 
 void main() {
@@ -7,7 +9,15 @@ void main() {
     testWidgets(
       'renders all modular sections and widgets on Beranda correctly',
       (tester) async {
-        await tester.pumpWidget(const MaterialApp(home: HomeScreen()));
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(home: HomeScreen()),
+          ),
+        );
 
         // 1. Verifikasi Header RS & Welcome Banner
         expect(find.text('RSUP Dr. Sitanala'), findsWidgets);
@@ -52,6 +62,22 @@ void main() {
         expect(find.text('IGD & Ambulans 24 Jam'), findsOneWidget);
         expect(find.textContaining('(021) 552-3059'), findsOneWidget);
         expect(find.text('Panggil'), findsOneWidget);
+
+        // 8. Kartu bento memakai jumlah bed live dari provider (fallback 18
+        // sebelum data tiba). Biarkan fetch sampel (400ms) selesai dulu.
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        final summary = container.read(
+          bedAvailabilityListProvider.select((s) => s.summary),
+        );
+        expect(
+          summary.when(
+            data: (s) => s.availableBeds,
+            loading: () => -1,
+            error: (_, _) => -1,
+          ),
+          18,
+        );
       },
     );
   });

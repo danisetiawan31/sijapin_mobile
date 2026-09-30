@@ -37,6 +37,10 @@ abstract final class AppRoutes {
   static const String mcuCatalogPath = '/mcu';
   static const String mcuCatalogName = 'mcu_catalog';
 
+  // Ketersediaan Kamar Rawat Inap (di luar shell, tanpa bottom nav)
+  static const String bedAvailabilityPath = '/bed-availability';
+  static const String bedAvailabilityName = 'bed_availability';
+
   static const String complaintPath = '/support/complaint';
   static const String complaintName = 'complaint';
 
