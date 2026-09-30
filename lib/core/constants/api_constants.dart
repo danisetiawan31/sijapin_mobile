@@ -21,7 +21,7 @@ class ApiConstants {
   // Step 3 & 4: Final Submit Transaksi & Terbitkan Tiket APM (t_daftar_rj)
   static const String bookingInsertRajal =
       'Daftar_Kunj_Raja/insert_daftar_rajal';
-  // Pembatalan Mandiri (Maksimal H-1 pukul 21:00 WIB)
+  // Pembatalan Mandiri (Maksimal H-1 pukul 23:59 WIB)
   static const String bookingBatalAntrian = 'Daftar_Kunj_Raja/batal_antrian';
   // Riwayat Antrean Pasien
   static const String bookingHistory = 'daftar_log';

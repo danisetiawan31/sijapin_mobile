@@ -606,7 +606,7 @@ class _CancelActionRow extends StatelessWidget {
         const SizedBox(width: 8),
         const Flexible(
           child: Text(
-            'Batas batal: H-1 s/d ${AppConfig.cancellationDeadlineHour}:00 ${AppConfig.timeZoneAbbr}',
+            'Batas batal: H-1 s/d ${AppConfig.cancellationDeadlineTime} ${AppConfig.timeZoneAbbr}',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.end,
