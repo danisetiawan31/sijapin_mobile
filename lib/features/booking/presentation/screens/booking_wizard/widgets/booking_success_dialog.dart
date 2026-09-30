@@ -8,16 +8,28 @@ import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart
 
 /// Modal dialog sukses pendaftaran janji temu rawat jalan.
 class BookingSuccessDialog extends StatelessWidget {
-  const BookingSuccessDialog({super.key, required this.appointment});
+  const BookingSuccessDialog({
+    super.key,
+    required this.appointment,
+    this.onFinished,
+  });
 
   final Appointment appointment;
+  final VoidCallback? onFinished;
 
   /// Memunculkan dialog sukses
-  static Future<void> show(BuildContext context, Appointment appointment) {
+  static Future<void> show(
+    BuildContext context,
+    Appointment appointment, {
+    VoidCallback? onFinished,
+  }) {
     return showDialog<void>(
       context: context,
       barrierDismissible: false,
-      builder: (context) => BookingSuccessDialog(appointment: appointment),
+      builder: (context) => BookingSuccessDialog(
+        appointment: appointment,
+        onFinished: onFinished,
+      ),
     );
   }
 
@@ -173,6 +185,7 @@ class BookingSuccessDialog extends StatelessWidget {
               label: 'Buka Tiket Janji Temu ➔',
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup Dialog
+                onFinished?.call();
                 context.go(AppRoutes.bookingPath); // Pindah ke Tab Janji Temu
               },
             ),

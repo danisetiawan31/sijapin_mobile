@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
@@ -120,13 +121,6 @@ class _Step1PatientStepState extends ConsumerState<Step1PatientStep> {
                       isSelected: draft.patient?.id == p.id,
                       onTap: () {
                         controller.setPatient(p);
-                        // Jika pasien punya nomor BPJS dan belum diisi, auto-fill
-                        if (p.hasBpjs &&
-                            _bpjsController.text.trim().isEmpty &&
-                            p.bpjsCardNumber != null) {
-                          _bpjsController.text = p.bpjsCardNumber!;
-                          controller.setBpjsReferenceNumber(p.bpjsCardNumber!);
-                        }
                       },
                     ),
                     const SizedBox(height: 10),
@@ -256,6 +250,10 @@ class _Step1PatientStepState extends ConsumerState<Step1PatientStep> {
                     hint: 'Contoh: 0123B0010926P000123',
                     keyboardType: TextInputType.text,
                     textInputAction: TextInputAction.done,
+                    maxLength: 19,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                    ],
                     onChanged: (val) {
                       controller.setBpjsReferenceNumber(val);
                     },

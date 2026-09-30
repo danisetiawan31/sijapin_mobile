@@ -221,11 +221,13 @@ class DoctorCard extends ConsumerWidget {
                 onPressed: isLibur
                     ? null
                     : (onActionPressed ??
-                          () {
-                            ref
+                          () async {
+                            await ref
                                 .read(bookingWizardControllerProvider.notifier)
                                 .initializeWithDoctor(doctor: schedule);
-                            context.push(AppRoutes.bookingWizardPath);
+                            if (context.mounted) {
+                              await context.push(AppRoutes.bookingWizardPath);
+                            }
                           }),
               ),
             ],

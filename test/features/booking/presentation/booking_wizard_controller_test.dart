@@ -185,5 +185,81 @@ void main() {
         );
       },
     );
+
+    test('setClinic and setBookingDate reset previously selected doctor', () {
+      final controller = container.read(
+        bookingWizardControllerProvider.notifier,
+      );
+
+      controller.setClinic(sampleClinic);
+      controller.setDoctor(sampleDoctor);
+      expect(
+        container.read(bookingWizardControllerProvider).draft.doctor,
+        isNotNull,
+      );
+
+      // Mengganti poli harus mereset dokter
+      const otherClinic = Polyclinic(
+        id: 2,
+        name: 'Poli Mata',
+        code: 'MAT',
+        floor: 'Lantai 2',
+      );
+      controller.setClinic(otherClinic);
+      expect(
+        container.read(bookingWizardControllerProvider).draft.doctor,
+        isNull,
+      );
+
+      // Set dokter lagi lalu ganti tanggal
+      controller.setDoctor(sampleDoctor);
+      expect(
+        container.read(bookingWizardControllerProvider).draft.doctor,
+        isNotNull,
+      );
+
+      controller.setBookingDate(DateTime(2026, 10, 1));
+      expect(
+        container.read(bookingWizardControllerProvider).draft.doctor,
+        isNull,
+      );
+    });
+
+    test(
+      'initializeWithDoctor resets state and auto-resolves matching clinic',
+      () async {
+        final controller = container.read(
+          bookingWizardControllerProvider.notifier,
+        );
+
+        await controller.initializeWithDoctor(doctor: sampleDoctor);
+
+        final state = container.read(bookingWizardControllerProvider);
+        expect(state.draft.doctor, equals(sampleDoctor));
+        expect(state.draft.clinic, isNotNull);
+        expect(state.draft.clinic!.code, equals('PDI'));
+      },
+    );
+
+    test('reset clears draft back to pristine state', () {
+      final controller = container.read(
+        bookingWizardControllerProvider.notifier,
+      );
+
+      controller.setPatient(samplePatient);
+      controller.setInsuranceType(InsuranceType.umum);
+      controller.nextStep();
+
+      expect(
+        container.read(bookingWizardControllerProvider).draft.currentStep,
+        equals(1),
+      );
+
+      controller.reset();
+
+      final state = container.read(bookingWizardControllerProvider);
+      expect(state.draft.currentStep, equals(0));
+      expect(state.draft.patient, isNull);
+    });
   });
 }

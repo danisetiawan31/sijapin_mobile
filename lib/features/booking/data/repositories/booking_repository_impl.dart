@@ -179,10 +179,6 @@ class BookingRepositoryImpl implements BookingRepository {
           (clinic.code == 'SAR' && docSpecLower.contains('saraf'));
     }).toList();
 
-    // Jika filter spesifik tidak menemukan hasil, kembalikan dokter yang berpraktik di hari tersebut
-    if (matchedDoctors.isEmpty) {
-      return allDoctors;
-    }
     return matchedDoctors;
   }
 

@@ -134,5 +134,13 @@ void main() {
         expect(draft.canProceedCurrentStep, isTrue);
       },
     );
+
+    test('copyWith with clearDoctor clears doctor properly', () {
+      var draft = const BookingDraft(doctor: sampleDoctor);
+      expect(draft.doctor, isNotNull);
+
+      draft = draft.copyWith(clearDoctor: true);
+      expect(draft.doctor, isNull);
+    });
   });
 }

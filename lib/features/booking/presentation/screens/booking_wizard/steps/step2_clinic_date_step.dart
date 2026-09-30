@@ -71,28 +71,26 @@ class Step2ClinicDateStep extends ConsumerWidget {
           // Daftar Poliklinik
           polyclinicsAsync.when(
             data: (clinics) {
-              // Auto-select poli pertama jika belum ada
-              if (draft.clinic == null && clinics.isNotEmpty) {
+              // Auto-select poli pertama jika belum ada dan bukan pre-selected doctor
+              if (draft.clinic == null &&
+                  draft.doctor == null &&
+                  clinics.isNotEmpty) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   controller.setClinic(clinics.first);
                 });
               }
 
-              return ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: clinics.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 8),
-                itemBuilder: (context, index) {
-                  final clinic = clinics[index];
-                  final isSelected = draft.clinic?.id == clinic.id;
-
-                  return _ClinicItemCard(
-                    clinic: clinic,
-                    isSelected: isSelected,
-                    onTap: () => controller.setClinic(clinic),
-                  );
-                },
+              return Column(
+                children: [
+                  for (final clinic in clinics) ...[
+                    _ClinicItemCard(
+                      clinic: clinic,
+                      isSelected: draft.clinic?.id == clinic.id,
+                      onTap: () => controller.setClinic(clinic),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ],
               );
             },
             loading: () => const Center(

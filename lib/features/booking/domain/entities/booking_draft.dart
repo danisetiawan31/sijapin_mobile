@@ -110,6 +110,7 @@ class BookingDraft {
     DoctorSchedule? doctor,
     bool? isAgreedToTerms,
     bool clearBpjsReference = false,
+    bool clearDoctor = false,
   }) {
     return BookingDraft(
       currentStep: currentStep ?? this.currentStep,
@@ -120,7 +121,7 @@ class BookingDraft {
           : (bpjsReferenceNumber ?? this.bpjsReferenceNumber),
       clinic: clinic ?? this.clinic,
       bookingDate: bookingDate ?? this.bookingDate,
-      doctor: doctor ?? this.doctor,
+      doctor: clearDoctor ? null : (doctor ?? this.doctor),
       isAgreedToTerms: isAgreedToTerms ?? this.isAgreedToTerms,
     );
   }

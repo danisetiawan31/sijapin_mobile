@@ -87,7 +87,7 @@ class BookingWizardController extends Notifier<BookingWizardState> {
   void setClinic(Polyclinic clinic) {
     // Jika poli berubah, dokter sebelumnya di-reset
     state = state.copyWith(
-      draft: state.draft.copyWith(clinic: clinic, doctor: null),
+      draft: state.draft.copyWith(clinic: clinic, clearDoctor: true),
       clearError: true,
     );
   }
@@ -95,7 +95,7 @@ class BookingWizardController extends Notifier<BookingWizardState> {
   /// Mengatur tanggal rencana kunjungan (Step 2)
   void setBookingDate(DateTime date) {
     state = state.copyWith(
-      draft: state.draft.copyWith(bookingDate: date, doctor: null),
+      draft: state.draft.copyWith(bookingDate: date, clearDoctor: true),
       clearError: true,
     );
   }
@@ -156,15 +156,45 @@ class BookingWizardController extends Notifier<BookingWizardState> {
   }
 
   /// Inisialisasi awal wizard dengan dokter/poli jika dibuka dari Jadwal Dokter
-  void initializeWithDoctor({
+  Future<void> initializeWithDoctor({
     required DoctorSchedule doctor,
     Polyclinic? clinic,
     DateTime? date,
-  }) {
+  }) async {
+    // Reset state terlebih dahulu agar sesi pendaftaran dimulai dari awal yang bersih
+    reset();
+
+    // Cari poliklinik yang sesuai jika belum disediakan
+    Polyclinic? targetClinic = clinic;
+    if (targetClinic == null) {
+      try {
+        final clinics = await _repository.getPolyclinics();
+        final docSpec = doctor.specialization.toLowerCase();
+        final docPoli = doctor.poli.toLowerCase();
+        targetClinic = clinics.firstWhere((c) {
+          final cName = c.name.toLowerCase();
+          return cName.contains(docPoli) ||
+              c.code.toLowerCase() == docPoli ||
+              (c.code == 'PDI' && docSpec.contains('penyakit dalam')) ||
+              (c.code == 'MAT' && docSpec.contains('mata')) ||
+              (c.code == 'THT' && docSpec.contains('tht')) ||
+              (c.code == 'OBG' &&
+                  (docSpec.contains('kandungan') ||
+                      docSpec.contains('obgyn'))) ||
+              (c.code == 'ANA' && docSpec.contains('anak')) ||
+              (c.code == 'GIG' && docSpec.contains('gigi')) ||
+              (c.code == 'JAN' && docSpec.contains('jantung')) ||
+              (c.code == 'SAR' && docSpec.contains('saraf'));
+        }, orElse: () => clinics.first);
+      } catch (_) {
+        // Fallback jika pemanggilan gagal
+      }
+    }
+
     state = state.copyWith(
       draft: state.draft.copyWith(
         doctor: doctor,
-        clinic: clinic,
+        clinic: targetClinic,
         bookingDate: date,
       ),
     );
