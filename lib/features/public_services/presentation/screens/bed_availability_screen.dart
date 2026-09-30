@@ -28,10 +28,10 @@ export '../widgets/ward_availability_card.dart';
 class BedAvailabilityScreen extends ConsumerWidget {
   const BedAvailabilityScreen({super.key});
 
-  static const List<String> classFilters = AppConstants.bedClassFilters;
+  static const List<String> classFilters = BedClass.filters;
 
   Future<void> _handleCall(BuildContext context) async {
-    final cleanNumber = AppConstants.emergencyPhoneDial.replaceAll(
+    final cleanNumber = AppConstants.hospitalPhoneDial.replaceAll(
       RegExp(r'[^0-9+]'),
       '',
     );
@@ -55,7 +55,7 @@ class BedAvailabilityScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(
-          'Tidak dapat membuka panggilan telepon ke ${AppConstants.emergencyPhoneNumber}',
+          'Tidak dapat membuka panggilan telepon ke ${AppConstants.hospitalPhoneNumber}',
         ),
         backgroundColor: AppColors.dangerCrimson,
       ),

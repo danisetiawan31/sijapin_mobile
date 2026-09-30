@@ -210,3 +210,23 @@ class WardClassAvailability {
 
 /// Status keterisian ruangan untuk styling badge/kartu.
 enum WardStatus { available, full }
+
+/// Definisi kelas perawatan kamar rawat inap RSUP Dr. Sitanala
+abstract final class BedClass {
+  static const String all = 'Semua Kelas';
+  static const String class3 = 'Kelas 3';
+  static const String class2 = 'Kelas 2';
+  static const String class1 = 'Kelas 1';
+  static const String vip = 'VIP / VVIP';
+  static const String icu = 'ICU';
+
+  /// Daftar seluruh opsi filter kelas rawat inap yang didukung sistem
+  static const List<String> filters = <String>[
+    all,
+    class3,
+    class2,
+    class1,
+    vip,
+    icu,
+  ];
+}

@@ -23,18 +23,9 @@ class BedAvailabilityMockData {
         floorBuilding: 'Lantai 3 Gedung B',
         updatedAt: now.subtract(const Duration(minutes: 15)),
         classBreakdown: const <WardClassAvailability>[
-          WardClassAvailability(
-            className: AppConstants.bedClass1,
-            availableBeds: 2,
-          ),
-          WardClassAvailability(
-            className: AppConstants.bedClass2,
-            availableBeds: 1,
-          ),
-          WardClassAvailability(
-            className: AppConstants.bedClass3,
-            availableBeds: 3,
-          ),
+          WardClassAvailability(className: BedClass.class1, availableBeds: 2),
+          WardClassAvailability(className: BedClass.class2, availableBeds: 1),
+          WardClassAvailability(className: BedClass.class3, availableBeds: 3),
         ],
       ),
 
@@ -47,14 +38,8 @@ class BedAvailabilityMockData {
         floorBuilding: 'Lantai 2 Gedung B',
         updatedAt: now.subtract(const Duration(minutes: 20)),
         classBreakdown: const <WardClassAvailability>[
-          WardClassAvailability(
-            className: AppConstants.bedClass2,
-            availableBeds: 2,
-          ),
-          WardClassAvailability(
-            className: AppConstants.bedClass3,
-            availableBeds: 3,
-          ),
+          WardClassAvailability(className: BedClass.class2, availableBeds: 2),
+          WardClassAvailability(className: BedClass.class3, availableBeds: 3),
         ],
       ),
 
@@ -62,16 +47,13 @@ class BedAvailabilityMockData {
       WardAvailability(
         id: 'icu-sentral',
         name: 'ICU Sentral',
-        category: AppConstants.bedClassIcu,
+        category: BedClass.icu,
         specialty: 'Intensif & Ventilator',
         floorBuilding: 'Lantai 1 Gedung A',
         updatedAt: now,
         isRealtime: true,
         classBreakdown: const <WardClassAvailability>[
-          WardClassAvailability(
-            className: AppConstants.bedClassIcu,
-            availableBeds: 0,
-          ),
+          WardClassAvailability(className: BedClass.icu, availableBeds: 0),
         ],
       ),
     ];

@@ -5,8 +5,8 @@ import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_
 
 /// Implementasi repository ketersediaan kamar rawat inap RSUP Dr. Sitanala.
 ///
-/// Seluruh parameter numerik default dan nilai filter merujuk pada [AppConstants]
-/// untuk memfasilitasi migrasi seamless ke endpoint SIMRS / Database produksi.
+/// Seluruh parameter numerik default merujuk pada [AppConstants], sedangkan kelas perawatan
+/// merujuk pada domain entity [BedClass] untuk memfasilitasi migrasi seamless ke endpoint SIMRS / Database.
 class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
   const BedAvailabilityRepositoryImpl();
 
@@ -21,11 +21,9 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
 
     // Filter berdasarkan kelas perawatan
     var filtered = allWards;
-    if (classFilter != null && classFilter != AppConstants.bedClassAll) {
-      if (classFilter == AppConstants.bedClassIcu) {
-        filtered = filtered
-            .where((w) => w.category == AppConstants.bedClassIcu)
-            .toList();
+    if (classFilter != null && classFilter != BedClass.all) {
+      if (classFilter == BedClass.icu) {
+        filtered = filtered.where((w) => w.category == BedClass.icu).toList();
       } else {
         filtered = filtered
             .where(

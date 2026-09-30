@@ -48,7 +48,7 @@ class BedAdmissionBanner extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Admisi: ${AppConstants.admissionPhoneNumber}',
+                  'Admisi: ${AppConstants.hospitalPhoneNumber}',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -71,7 +71,7 @@ class BedAdmissionBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppConstants.admissionCallAction,
+                      AppConstants.callActionText,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
