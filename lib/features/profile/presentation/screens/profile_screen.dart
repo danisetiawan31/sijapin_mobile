@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -122,12 +124,11 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
-                          icon: Icons.support_agent_rounded,
-                          label: 'Hubungi Petugas',
-                          subtitle: 'Loket informasi Lantai 1',
+                          icon: Icons.call_rounded,
+                          label: 'Hotline Rumah Sakit',
+                          subtitle: AppConstants.emergencyPhoneNumber,
                           iconColor: AppColors.successEmerald,
-                          onTap: () =>
-                              _showComingSoon(context, 'Hubungi Petugas'),
+                          onTap: () => _callHospitalHotline(context),
                         ),
                       ],
                     ),
@@ -306,6 +307,26 @@ void _showAppSnack(BuildContext context, String message) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
+}
+
+/// Membuka aplikasi panggilan dengan nomor hotline rumah sakit sudah terisi.
+Future<void> _callHospitalHotline(BuildContext context) async {
+  const String hotline = AppConstants.emergencyPhoneNumber;
+  final String cleanNumber = hotline.replaceAll(RegExp(r'[^0-9+]'), '');
+  final Uri uri = Uri.parse('tel:$cleanNumber');
+  try {
+    final bool launched = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched && context.mounted) {
+      _showAppSnack(context, 'Tidak dapat membuka panggilan ke $hotline.');
+    }
+  } catch (_) {
+    if (context.mounted) {
+      _showAppSnack(context, 'Tidak dapat membuka panggilan ke $hotline.');
+    }
+  }
 }
 
 void _showAboutDialog(BuildContext context) {
