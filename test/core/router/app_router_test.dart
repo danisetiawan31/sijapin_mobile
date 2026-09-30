@@ -60,6 +60,10 @@ void main() {
         expect(find.text('Janji Temu'), findsOneWidget);
         expect(find.text('Jadwal'), findsOneWidget);
         expect(find.text('Profil'), findsOneWidget);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -134,6 +138,10 @@ void main() {
 
         // AppBottomNavBar TIDAK boleh ada di halaman login (rute di luar shell)
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -155,6 +163,10 @@ void main() {
 
         // AppBottomNavBar TIDAK boleh ada di halaman register (rute di luar shell)
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -174,6 +186,10 @@ void main() {
         expect(find.text('Katalog Paket MCU'), findsOneWidget);
         expect(find.text('Panduan Persiapan Puasa'), findsOneWidget);
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -212,6 +228,10 @@ void main() {
         expect(find.text('Form Pengaduan Layanan'), findsOneWidget);
         expect(find.text('Kanal Bantuan Resmi Kemenkes RI'), findsOneWidget);
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -231,6 +251,10 @@ void main() {
         expect(find.text('Standar Pelayanan Publik'), findsOneWidget);
         expect(find.text('Maklumat Pelayanan'), findsOneWidget);
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
 
@@ -250,6 +274,34 @@ void main() {
         expect(find.text('Alur Pasien BPJS Kesehatan'), findsOneWidget);
         expect(find.text('5 Langkah Berobat dengan BPJS'), findsOneWidget);
         expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
+      },
+    );
+    testWidgets(
+      'navigating to /bed-availability renders BedAvailabilityScreen outside shell without AppBottomNavBar',
+      (tester) async {
+        final container = ProviderContainer();
+        addTearDown(container.dispose);
+
+        await tester.pumpWidget(_buildAppWithRouter(container));
+        await tester.pumpAndSettle();
+
+        final router = container.read(appRouterProvider);
+        router.go(AppRoutes.bedAvailabilityPath);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+
+        expect(find.text('Ketersediaan Kamar'), findsOneWidget);
+        expect(find.text('Live SIMRS'), findsOneWidget);
+        expect(find.byType(AppBottomNavBar), findsNothing);
+
+        // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+        // tidak ada timer menggantung saat teardown.
+        await tester.pump(const Duration(milliseconds: 500));
       },
     );
   });
