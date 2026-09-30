@@ -6,6 +6,8 @@ import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.
 import 'package:sijapin_mobile/features/booking/domain/entities/patient_member.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/polyclinic.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/booking_repository.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
 
 import 'booking_controller.dart';
 
@@ -246,8 +248,12 @@ final bookingWizardControllerProvider =
       BookingWizardController.new,
     );
 
-/// Provider daftar anggota keluarga / pasien
+/// Provider daftar anggota keluarga / pasien (tersinkronisasi dengan modul profil keluarga)
 final patientMembersProvider = FutureProvider<List<PatientMember>>((ref) {
+  final familyMembers = ref.watch(familyMembersProvider);
+  if (familyMembers.isNotEmpty) {
+    return familyMembers.map((FamilyMember m) => m.toPatientMember()).toList();
+  }
   final repo = ref.watch(bookingRepositoryProvider);
   return repo.getPatientMembers();
 });

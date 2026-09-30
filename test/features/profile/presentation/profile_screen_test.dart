@@ -34,6 +34,8 @@ void main() {
     expect(find.text('Data Diri'), findsOneWidget);
     expect(find.text('Golongan Darah'), findsOneWidget);
     expect(find.text('Anggota Keluarga'), findsOneWidget);
+    expect(find.text('Hotline Rumah Sakit'), findsOneWidget);
+    expect(find.text('Tentang Sijapin'), findsOneWidget);
     expect(find.text('Keluar dari Akun'), findsOneWidget);
   });
 
