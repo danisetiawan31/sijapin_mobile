@@ -1,5 +1,7 @@
 package com.example.sijapin_mobile
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity dibutuhkan plugin local_auth untuk dialog biometrik
+// sistem (Sidik Jari / Face ID).
+class MainActivity : FlutterFragmentActivity()
