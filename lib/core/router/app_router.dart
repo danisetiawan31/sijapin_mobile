@@ -8,6 +8,7 @@ import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/booking/presentation/screens/booking_screen.dart';
 import '../../features/booking/presentation/screens/doctor_schedule_screen.dart';
+import '../../features/profile/presentation/screens/family_members_screen.dart';
 import '../../features/profile/presentation/screens/medical_history_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/public_services/presentation/screens/home_screen.dart';
@@ -141,8 +142,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'medical-history',
+                    name: AppRoutes.medicalHistoryName,
                     pageBuilder: (context, state) =>
                         const NoTransitionPage(child: MedicalHistoryScreen()),
+                  ),
+                  GoRoute(
+                    path: 'family-members',
+                    name: AppRoutes.familyMembersName,
+                    pageBuilder: (context, state) =>
+                        const NoTransitionPage(child: FamilyMembersScreen()),
                   ),
                 ],
               ),

@@ -71,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                           label: 'Anggota Keluarga',
                           subtitle: 'Kelola profil keluarga terdaftar',
                           onTap: () =>
-                              _showComingSoon(context, 'Anggota Keluarga'),
+                              context.push(AppRoutes.familyMembersPath),
                         ),
                       ],
                     ),
