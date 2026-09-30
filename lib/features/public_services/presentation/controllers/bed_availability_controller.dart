@@ -1,15 +1,14 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/features/public_services/data/repositories/bed_availability_repository_impl.dart';
 import 'package:sijapin_mobile/features/public_services/domain/entities/bed_availability.dart';
 import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_availability_repository.dart';
 
-part 'bed_availability_controller.g.dart';
-
-/// Provider repository ketersediaan kamar
-@riverpod
-BedAvailabilityRepository bedAvailabilityRepository(Ref ref) {
+/// Provider repository ketersediaan kamar rawat inap
+final bedAvailabilityRepositoryProvider = Provider<BedAvailabilityRepository>((
+  ref,
+) {
   return const BedAvailabilityRepositoryImpl();
-}
+});
 
 /// State untuk BedAvailabilityList
 class BedAvailabilityState {
@@ -36,20 +35,18 @@ class BedAvailabilityState {
   }
 }
 
-/// Provider ringkasan ketersediaan kamar dengan filter kelas
-@riverpod
-class BedAvailabilityList extends _$BedAvailabilityList {
+/// Notifier pengelola ketersediaan kamar dan filter kelas perawatan.
+class BedAvailabilityListNotifier extends Notifier<BedAvailabilityState> {
   int _requestId = 0;
 
   @override
   BedAvailabilityState build() {
-    // Trigger initial load after the provider is created
-    Future.microtask(() => loadInitial());
-
+    // Inisialisasi pengambilan data awal secara aman
+    Future.microtask(loadInitial);
     return const BedAvailabilityState(summary: AsyncLoading());
   }
 
-  /// Load initial data
+  /// Memuat data ringkasan ketersediaan kamar dari repository.
   Future<void> loadInitial() async {
     final repo = ref.read(bedAvailabilityRepositoryProvider);
     try {
@@ -62,14 +59,14 @@ class BedAvailabilityList extends _$BedAvailabilityList {
     }
   }
 
-  /// Memfilter ruangan berdasarkan kelas perawatan
+  /// Memfilter ruangan berdasarkan kelas perawatan (misal: 'Kelas 1', 'ICU', 'Semua Kelas').
   Future<void> filterByClass(String className) async {
     final id = ++_requestId;
     state = state.copyWith(selectedClass: className, isFetching: true);
     try {
       final repo = ref.read(bedAvailabilityRepositoryProvider);
       final result = await repo.getBedAvailability(classFilter: className);
-      if (id != _requestId || !ref.mounted) return; // stale request
+      if (id != _requestId || !ref.mounted) return;
       state = state.copyWith(summary: AsyncData(result), isFetching: false);
     } catch (e, st) {
       if (id != _requestId || !ref.mounted) return;
@@ -77,7 +74,7 @@ class BedAvailabilityList extends _$BedAvailabilityList {
     }
   }
 
-  /// Reset ke data awal (semua kelas)
+  /// Reset ke data awal (seluruh kelas).
   Future<void> reset() async {
     final id = ++_requestId;
     state = state.copyWith(selectedClass: 'Semua Kelas', isFetching: true);
@@ -92,3 +89,9 @@ class BedAvailabilityList extends _$BedAvailabilityList {
     }
   }
 }
+
+/// Provider ringkasan ketersediaan kamar dengan filter kelas
+final bedAvailabilityListProvider =
+    NotifierProvider<BedAvailabilityListNotifier, BedAvailabilityState>(
+      BedAvailabilityListNotifier.new,
+    );
