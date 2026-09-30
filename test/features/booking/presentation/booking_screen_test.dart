@@ -49,7 +49,7 @@ void main() {
       // Aksi tiket dan callout check-in mandiri.
       expect(find.text('Buka Tiket QR APM'), findsOneWidget);
       expect(find.text('Batalkan Janji'), findsOneWidget);
-      expect(find.text('Batas batal: H-1 s/d 21:00 WIB'), findsOneWidget);
+      expect(find.text('Batas batal: H-1 s/d 23:59 WIB'), findsOneWidget);
       expect(find.text('Check-in Mandiri Cepat (APM)'), findsOneWidget);
       expect(find.text('Layanan Buka 06.30 WIB'), findsOneWidget);
       expect(find.text('Petunjuk Arah RS'), findsNothing);

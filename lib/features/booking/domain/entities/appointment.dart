@@ -56,7 +56,7 @@ class Appointment {
   bool get isCompleted => status == AppointmentStatus.completed;
   bool get isCancelled => status == AppointmentStatus.cancelled;
 
-  /// Batas pembatalan H-1 pukul 21.00 WIB.
+  /// Batas pembatalan H-1 pukul 23:59 WIB.
   DateTime get cancelDeadline {
     final wibDate = AppDateTime.toWib(scheduledDate);
     return AppDateTime.wibDateTime(
@@ -64,6 +64,8 @@ class Appointment {
       wibDate.month,
       wibDate.day - 1,
       AppConfig.cancellationDeadlineHour,
+      AppConfig.cancellationDeadlineMinute,
+      59,
     );
   }
 

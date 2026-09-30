@@ -67,7 +67,7 @@ void main() {
       );
     });
 
-    test('Appointment.cancelDeadline correctly sets H-1 at 21:00 WIB', () {
+    test('Appointment.cancelDeadline correctly sets H-1 at 23:59 WIB', () {
       final appointment = Appointment(
         bookingCode: '260930014221',
         queueNumber: 'MAT-014',
@@ -87,6 +87,7 @@ void main() {
       expect(deadline.month, equals(9));
       expect(deadline.day, equals(29));
       expect(deadline.hour, equals(AppConfig.cancellationDeadlineHour));
+      expect(deadline.minute, equals(AppConfig.cancellationDeadlineMinute));
       expect(deadline.timeZoneOffset.inHours, equals(7));
     });
   });
