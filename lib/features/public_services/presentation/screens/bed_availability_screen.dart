@@ -28,14 +28,7 @@ export '../widgets/ward_availability_card.dart';
 class BedAvailabilityScreen extends ConsumerWidget {
   const BedAvailabilityScreen({super.key});
 
-  static const List<String> classFilters = <String>[
-    'Semua Kelas',
-    'Kelas 3',
-    'Kelas 2',
-    'Kelas 1',
-    'VIP / VVIP',
-    'ICU',
-  ];
+  static const List<String> classFilters = AppConstants.bedClassFilters;
 
   Future<void> _handleCall(BuildContext context) async {
     final cleanNumber = AppConstants.emergencyPhoneDial.replaceAll(

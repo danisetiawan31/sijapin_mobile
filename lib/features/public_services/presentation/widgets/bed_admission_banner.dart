@@ -38,7 +38,7 @@ class BedAdmissionBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Butuh info rujukan rawat inap mendesak?',
+                  AppConstants.admissionBannerTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -48,7 +48,7 @@ class BedAdmissionBanner extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Admisi: ${AppConstants.emergencyPhoneNumber}',
+                  'Admisi: ${AppConstants.admissionPhoneNumber}',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -71,7 +71,7 @@ class BedAdmissionBanner extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppConstants.emergencyCallAction,
+                      AppConstants.admissionCallAction,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,

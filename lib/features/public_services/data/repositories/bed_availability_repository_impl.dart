@@ -1,8 +1,12 @@
+import 'package:sijapin_mobile/core/constants/app_constants.dart';
 import 'package:sijapin_mobile/features/public_services/data/datasources/bed_availability_mock_data.dart';
 import 'package:sijapin_mobile/features/public_services/domain/entities/bed_availability.dart';
 import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_availability_repository.dart';
 
 /// Implementasi repository ketersediaan kamar rawat inap RSUP Dr. Sitanala.
+///
+/// Seluruh parameter numerik default dan nilai filter merujuk pada [AppConstants]
+/// untuk memfasilitasi migrasi seamless ke endpoint SIMRS / Database produksi.
 class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
   const BedAvailabilityRepositoryImpl();
 
@@ -10,16 +14,18 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
   Future<BedAvailabilitySummary> getBedAvailability({
     String? classFilter,
   }) async {
-    // Simulasi latensi jaringan
+    // Simulasi latensi jaringan (pada fase migrasi backend, blok ini digantikan HTTP/REST client)
     await Future<void>.delayed(const Duration(milliseconds: 300));
 
-    final allWards = getSampleWards();
+    final allWards = BedAvailabilityMockData.getSampleWards();
 
-    // Filter berdasarkan kelas
+    // Filter berdasarkan kelas perawatan
     var filtered = allWards;
-    if (classFilter != null && classFilter != 'Semua Kelas') {
-      if (classFilter == 'ICU') {
-        filtered = filtered.where((w) => w.category == 'ICU').toList();
+    if (classFilter != null && classFilter != AppConstants.bedClassAll) {
+      if (classFilter == AppConstants.bedClassIcu) {
+        filtered = filtered
+            .where((w) => w.category == AppConstants.bedClassIcu)
+            .toList();
       } else {
         filtered = filtered
             .where(
@@ -32,8 +38,8 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
     }
 
     return BedAvailabilitySummary(
-      totalBeds: 142,
-      availableBeds: 18,
+      totalBeds: AppConstants.hospitalTotalBeds,
+      availableBeds: AppConstants.defaultAvailableBeds,
       wards: filtered,
     );
   }
@@ -41,7 +47,7 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
   @override
   Future<WardAvailability?> getWardById(String id) async {
     await Future<void>.delayed(const Duration(milliseconds: 150));
-    final allWards = getSampleWards();
+    final allWards = BedAvailabilityMockData.getSampleWards();
     try {
       return allWards.firstWhere((w) => w.id == id);
     } on StateError {
