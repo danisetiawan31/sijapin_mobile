@@ -12,6 +12,7 @@ import '../../features/booking/presentation/screens/doctor_schedule_screen.dart'
 import '../../features/profile/presentation/screens/family_members_screen.dart';
 import '../../features/profile/presentation/screens/medical_history_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/public_services/presentation/screens/bed_availability_screen.dart';
 import '../../features/public_services/presentation/screens/home_screen.dart';
 import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
 import '../../features/support/presentation/screens/complaint_screen.dart';
@@ -67,6 +68,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.mcuCatalogName,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const McuCatalogScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.bedAvailabilityPath,
+        name: AppRoutes.bedAvailabilityName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BedAvailabilityScreen(),
       ),
       GoRoute(
         path: AppRoutes.complaintPath,
