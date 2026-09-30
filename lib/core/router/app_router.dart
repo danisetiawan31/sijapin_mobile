@@ -7,7 +7,10 @@ import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/booking/presentation/screens/booking_screen.dart';
+import '../../features/booking/presentation/screens/booking_wizard/booking_wizard_screen.dart';
 import '../../features/booking/presentation/screens/doctor_schedule_screen.dart';
+import '../../features/profile/presentation/screens/family_members_screen.dart';
+import '../../features/profile/presentation/screens/medical_history_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/public_services/presentation/screens/home_screen.dart';
 import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
@@ -83,6 +86,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const BpjsFlowScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.bookingWizardPath,
+        name: AppRoutes.bookingWizardName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BookingWizardScreen(),
+      ),
       // Stateful Shell Route untuk 4 Tab Utama Persisten
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -137,6 +146,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 name: AppRoutes.profileName,
                 pageBuilder: (context, state) =>
                     const NoTransitionPage(child: ProfileScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'medical-history',
+                    name: AppRoutes.medicalHistoryName,
+                    pageBuilder: (context, state) =>
+                        const NoTransitionPage(child: MedicalHistoryScreen()),
+                  ),
+                  GoRoute(
+                    path: 'family-members',
+                    name: AppRoutes.familyMembersName,
+                    pageBuilder: (context, state) =>
+                        const NoTransitionPage(child: FamilyMembersScreen()),
+                  ),
+                ],
               ),
             ],
           ),

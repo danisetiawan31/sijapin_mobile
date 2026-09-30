@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- Offline Ambient Gradient -->
+    <radialGradient id="offlineAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FDE8C7" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#FAF7F2" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FAF8F5" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Cloud Gradient -->
+    <linearGradient id="cloudGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#F7F3ED"/>
+    </linearGradient>
+
+    <!-- Warning / Error Gradient -->
+    <linearGradient id="warnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#AA2D11"/>
+    </linearGradient>
+
+    <!-- Teal Refresh Gradient -->
+    <linearGradient id="tealGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B7369"/>
+      <stop offset="100%" stop-color="#2A9D8F"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow Filter -->
+    <filter id="netShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#1C140E" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Ambient Background Aura -->
+  <circle cx="100" cy="100" r="90" fill="url(#offlineAura)"/>
+
+  <!-- 2. Ground Shadow -->
+  <ellipse cx="100" cy="170" rx="60" ry="8" fill="#1C140E" opacity="0.06"/>
+
+  <!-- 3. Network Cloud Body -->
+  <g filter="url(#netShadow)">
+    <path d="M 65 130 
+             L 140 130 
+             A 22 22 0 0 0 148 88 
+             A 28 28 0 0 0 98 72 
+             A 22 22 0 0 0 54 94 
+             A 20 20 0 0 0 65 130 Z" 
+          fill="url(#cloudGrad)" 
+          stroke="#F5CF93" 
+          stroke-width="1.8"/>
+  </g>
+
+  <!-- 4. ECG Pulse Wave Across Cloud (With Gap / Break) -->
+  <!-- Left ECG Section -->
+  <path d="M 50 106 L 72 106 L 78 92 L 86 118 L 92 106 L 96 106" 
+        fill="none" 
+        stroke="#1B7369" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+
+  <!-- Pulse Disconnect Break Icon (Diagonal Slash in Center) -->
+  <circle cx="106" cy="106" r="9" fill="#FEF2F2" stroke="#AA2D11" stroke-width="1.5"/>
+  <line x1="102" y1="102" x2="110" y2="110" stroke="#AA2D11" stroke-width="2.2" stroke-linecap="round"/>
+  <line x1="110" y1="102" x2="102" y2="110" stroke="#AA2D11" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- Right ECG Section (Flatline Reconnect) -->
+  <path d="M 116 106 L 122 106 L 126 98 L 132 112 L 136 106 L 152 106" 
+        fill="none" 
+        stroke="#2A9D8F" 
+        stroke-width="3" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+
+  <!-- 5. Disconnected Wi-Fi Signal Symbol (Floating Above Cloud) -->
+  <g filter="url(#netShadow)" transform="translate(100, 48)">
+    <!-- Arc 1 (Outer) -->
+    <path d="M -22 -10 A 30 30 0 0 1 22 -10" fill="none" stroke="#D97706" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+    <!-- Arc 2 (Middle) -->
+    <path d="M -14 -2 A 20 20 0 0 1 14 -2" fill="none" stroke="#D97706" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+    <!-- Center Dot -->
+    <circle cx="0" cy="8" r="3.5" fill="#AA2D11"/>
+    <!-- Small Slash Across Wifi -->
+    <line x1="-16" y1="-14" x2="16" y2="14" stroke="#AA2D11" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- 6. Retry Arrow Badge (Bottom Right) -->
+  <g filter="url(#netShadow)">
+    <circle cx="140" cy="142" r="18" fill="#FFFFFF" stroke="#BCE0DA" stroke-width="1.5"/>
+    <circle cx="140" cy="142" r="15" fill="#E0F5F0"/>
+    <!-- Circular Refresh Arrow -->
+    <path d="M 148 140 A 9 9 0 1 1 140 133" fill="none" stroke="#1B7369" stroke-width="2.5" stroke-linecap="round"/>
+    <polygon points="144,130 148,135 141,136" fill="#1B7369"/>
+  </g>
+
+  <!-- 7. Ambient Decorative Dots -->
+  <circle cx="42" cy="74" r="3" fill="#D97706" opacity="0.5"/>
+  <circle cx="162" cy="78" r="4" fill="#BCE0DA"/>
+  <path d="M 38 124 L 44 124 M 41 121 L 41 127" stroke="#AA7409" stroke-width="2" stroke-linecap="round"/>
+</svg>

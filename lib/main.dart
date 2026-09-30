@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -7,10 +8,28 @@ import 'core/network/cookie_manager_service.dart';
 import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
 import 'core/storage/local_storage_service.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
+import 'core/utils/app_date_time.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi basis data zona waktu resmi RSUP Dr. Sitanala (WIB / Asia/Jakarta)
+  AppDateTime.initialize();
+
+  // Konfigurasi status bar & navigasi agar menyatu 1 warna tanpa shadow/scrim
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      statusBarBrightness: Brightness.light,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarColor: AppColors.surfaceBg,
+      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+    ),
+  );
 
   // Inisialisasi basis data lokal Hive CE
   final localStorageService = LocalStorageService();
@@ -34,14 +53,14 @@ Future<void> main() async {
 
       ErrorWidget.builder = (FlutterErrorDetails details) {
         return Material(
-          color: const Color(0xFF8B0000),
+          color: AppColors.brandDarkEspresso,
           child: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Text(
                 'ERROR:\n${details.exceptionAsString()}\n\nSTACK TRACE:\n${details.stack}',
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.white,
                   fontSize: 11,
                   fontFamily: 'monospace',
                 ),

@@ -39,7 +39,10 @@ class DioClient {
              ),
            ) {
     _dio.interceptors.add(this.csrfInterceptor);
-    _dio.interceptors.add(cookieManagerService.cookieManager);
+    final cookieMgr = cookieManagerService.cookieManager;
+    if (cookieMgr != null) {
+      _dio.interceptors.add(cookieMgr);
+    }
     _dio.interceptors.add(
       SessionExpiredInterceptor(onSessionExpired: onSessionExpired),
     );

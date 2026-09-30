@@ -1,3 +1,6 @@
+import 'package:sijapin_mobile/core/config/app_config.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
+
 enum AppointmentStatus { upcoming, ongoing, completed, cancelled }
 
 class Appointment {
@@ -55,13 +58,18 @@ class Appointment {
 
   /// Batas pembatalan H-1 pukul 21.00 WIB.
   DateTime get cancelDeadline {
-    final day = scheduledDate;
-    return DateTime(day.year, day.month, day.day - 1, 21);
+    final wibDate = AppDateTime.toWib(scheduledDate);
+    return AppDateTime.wibDateTime(
+      wibDate.year,
+      wibDate.month,
+      wibDate.day - 1,
+      AppConfig.cancellationDeadlineHour,
+    );
   }
 
   bool get canCancel =>
       status == AppointmentStatus.upcoming &&
-      DateTime.now().isBefore(cancelDeadline);
+      AppDateTime.now().isBefore(cancelDeadline);
 
   bool get hasPassed =>
       status == AppointmentStatus.completed ||

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_widgets.dart';
 
@@ -117,7 +118,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                               children: [
                                 Expanded(
                                   child: Material(
-                                    color: Colors.transparent,
+                                    color: AppColors.transparent,
                                     child: CheckboxListTile(
                                       value: _rememberMe,
                                       onChanged: (value) => setState(
@@ -181,7 +182,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
                     const SizedBox(height: 15),
                     const Center(
                       child: AuthSecurityBadge(
-                        text: 'Data terenkripsi sesuai standar keamanan Kemenkes RI',
+                        text: 'Data terenkripsi standar keamanan Kemenkes RI',
                       ),
                     ),
                   ],
