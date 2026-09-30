@@ -201,5 +201,43 @@ void main() {
     expect(find.text('Kode Kunci salah. Silakan coba lagi.'), findsOneWidget);
     expect(find.text('HOME-TEST'), findsNothing);
     expect(find.text('Gunakan biometrik'), findsOneWidget);
+    expect(find.text('Lupa PIN? Buka Beranda / Tiket'), findsOneWidget);
+
+    final escapeBtn = find.byKey(const ValueKey('splash-passcode-escape-home'));
+    await tester.ensureVisible(escapeBtn);
+    await tester.tap(escapeBtn);
+    await tester.pumpAndSettle();
+    expect(find.text('HOME-TEST'), findsOneWidget);
   });
+
+  testWidgets(
+    'tombol fallback pada kegagalan biometrik membuka beranda tanpa terkunci',
+    (tester) async {
+      store.remove(StorageConstants.keyPasscodeHash);
+      storage = _FakeSecureStorage(store);
+      final container = ProviderContainer(
+        overrides: [
+          secureStorageServiceProvider.overrideWithValue(storage),
+          biometricAuthServiceProvider.overrideWithValue(fakeAuth),
+        ],
+      );
+      addTearDown(container.dispose);
+      final router = buildRouter();
+
+      await tester.pumpWidget(_buildApp(container, router));
+      await tester.pump(const Duration(milliseconds: 1200));
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text('Lanjut ke Beranda (Akses Tiket Offline)'),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Lanjut ke Beranda (Akses Tiket Offline)'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('HOME-TEST'), findsOneWidget);
+    },
+  );
 }

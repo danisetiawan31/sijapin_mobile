@@ -195,6 +195,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     icon: const Icon(Icons.lock_open_rounded, size: 18),
                     label: const Text('Coba Lagi'),
                   ),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: () => context.go(AppRoutes.homePath),
+                    icon: const Icon(Icons.home_outlined, size: 18),
+                    label: const Text('Lanjut ke Beranda (Akses Tiket Offline)'),
+                  ),
                 ] else ...[
                   const CircularProgressIndicator(),
                   const SizedBox(height: 12),
@@ -297,6 +303,12 @@ class _PasscodeEntryState extends State<_PasscodeEntry> {
           key: const ValueKey('splash-passcode-retry-biometric'),
           onPressed: widget.busy ? null : widget.onRetryBiometric,
           child: const Text('Gunakan biometrik'),
+        ),
+        TextButton.icon(
+          key: const ValueKey('splash-passcode-escape-home'),
+          onPressed: widget.busy ? null : () => context.go(AppRoutes.homePath),
+          icon: const Icon(Icons.home_outlined, size: 16),
+          label: const Text('Lupa PIN? Buka Beranda / Tiket'),
         ),
       ],
     );
