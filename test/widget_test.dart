@@ -19,5 +19,9 @@ void main() {
     expect(find.text('Masuk'), findsOneWidget);
     expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);
     expect(find.text('Selamat Datang di RSUP Dr. Sitanala'), findsOneWidget);
+
+    // Biarkan fetch sampel ketersediaan kamar (400ms) selesai agar
+    // tidak ada timer menggantung saat teardown.
+    await tester.pump(const Duration(milliseconds: 500));
   });
 }
