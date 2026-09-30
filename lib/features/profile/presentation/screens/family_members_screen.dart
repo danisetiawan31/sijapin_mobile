@@ -71,8 +71,7 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
         ? members
         : members
               .where(
-                (FamilyMember member) =>
-                    member.relation == _filter.relation,
+                (FamilyMember member) => member.relation == _filter.relation,
               )
               .toList();
 
@@ -147,10 +146,8 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                     child: AppPrimaryButton(
                       label: 'Tambah Anggota Keluarga',
                       icon: Icons.person_add_alt_1_rounded,
-                      onPressed: () => _showComingSoon(
-                        context,
-                        'Tambah Anggota Keluarga',
-                      ),
+                      onPressed: () =>
+                          _showComingSoon(context, 'Tambah Anggota Keluarga'),
                     ),
                   ),
                 ],
@@ -169,7 +166,9 @@ class _FamilySummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<FamilyMember> bpjsMembers = members
-        .where((FamilyMember member) => member.insurance == FamilyInsurance.bpjs)
+        .where(
+          (FamilyMember member) => member.insurance == FamilyInsurance.bpjs,
+        )
         .toList();
     FamilyMember? utama;
     for (final FamilyMember member in members) {
