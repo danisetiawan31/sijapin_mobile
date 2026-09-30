@@ -30,6 +30,9 @@ abstract final class AppRoutes {
   static const String medicalHistoryPath = '/profile/medical-history';
   static const String medicalHistoryName = 'medical_history';
 
+  static const String familyMembersPath = '/profile/family-members';
+  static const String familyMembersName = 'family_members';
+
   // Modul Support & Informasi Publik (Epic 08)
   static const String mcuCatalogPath = '/mcu';
   static const String mcuCatalogName = 'mcu_catalog';
