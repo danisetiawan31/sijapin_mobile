@@ -227,7 +227,8 @@ class BookingRepositoryImpl implements BookingRepository {
         final tglKunjungan =
             '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
         final caraBayar = draft.insuranceType.isBpjs ? 'BPJS' : 'UMUM';
-        final isOldPatient = draft.patient?.medicalRecordNumber != null &&
+        final isOldPatient =
+            draft.patient?.medicalRecordNumber != null &&
             draft.patient!.medicalRecordNumber!.isNotEmpty;
 
         // Step 1: Kunci identitas pasien ke sesi CI3 (ses_siijapin_rj_pasien)
@@ -239,9 +240,14 @@ class BookingRepositoryImpl implements BookingRepository {
             'nomr': draft.patient!.medicalRecordNumber ?? '',
             'nama_pasien': draft.patient!.fullName,
             'tmp_lahir': draft.patient!.birthPlace,
-            'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(2, '0'),
-            'bln_lahir':
-                draft.patient!.birthDate.month.toString().padLeft(2, '0'),
+            'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(
+              2,
+              '0',
+            ),
+            'bln_lahir': draft.patient!.birthDate.month.toString().padLeft(
+              2,
+              '0',
+            ),
             'thn_lahir': draft.patient!.birthDate.year.toString(),
             'agama': '1',
             'jns_kelamin': draft.patient!.gender,
@@ -269,9 +275,7 @@ class BookingRepositoryImpl implements BookingRepository {
         // Step 3: Kunci metode pembayaran ke sesi CI3 (ses_siijapin_rj_bayar)
         await dioClient!.post<dynamic>(
           ApiConstants.bookingInputPembayaran,
-          data: FormData.fromMap({
-            'cara_bayar': caraBayar,
-          }),
+          data: FormData.fromMap({'cara_bayar': caraBayar}),
         );
 
         // Step 4: Final insert transaksi ke tabel t_daftar_rj
@@ -337,9 +341,8 @@ class BookingRepositoryImpl implements BookingRepository {
   }) async {
     if (dioClient != null) {
       try {
-        final customerId = await secureStorage?.read(
-              key: StorageConstants.keyCustomerId,
-            ) ??
+        final customerId =
+            await secureStorage?.read(key: StorageConstants.keyCustomerId) ??
             '';
         final targetDate = scheduledDate ?? AppDateTime.now();
         final tgl =

@@ -79,7 +79,9 @@ class AuthController extends Notifier<AuthControllerState> {
         rememberMe: rememberMe,
       );
       if (result.success) {
-        ref.read(activeSessionUserProvider.notifier).setUser(
+        ref
+            .read(activeSessionUserProvider.notifier)
+            .setUser(
               UserProfile(
                 fullName: 'Pasien Terdaftar',
                 phone: identifier.trim(),
@@ -133,7 +135,9 @@ class AuthController extends Notifier<AuthControllerState> {
         password: password,
       );
       if (result.success) {
-        ref.read(activeSessionUserProvider.notifier).setUser(
+        ref
+            .read(activeSessionUserProvider.notifier)
+            .setUser(
               UserProfile(
                 fullName: fullName.trim(),
                 phone: phone.trim(),

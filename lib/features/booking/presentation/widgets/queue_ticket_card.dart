@@ -66,8 +66,10 @@ class QueueTicketCard extends StatelessWidget {
                 if (!appointment.isServerSynced) ...[
                   Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.brandWarmBronze.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(8),

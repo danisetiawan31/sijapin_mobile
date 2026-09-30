@@ -150,7 +150,9 @@ class BookingController extends Notifier<BookingState> {
     if (appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
     unawaited(
-      ref.read(bookingRepositoryProvider).cancelBooking(
+      ref
+          .read(bookingRepositoryProvider)
+          .cancelBooking(
             bookingCode: appointment.bookingCode,
             reason: reason,
             memberId: appointment.memberId,

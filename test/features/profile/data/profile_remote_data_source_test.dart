@@ -59,8 +59,7 @@ class MockProfileRemoteDataSource implements IProfileRemoteDataSource {
   Future<Map<String, dynamic>> saveFamilyMember(
     FamilyMember member, {
     bool isUpdate = false,
-  }) async =>
-      {'ret': 'success'};
+  }) async => {'ret': 'success'};
 
   @override
   Future<Map<String, dynamic>> updateProfile({
@@ -71,8 +70,7 @@ class MockProfileRemoteDataSource implements IProfileRemoteDataSource {
     DateTime? birthDate,
     String? gender,
     String? password,
-  }) async =>
-      {'ret': 'success'};
+  }) async => {'ret': 'success'};
 }
 
 class MockDioClient implements DioClient {
@@ -142,101 +140,115 @@ void main() {
       dataSource = ProfileRemoteDataSource(dioClient: mockDioClient);
     });
 
-    test('saveFamilyMember mengirim FormData lengkap ke CI3 input_pasien', () async {
-      mockDioClient.nextResponseData = {
-        'ret': 'success',
-        'msg': '',
-      };
+    test(
+      'saveFamilyMember mengirim FormData lengkap ke CI3 input_pasien',
+      () async {
+        mockDioClient.nextResponseData = {'ret': 'success', 'msg': ''};
 
-      final member = FamilyMember(
-        id: 'mem-99',
-        fullName: 'Siti Rahma',
-        relation: FamilyRelation.child,
-        nik: '3671045508940003',
-        phone: '081299887766',
-        gender: 'P',
-        insurance: FamilyInsurance.bpjs,
-        birthDate: DateTime(2015, 6, 15),
-        birthPlace: 'Tangerang',
-        motherName: 'Rina Puspita',
-        address: 'Jl. Daan Mogot KM 20',
-        religion: '1',
-        occupation: 'Pelajar',
-        medicalRecordNumber: '00112233',
-      );
+        final member = FamilyMember(
+          id: 'mem-99',
+          fullName: 'Siti Rahma',
+          relation: FamilyRelation.child,
+          nik: '3671045508940003',
+          phone: '081299887766',
+          gender: 'P',
+          insurance: FamilyInsurance.bpjs,
+          birthDate: DateTime(2015, 6, 15),
+          birthPlace: 'Tangerang',
+          motherName: 'Rina Puspita',
+          address: 'Jl. Daan Mogot KM 20',
+          religion: '1',
+          occupation: 'Pelajar',
+          medicalRecordNumber: '00112233',
+        );
 
-      final result = await dataSource.saveFamilyMember(member, isUpdate: false);
+        final result = await dataSource.saveFamilyMember(
+          member,
+          isUpdate: false,
+        );
 
-      expect(mockDioClient.lastPath, equals(ApiConstants.inputPasien));
-      expect(result['ret'], equals('success'));
-      expect(mockDioClient.lastData, isA<FormData>());
-      final formData = mockDioClient.lastData as FormData;
-      final map = Map.fromEntries(formData.fields);
-      expect(map['nama_pasien'], equals('Siti Rahma'));
-      expect(map['rd_nomr'], equals('1'));
-      expect(map['nomr'], equals('00112233'));
-      expect(map['tmp_lahir'], equals('Tangerang'));
-      expect(map['tgl_lahir'], equals('15'));
-      expect(map['bln_lahir'], equals('06'));
-      expect(map['thn_lahir'], equals('2015'));
-      expect(map['agama'], equals('1'));
-      expect(map['jns_kelamin'], equals('P'));
-      expect(map['nama_ibu'], equals('Rina Puspita'));
-      expect(map['nik'], equals('3671045508940003'));
-      expect(map['alamat'], equals('Jl. Daan Mogot KM 20'));
-      expect(map['pekerjaan'], equals('Pelajar'));
-      expect(map['id_member'], equals(''));
-    });
+        expect(mockDioClient.lastPath, equals(ApiConstants.inputPasien));
+        expect(result['ret'], equals('success'));
+        expect(mockDioClient.lastData, isA<FormData>());
+        final formData = mockDioClient.lastData as FormData;
+        final map = Map.fromEntries(formData.fields);
+        expect(map['nama_pasien'], equals('Siti Rahma'));
+        expect(map['rd_nomr'], equals('1'));
+        expect(map['nomr'], equals('00112233'));
+        expect(map['tmp_lahir'], equals('Tangerang'));
+        expect(map['tgl_lahir'], equals('15'));
+        expect(map['bln_lahir'], equals('06'));
+        expect(map['thn_lahir'], equals('2015'));
+        expect(map['agama'], equals('1'));
+        expect(map['jns_kelamin'], equals('P'));
+        expect(map['nama_ibu'], equals('Rina Puspita'));
+        expect(map['nik'], equals('3671045508940003'));
+        expect(map['alamat'], equals('Jl. Daan Mogot KM 20'));
+        expect(map['pekerjaan'], equals('Pelajar'));
+        expect(map['id_member'], equals(''));
+      },
+    );
 
-    test('saveFamilyMember mengirim id_member ketika isUpdate = true', () async {
-      mockDioClient.nextResponseData = {'ret': 'success', 'msg': ''};
+    test(
+      'saveFamilyMember mengirim id_member ketika isUpdate = true',
+      () async {
+        mockDioClient.nextResponseData = {'ret': 'success', 'msg': ''};
 
-      const member = FamilyMember(
-        id: 'mem-77',
-        fullName: 'Budi Santoso',
-        relation: FamilyRelation.spouse,
-        nik: '3671040101900001',
-        phone: '08123456789',
-        gender: 'L',
-        insurance: FamilyInsurance.umum,
-        medicalRecordNumber: '',
-      );
+        const member = FamilyMember(
+          id: 'mem-77',
+          fullName: 'Budi Santoso',
+          relation: FamilyRelation.spouse,
+          nik: '3671040101900001',
+          phone: '08123456789',
+          gender: 'L',
+          insurance: FamilyInsurance.umum,
+          medicalRecordNumber: '',
+        );
 
-      await dataSource.saveFamilyMember(member, isUpdate: true);
+        await dataSource.saveFamilyMember(member, isUpdate: true);
 
-      final formData = mockDioClient.lastData as FormData;
-      final map = Map.fromEntries(formData.fields);
-      expect(map['id_member'], equals('mem-77'));
-      expect(map['rd_nomr'], equals('3'));
-    });
+        final formData = mockDioClient.lastData as FormData;
+        final map = Map.fromEntries(formData.fields);
+        expect(map['id_member'], equals('mem-77'));
+        expect(map['rd_nomr'], equals('3'));
+      },
+    );
 
-    test('updateProfile mengirim data profil ke Profile/simpan_akun_pr', () async {
-      mockDioClient.nextResponseData = {'ret': 'success', 'msg': 'Profil tersimpan'};
+    test(
+      'updateProfile mengirim data profil ke Profile/simpan_akun_pr',
+      () async {
+        mockDioClient.nextResponseData = {
+          'ret': 'success',
+          'msg': 'Profil tersimpan',
+        };
 
-      final result = await dataSource.updateProfile(
-        customerId: 'cust-123',
-        fullName: 'Rina Puspita Sari',
-        phoneNumber: '081234567890',
-        email: 'rina@example.com',
-        birthDate: DateTime(1994, 8, 20),
-        gender: 'P',
-      );
+        final result = await dataSource.updateProfile(
+          customerId: 'cust-123',
+          fullName: 'Rina Puspita Sari',
+          phoneNumber: '081234567890',
+          email: 'rina@example.com',
+          birthDate: DateTime(1994, 8, 20),
+          gender: 'P',
+        );
 
-      expect(mockDioClient.lastPath, equals(ApiConstants.updateProfile));
-      expect(result['ret'], equals('success'));
-      final formData = mockDioClient.lastData as FormData;
-      final map = Map.fromEntries(formData.fields);
-      expect(map['id_customer'], equals('cust-123'));
-      expect(map['nomor_telepon'], equals('081234567890'));
-      expect(map['nama'], equals('Rina Puspita Sari'));
-      expect(map['tgl_lahir'], equals('20'));
-      expect(map['bln_lahir'], equals('08'));
-      expect(map['thn_lahir'], equals('1994'));
-      expect(map['jns_kelamin'], equals('P'));
-    });
+        expect(mockDioClient.lastPath, equals(ApiConstants.updateProfile));
+        expect(result['ret'], equals('success'));
+        final formData = mockDioClient.lastData as FormData;
+        final map = Map.fromEntries(formData.fields);
+        expect(map['id_customer'], equals('cust-123'));
+        expect(map['nomor_telepon'], equals('081234567890'));
+        expect(map['nama'], equals('Rina Puspita Sari'));
+        expect(map['tgl_lahir'], equals('20'));
+        expect(map['bln_lahir'], equals('08'));
+        expect(map['thn_lahir'], equals('1994'));
+        expect(map['jns_kelamin'], equals('P'));
+      },
+    );
 
-    test('fetchFamilyMembers mem-parsing kartu HTML dari backend CI3', () async {
-      const sampleHtml = '''
+    test(
+      'fetchFamilyMembers mem-parsing kartu HTML dari backend CI3',
+      () async {
+        const sampleHtml = '''
       <html>
         <body>
           <div class="row">
@@ -259,17 +271,18 @@ void main() {
       </html>
       ''';
 
-      mockDioClient.nextResponseData = sampleHtml;
+        mockDioClient.nextResponseData = sampleHtml;
 
-      final members = await dataSource.fetchFamilyMembers();
+        final members = await dataSource.fetchFamilyMembers();
 
-      expect(members, isNotNull);
-      expect(members!.length, equals(2));
-      expect(members[0].id, equals('101'));
-      expect(members[0].fullName, equals('Ahmad Fauzi Rahman'));
-      expect(members[1].id, equals('102'));
-      expect(members[1].fullName, equals('Nadira Aulia Putri'));
-    });
+        expect(members, isNotNull);
+        expect(members!.length, equals(2));
+        expect(members[0].id, equals('101'));
+        expect(members[0].fullName, equals('Ahmad Fauzi Rahman'));
+        expect(members[1].id, equals('102'));
+        expect(members[1].fullName, equals('Nadira Aulia Putri'));
+      },
+    );
   });
 
   group('FamilyMemberRepositoryImpl with Remote Data Source Tests', () {
@@ -322,37 +335,43 @@ void main() {
       final updated = member.copyWith(fullName: 'Nama Diperbarui');
       await repository.updateFamilyMember(updated);
 
-      expect(repository.getCachedFamilyMembers().first.fullName, equals('Nama Diperbarui'));
-    });
-
-    test('addFamilyMember menyimpan ke Hive LocalStorage untuk mode offline', () async {
-      final mockLocalStorage = MockLocalStorage();
-      final repoWithStorage = FamilyMemberRepositoryImpl(
-        remoteDataSource: remoteDataSource,
-        localStorage: mockLocalStorage,
-        initialMembers: [],
-      );
-
-      const member = FamilyMember(
-        id: 'hive-01',
-        fullName: 'Dewi Lestari',
-        relation: FamilyRelation.spouse,
-        nik: '3671040101900005',
-        phone: '081233445566',
-        gender: 'P',
-        insurance: FamilyInsurance.bpjs,
-      );
-
-      await repoWithStorage.addFamilyMember(member);
-
       expect(
-        mockLocalStorage.containsKey(
-          boxName: StorageConstants.familyMembersBox,
-          key: 'hive-01',
-        ),
-        isTrue,
+        repository.getCachedFamilyMembers().first.fullName,
+        equals('Nama Diperbarui'),
       );
     });
+
+    test(
+      'addFamilyMember menyimpan ke Hive LocalStorage untuk mode offline',
+      () async {
+        final mockLocalStorage = MockLocalStorage();
+        final repoWithStorage = FamilyMemberRepositoryImpl(
+          remoteDataSource: remoteDataSource,
+          localStorage: mockLocalStorage,
+          initialMembers: [],
+        );
+
+        const member = FamilyMember(
+          id: 'hive-01',
+          fullName: 'Dewi Lestari',
+          relation: FamilyRelation.spouse,
+          nik: '3671040101900005',
+          phone: '081233445566',
+          gender: 'P',
+          insurance: FamilyInsurance.bpjs,
+        );
+
+        await repoWithStorage.addFamilyMember(member);
+
+        expect(
+          mockLocalStorage.containsKey(
+            boxName: StorageConstants.familyMembersBox,
+            key: 'hive-01',
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('getFamilyMembers memuat anggota dari Hive LocalStorage', () async {
       final mockLocalStorage = MockLocalStorage();

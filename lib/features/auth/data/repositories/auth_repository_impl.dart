@@ -59,15 +59,15 @@ class AuthRepositoryImpl implements AuthRepository {
           message: 'Nomor telepon atau kata sandi Anda salah.',
         );
       } else {
-        final String msg = response['msg']?.toString() ??
+        final String msg =
+            response['msg']?.toString() ??
             'Gagal melakukan autentikasi ke server rumah sakit.';
         return AuthResult(success: false, message: msg);
       }
     } catch (_) {
       return const AuthResult(
         success: false,
-        message:
-            'Gagal terhubung ke server SIMRS. Silakan periksa koneksi internet Anda.',
+        message: 'Gagal terhubung ke server SIMRS. Silakan periksa koneksi internet Anda.',
       );
     }
   }
@@ -104,7 +104,8 @@ class AuthRepositoryImpl implements AuthRepository {
         return AuthResult(
           success: false,
           message:
-              msg ?? 'Pendaftaran akun gagal. Silakan periksa kembali data Anda.',
+              msg ??
+              'Pendaftaran akun gagal. Silakan periksa kembali data Anda.',
         );
       }
     } catch (_) {

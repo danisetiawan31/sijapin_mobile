@@ -30,8 +30,8 @@ class ActiveSessionUserNotifier extends Notifier<UserProfile?> {
 
 final activeSessionUserProvider =
     NotifierProvider<ActiveSessionUserNotifier, UserProfile?>(
-  ActiveSessionUserNotifier.new,
-);
+      ActiveSessionUserNotifier.new,
+    );
 
 /// Sumber data profil pasien yang sedang login.
 final currentUserProfileProvider = Provider<UserProfile?>((ref) {
@@ -137,25 +137,26 @@ class ProfileController extends Notifier<ProfileState> {
     }
 
     final currentUser = state.user;
-    final updatedUser = (currentUser ??
-            UserProfile(
+    final updatedUser =
+        (currentUser ??
+                UserProfile(
+                  fullName: fullName,
+                  email: email,
+                  phone: phone,
+                  nik: '',
+                  birthDate: birthDate,
+                  gender: gender ?? 'L',
+                  bloodType: 'O',
+                  address: '',
+                  memberSince: DateTime.now(),
+                ))
+            .copyWith(
               fullName: fullName,
-              email: email,
               phone: phone,
-              nik: '',
+              email: email,
+              gender: gender,
               birthDate: birthDate,
-              gender: gender ?? 'L',
-              bloodType: 'O',
-              address: '',
-              memberSince: DateTime.now(),
-            ))
-        .copyWith(
-      fullName: fullName,
-      phone: phone,
-      email: email,
-      gender: gender,
-      birthDate: birthDate,
-    );
+            );
 
     ref.read(activeSessionUserProvider.notifier).setUser(updatedUser);
     state = state.copyWith(user: updatedUser);

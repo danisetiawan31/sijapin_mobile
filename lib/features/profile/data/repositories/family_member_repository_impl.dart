@@ -15,9 +15,7 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
     this.remoteDataSource,
     this.localStorage,
     List<FamilyMember>? initialMembers,
-  }) : _members = List<FamilyMember>.from(
-          initialMembers ?? kMockFamilyMembers,
-        );
+  }) : _members = List<FamilyMember>.from(initialMembers ?? kMockFamilyMembers);
 
   final IProfileRemoteDataSource? remoteDataSource;
   final ILocalStorage? localStorage;
@@ -146,7 +144,8 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
                 await localStorage!.put<dynamic>(
                   boxName: StorageConstants.familyMembersBox,
                   key: _members[idx != -1 ? idx : _members.length - 1].id,
-                  value: _members[idx != -1 ? idx : _members.length - 1].toMap(),
+                  value: _members[idx != -1 ? idx : _members.length - 1]
+                      .toMap(),
                 );
               } catch (_) {}
             }
@@ -220,7 +219,9 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
 
   @override
   Future<FamilyMember> updateFamilyMember(FamilyMember member) async {
-    final int index = _members.indexWhere((FamilyMember m) => m.id == member.id);
+    final int index = _members.indexWhere(
+      (FamilyMember m) => m.id == member.id,
+    );
     if (index != -1) {
       _members[index] = member;
     } else {

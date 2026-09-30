@@ -46,10 +46,12 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
       'nomr': member.medicalRecordNumber ?? '',
       'nama_pasien': member.fullName,
       'tmp_lahir': member.birthPlace,
-      'tgl_lahir':
-          birthDate != null ? birthDate.day.toString().padLeft(2, '0') : '',
-      'bln_lahir':
-          birthDate != null ? birthDate.month.toString().padLeft(2, '0') : '',
+      'tgl_lahir': birthDate != null
+          ? birthDate.day.toString().padLeft(2, '0')
+          : '',
+      'bln_lahir': birthDate != null
+          ? birthDate.month.toString().padLeft(2, '0')
+          : '',
       'thn_lahir': birthDate != null ? birthDate.year.toString() : '',
       'agama': member.religion.isNotEmpty ? member.religion : '1',
       'jns_kelamin': member.gender,
@@ -89,10 +91,12 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
       'id_customer': customerId,
       'nomor_telepon': phoneNumber,
       'nama': fullName,
-      'tgl_lahir':
-          birthDate != null ? birthDate.day.toString().padLeft(2, '0') : '',
-      'bln_lahir':
-          birthDate != null ? birthDate.month.toString().padLeft(2, '0') : '',
+      'tgl_lahir': birthDate != null
+          ? birthDate.day.toString().padLeft(2, '0')
+          : '',
+      'bln_lahir': birthDate != null
+          ? birthDate.month.toString().padLeft(2, '0')
+          : '',
       'thn_lahir': birthDate != null ? birthDate.year.toString() : '',
       'jns_kelamin': gender ?? 'L',
       'email': email,
@@ -122,7 +126,9 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
       if (htmlContent.isEmpty) return null;
 
       final document = html_parser.parse(htmlContent);
-      final memberCards = document.querySelectorAll('a[href*="pasien/form_data"]');
+      final memberCards = document.querySelectorAll(
+        'a[href*="pasien/form_data"]',
+      );
       if (memberCards.isEmpty) return null;
 
       final List<FamilyMember> members = [];
@@ -132,14 +138,17 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
         final id = idMatch?.group(1) ?? '';
         if (id.isEmpty) continue;
 
-        final titleEl = anchor.querySelector('.card-title') ??
+        final titleEl =
+            anchor.querySelector('.card-title') ??
             anchor.querySelector('h5') ??
             anchor.querySelector('h4') ??
             anchor.querySelector('strong') ??
             anchor.querySelector('b');
         final name = titleEl != null && titleEl.text.trim().isNotEmpty
             ? titleEl.text.trim()
-            : (anchor.text.trim().isNotEmpty ? anchor.text.trim() : 'Anggota Keluarga');
+            : (anchor.text.trim().isNotEmpty
+                  ? anchor.text.trim()
+                  : 'Anggota Keluarga');
 
         members.add(
           FamilyMember(

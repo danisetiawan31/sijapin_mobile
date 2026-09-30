@@ -282,9 +282,7 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                       child: DropdownButtonFormField<String>(
                         initialValue: _religion,
                         isExpanded: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Agama',
-                        ),
+                        decoration: const InputDecoration(labelText: 'Agama'),
                         items: const [
                           DropdownMenuItem(value: '1', child: Text('Islam')),
                           DropdownMenuItem(value: '2', child: Text('Kristen')),
@@ -364,7 +362,8 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                   decoration: const InputDecoration(
                     labelText: 'Nama Ibu Kandung',
                     hintText: 'Contoh: Siti Maryam',
-                    helperText: 'Wajib diisi jika pasien baru (belum ada No. RM)',
+                    helperText:
+                        'Wajib diisi jika pasien baru (belum ada No. RM)',
                     prefixIcon: Icon(Icons.family_restroom_outlined),
                   ),
                 ),

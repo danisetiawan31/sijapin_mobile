@@ -44,7 +44,8 @@ class _FakeCookieManagerService implements ICookieManagerService {
   Future<void> clearCookies() async {}
 
   @override
-  Future<String?> getCiSessionToken(Uri baseUri) async => 'mock-ci-session-12345';
+  Future<String?> getCiSessionToken(Uri baseUri) async =>
+      'mock-ci-session-12345';
 
   @override
   Future<List<Cookie>> loadForRequest(Uri uri) async => [];
@@ -54,8 +55,15 @@ class _FakeCookieManagerService implements ICookieManagerService {
 }
 
 class _MockAuthRemoteDataSource implements IAuthRemoteDataSource {
-  Map<String, dynamic> loginResponse = {'ret': 'success', 'login': 1, 'token': 'csrf-123'};
-  Map<String, dynamic> registerResponse = {'ret': 'success', 'msg': 'Pendaftaran berhasil'};
+  Map<String, dynamic> loginResponse = {
+    'ret': 'success',
+    'login': 1,
+    'token': 'csrf-123',
+  };
+  Map<String, dynamic> registerResponse = {
+    'ret': 'success',
+    'msg': 'Pendaftaran berhasil',
+  };
   bool shouldThrow = false;
 
   @override
@@ -121,18 +129,21 @@ void main() {
       );
     });
 
-    test('login gagal kredensial salah mengembalikan pesan informatif', () async {
-      remoteDataSource.loginResponse = {'ret': 'success', 'login': 2};
+    test(
+      'login gagal kredensial salah mengembalikan pesan informatif',
+      () async {
+        remoteDataSource.loginResponse = {'ret': 'success', 'login': 2};
 
-      final result = await repository.login(
-        identifier: '081234567890',
-        password: 'wrong-password',
-        rememberMe: false,
-      );
+        final result = await repository.login(
+          identifier: '081234567890',
+          password: 'wrong-password',
+          rememberMe: false,
+        );
 
-      expect(result.success, isFalse);
-      expect(result.message, 'Nomor telepon atau kata sandi Anda salah.');
-    });
+        expect(result.success, isFalse);
+        expect(result.message, 'Nomor telepon atau kata sandi Anda salah.');
+      },
+    );
 
     test('login saat jaringan error ditangani secara graceful', () async {
       remoteDataSource.shouldThrow = true;

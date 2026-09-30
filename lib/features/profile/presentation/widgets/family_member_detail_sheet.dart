@@ -209,24 +209,15 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
               ),
               if (member.birthPlace.trim().isNotEmpty) ...[
                 const SizedBox(height: 12),
-                _DetailRow(
-                  label: 'Tempat Lahir',
-                  value: member.birthPlace,
-                ),
+                _DetailRow(label: 'Tempat Lahir', value: member.birthPlace),
               ],
               if (member.motherName.trim().isNotEmpty) ...[
                 const SizedBox(height: 12),
-                _DetailRow(
-                  label: 'Nama Ibu Kandung',
-                  value: member.motherName,
-                ),
+                _DetailRow(label: 'Nama Ibu Kandung', value: member.motherName),
               ],
               if (member.address.trim().isNotEmpty) ...[
                 const SizedBox(height: 12),
-                _DetailRow(
-                  label: 'Alamat Domisili',
-                  value: member.address,
-                ),
+                _DetailRow(label: 'Alamat Domisili', value: member.address),
               ],
               const SizedBox(height: 12),
               _DetailRow(

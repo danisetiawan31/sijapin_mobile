@@ -150,39 +150,42 @@ void main() {
       expect(member1.hashCode, member3.hashCode);
     });
 
-    test('resolvedRdNomr mengembalikan status rekam medis SIMRS yang akurat', () {
-      const oldMember = FamilyMember(
-        id: '1',
-        fullName: 'Budi',
-        relation: FamilyRelation.spouse,
-        gender: 'L',
-        nik: '3671041205860005',
-        insurance: FamilyInsurance.bpjs,
-        medicalRecordNumber: '098877',
-      );
-      expect(oldMember.resolvedRdNomr, '1');
+    test(
+      'resolvedRdNomr mengembalikan status rekam medis SIMRS yang akurat',
+      () {
+        const oldMember = FamilyMember(
+          id: '1',
+          fullName: 'Budi',
+          relation: FamilyRelation.spouse,
+          gender: 'L',
+          nik: '3671041205860005',
+          insurance: FamilyInsurance.bpjs,
+          medicalRecordNumber: '098877',
+        );
+        expect(oldMember.resolvedRdNomr, '1');
 
-      const newMember = FamilyMember(
-        id: '2',
-        fullName: 'Siti',
-        relation: FamilyRelation.child,
-        gender: 'P',
-        nik: '3671047103150008',
-        insurance: FamilyInsurance.umum,
-      );
-      expect(newMember.resolvedRdNomr, '3');
+        const newMember = FamilyMember(
+          id: '2',
+          fullName: 'Siti',
+          relation: FamilyRelation.child,
+          gender: 'P',
+          nik: '3671047103150008',
+          insurance: FamilyInsurance.umum,
+        );
+        expect(newMember.resolvedRdNomr, '3');
 
-      const explicitMember = FamilyMember(
-        id: '3',
-        fullName: 'Dewi',
-        relation: FamilyRelation.parent,
-        gender: 'P',
-        nik: '3671045709520003',
-        insurance: FamilyInsurance.bpjs,
-        rdNomr: '1',
-      );
-      expect(explicitMember.resolvedRdNomr, '1');
-    });
+        const explicitMember = FamilyMember(
+          id: '3',
+          fullName: 'Dewi',
+          relation: FamilyRelation.parent,
+          gender: 'P',
+          nik: '3671045709520003',
+          insurance: FamilyInsurance.bpjs,
+          rdNomr: '1',
+        );
+        expect(explicitMember.resolvedRdNomr, '1');
+      },
+    );
 
     test('field database SIMRS (TMP_LAHIR, NAMA_IBU, ALAMAT) tersimpan dengan baik', () {
       const member = FamilyMember(
@@ -205,7 +208,10 @@ void main() {
       expect(member.religion, '1');
       expect(member.occupation, 'Pelajar');
 
-      final updated = member.copyWith(motherName: 'Aminah', occupation: 'Mahasiswa');
+      final updated = member.copyWith(
+        motherName: 'Aminah',
+        occupation: 'Mahasiswa',
+      );
       expect(updated.motherName, 'Aminah');
       expect(updated.occupation, 'Mahasiswa');
       expect(updated.birthPlace, 'Tangerang');

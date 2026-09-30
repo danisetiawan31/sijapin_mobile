@@ -199,7 +199,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   TextButton.icon(
                     onPressed: () => context.go(AppRoutes.homePath),
                     icon: const Icon(Icons.home_outlined, size: 18),
-                    label: const Text('Lanjut ke Beranda (Akses Tiket Offline)'),
+                    label: const Text(
+                      'Lanjut ke Beranda (Akses Tiket Offline)',
+                    ),
                   ),
                 ] else ...[
                   const CircularProgressIndicator(),
