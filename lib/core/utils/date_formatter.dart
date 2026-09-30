@@ -82,6 +82,17 @@ class DateFormatter {
     return _hari[target.weekday - 1];
   }
 
+  /// Label relatif ringkas untuk pembaruan data: `Baru saja`, `N mnt lalu`,
+  /// `N jam lalu`, atau label hari dari [hariRelatif] untuk selisih ≥ 1 hari.
+  static String waktuRelatif(DateTime date, {DateTime? reference}) {
+    final DateTime now = reference ?? DateTime.now();
+    final Duration diff = now.difference(date);
+    if (diff.inMinutes < 1) return 'Baru saja';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';
+    if (diff.inHours < 24) return '${diff.inHours} jam lalu';
+    return hariRelatif(date, reference: reference);
+  }
+
   /// Umur pasien dalam tahun pada [reference], atau `null` bila tanggal lahir belum diisi.
   static int? umur({required DateTime? birthDate, DateTime? reference}) {
     if (birthDate == null) return null;
