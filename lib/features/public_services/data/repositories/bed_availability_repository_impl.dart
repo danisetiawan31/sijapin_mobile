@@ -4,7 +4,7 @@ import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_
 /// Implementasi repository ketersediaan kamar dengan data lokal/sampel.
 ///
 /// Mengikuti pola `DoctorScheduleRepositoryImpl` — data dummy sesuai
-/// referensi visual `stitch_design/Ketersedian-Kamar/screen.png`.
+/// referensi visual `.ai-docs/stitch_design/Ketersedian-Kamar/screen.png`.
 /// Siap diganti dengan implementasi backend `Ket_Kamar` endpoint CI3.
 class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
   const BedAvailabilityRepositoryImpl();

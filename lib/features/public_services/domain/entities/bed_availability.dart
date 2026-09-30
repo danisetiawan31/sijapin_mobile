@@ -1,6 +1,6 @@
 /// Ringkasan ketersediaan kamar rawat inap RSUP Dr. Sitanala.
 ///
-/// Mencerminkan data referensi `stitch_design/Ketersedian-Kamar/screen.png`:
+/// Mencerminkan data referensi `.ai-docs/stitch_design/Ketersedian-Kamar/screen.png`:
 /// 18 bed tersedia dari total 142 (BOR 87.3%).
 class BedAvailabilitySummary {
   const BedAvailabilitySummary({

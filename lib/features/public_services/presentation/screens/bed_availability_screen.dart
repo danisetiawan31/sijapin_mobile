@@ -15,7 +15,7 @@ import '../widgets/ward_availability_card.dart';
 
 /// Layar Ketersediaan Kamar Rawat Inap & ICU.
 ///
-/// Referensi visual: `stitch_design/Ketersedian-Kamar/screen.png`.
+/// Referensi visual: `.ai-docs/stitch_design/Ketersedian-Kamar/screen.png`.
 /// Rute: `/bed-availability` (di luar shell, tanpa bottom nav).
 class BedAvailabilityScreen extends ConsumerWidget {
   const BedAvailabilityScreen({super.key});

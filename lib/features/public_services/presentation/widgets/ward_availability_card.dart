@@ -8,7 +8,7 @@ import 'package:sijapin_mobile/features/public_services/domain/entities/bed_avai
 
 /// Kartu ketersediaan bed per ruangan/bangsal.
 ///
-/// Referensi visual: `stitch_design/Ketersedian-Kamar/screen.png`.
+/// Referensi visual: `.ai-docs/stitch_design/Ketersedian-Kamar/screen.png`.
 /// Varian penuh (ICU) memakai bingkai rose sesuai desain.
 class WardAvailabilityCard extends StatelessWidget {
   const WardAvailabilityCard({
