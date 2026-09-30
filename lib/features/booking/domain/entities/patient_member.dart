@@ -14,6 +14,9 @@ class PatientMember {
     required this.birthDate,
     this.bpjsCardNumber,
     this.phone,
+    this.birthPlace = '',
+    this.motherName = '',
+    this.address = '',
   });
 
   /// ID anggota di tabel `m_customer_member`
@@ -42,6 +45,15 @@ class PatientMember {
 
   /// Nomor telepon / WhatsApp pasien
   final String? phone;
+
+  /// Tempat lahir pasien (TMP_LAHIR)
+  final String birthPlace;
+
+  /// Nama ibu kandung pasien (NAMA_IBU, wajib jika pasien baru)
+  final String motherName;
+
+  /// Alamat domisili pasien (ALAMAT)
+  final String address;
 
   /// Apakah pasien berjenis kelamin pria
   bool get isMale => gender.toUpperCase() == 'L';
@@ -102,6 +114,9 @@ class PatientMember {
     DateTime? birthDate,
     String? bpjsCardNumber,
     String? phone,
+    String? birthPlace,
+    String? motherName,
+    String? address,
   }) {
     return PatientMember(
       id: id ?? this.id,
@@ -113,6 +128,9 @@ class PatientMember {
       birthDate: birthDate ?? this.birthDate,
       bpjsCardNumber: bpjsCardNumber ?? this.bpjsCardNumber,
       phone: phone ?? this.phone,
+      birthPlace: birthPlace ?? this.birthPlace,
+      motherName: motherName ?? this.motherName,
+      address: address ?? this.address,
     );
   }
 }

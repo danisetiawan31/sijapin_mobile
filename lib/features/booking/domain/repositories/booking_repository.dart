@@ -26,5 +26,7 @@ abstract interface class BookingRepository {
   Future<bool> cancelBooking({
     required String bookingCode,
     required String reason,
+    int? memberId,
+    DateTime? scheduledDate,
   });
 }

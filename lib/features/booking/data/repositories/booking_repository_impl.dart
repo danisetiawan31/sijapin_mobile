@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/config/app_config.dart';
+import 'package:sijapin_mobile/core/constants/api_constants.dart';
 import 'package:sijapin_mobile/core/network/dio_client.dart';
+import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
+import 'package:sijapin_mobile/core/storage/storage_constants.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/booking_draft.dart';
@@ -21,10 +25,12 @@ import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_sched
 class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl({
     this.dioClient,
+    this.secureStorage,
     required this.doctorScheduleRepository,
   });
 
   final DioClient? dioClient;
+  final ISecureStorage? secureStorage;
   final DoctorScheduleRepository doctorScheduleRepository;
 
   // Counter lokal untuk simulasi nomor antrean & kode booking harian
@@ -214,6 +220,91 @@ class BookingRepositoryImpl implements BookingRepository {
     final scheduledTime =
         doctorEntry?.displayTime ?? '09.00 – 12.00 ${AppConfig.timeZoneAbbr}';
 
+    // 4. Eksekusi sekuens multi-step stateful ke server CodeIgniter 3
+    var serverSyncSuccess = false;
+    if (dioClient != null) {
+      try {
+        final tglKunjungan =
+            '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
+        final caraBayar = draft.insuranceType.isBpjs ? 'BPJS' : 'UMUM';
+        final isOldPatient = draft.patient?.medicalRecordNumber != null &&
+            draft.patient!.medicalRecordNumber!.isNotEmpty;
+
+        // Step 1: Kunci identitas pasien ke sesi CI3 (ses_siijapin_rj_pasien)
+        await dioClient!.post<dynamic>(
+          ApiConstants.bookingInputPasien,
+          data: FormData.fromMap({
+            'id_member': draft.patient!.id.toString(),
+            'rd_nomr': isOldPatient ? '1' : '3',
+            'nomr': draft.patient!.medicalRecordNumber ?? '',
+            'nama_pasien': draft.patient!.fullName,
+            'tmp_lahir': draft.patient!.birthPlace,
+            'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(2, '0'),
+            'bln_lahir':
+                draft.patient!.birthDate.month.toString().padLeft(2, '0'),
+            'thn_lahir': draft.patient!.birthDate.year.toString(),
+            'agama': '1',
+            'jns_kelamin': draft.patient!.gender,
+            'nama_ibu': draft.patient!.motherName,
+            'nik': draft.patient!.nik,
+            'alamat': draft.patient!.address,
+            'no_kontak': draft.patient!.phone ?? '',
+            'email': '',
+            'pekerjaan': '',
+          }),
+        );
+
+        // Step 2: Kunci unit poli, dokter, dan tanggal ke sesi CI3
+        await dioClient!.post<dynamic>(
+          ApiConstants.bookingInputKunjungan,
+          data: FormData.fromMap({
+            'poli_tujuan': draft.clinic!.id.toString(),
+            'dokter_tujuan': draft.doctor!.id.toString(),
+            'tgl_kunjungan': tglKunjungan,
+            'jam_layanan': scheduledTime,
+            'ambil_resep': '1',
+          }),
+        );
+
+        // Step 3: Kunci metode pembayaran ke sesi CI3 (ses_siijapin_rj_bayar)
+        await dioClient!.post<dynamic>(
+          ApiConstants.bookingInputPembayaran,
+          data: FormData.fromMap({
+            'cara_bayar': caraBayar,
+          }),
+        );
+
+        // Step 4: Final insert transaksi ke tabel t_daftar_rj
+        await dioClient!.post<dynamic>(
+          ApiConstants.bookingInsertRajal,
+          data: FormData.fromMap({
+            'member_id': draft.patient!.id.toString(),
+            'poli': draft.clinic!.id.toString(),
+            'dokter': draft.doctor!.id.toString(),
+            'no_antrian': queueNumber,
+            'jam_layanan': scheduledTime,
+            'pembayaran': caraBayar,
+            'cara_bayar': caraBayar,
+            'nik': draft.patient!.nik,
+            'nama': draft.patient!.fullName,
+            'jns_kelamin': draft.patient!.gender,
+            'tgl_lahir':
+                '${draft.patient!.birthDate.day.toString().padLeft(2, '0')}-${draft.patient!.birthDate.month.toString().padLeft(2, '0')}-${draft.patient!.birthDate.year}',
+            'nomr': draft.patient!.medicalRecordNumber ?? '',
+            'kodebooking': bookingCode,
+            'noKunjungan': draft.bpjsReferenceNumber ?? '',
+            'no_peserta': draft.patient!.bpjsCardNumber ?? '',
+          }),
+        );
+
+        // Step 5: Bersihkan variabel sesi wizard di server CI3 agar tidak meninggalkan sesi yatim
+        await dioClient!.get<dynamic>(ApiConstants.bookingFinishDaftar);
+        serverSyncSuccess = true;
+      } catch (_) {
+        // Fallback anggun: Tetap terbitkan tiket jika terjadi kendala jaringan/offline
+      }
+    }
+
     final appointment = Appointment(
       bookingCode: bookingCode,
       queueNumber: queueNumber,
@@ -230,6 +321,8 @@ class BookingRepositoryImpl implements BookingRepository {
       status: AppointmentStatus.upcoming,
       patientRelation: draft.patient!.relation,
       medicalRecord: draft.patient!.maskedMedicalRecord,
+      memberId: draft.patient?.id,
+      isServerSynced: serverSyncSuccess,
     );
 
     return appointment;
@@ -239,8 +332,32 @@ class BookingRepositoryImpl implements BookingRepository {
   Future<bool> cancelBooking({
     required String bookingCode,
     required String reason,
+    int? memberId,
+    DateTime? scheduledDate,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    if (dioClient != null) {
+      try {
+        final customerId = await secureStorage?.read(
+              key: StorageConstants.keyCustomerId,
+            ) ??
+            '';
+        final targetDate = scheduledDate ?? AppDateTime.now();
+        final tgl =
+            '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
+        await dioClient!.post<dynamic>(
+          ApiConstants.bookingBatalAntrian,
+          data: FormData.fromMap({
+            'customer_id': customerId,
+            'member_id': memberId?.toString() ?? '',
+            'kodebooking': bookingCode,
+            'alasan': reason,
+            'tanggal': tgl,
+          }),
+        );
+      } catch (_) {
+        // Fallback gracefully
+      }
+    }
     return true;
   }
 
@@ -265,9 +382,11 @@ class BookingRepositoryImpl implements BookingRepository {
 /// Provider repositori pendaftaran rawat jalan
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   final dioClient = ref.watch(dioClientProvider);
+  final secureStorage = ref.watch(secureStorageServiceProvider);
 
   return BookingRepositoryImpl(
     dioClient: dioClient,
+    secureStorage: secureStorage,
     doctorScheduleRepository: const DoctorScheduleRepositoryImpl(),
   );
 });
