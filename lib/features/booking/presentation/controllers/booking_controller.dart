@@ -135,6 +135,11 @@ class BookingController extends Notifier<BookingState> {
     state = state.copyWith(isRefreshing: false);
   }
 
+  /// Menetapkan janji temu aktif hasil booking baru
+  void setAppointment(Appointment appointment) {
+    state = state.copyWith(appointment: appointment);
+  }
+
   Future<void> cancelAppointment() async {
     if (state.appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
