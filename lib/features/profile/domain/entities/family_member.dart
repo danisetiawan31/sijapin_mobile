@@ -50,6 +50,12 @@ class FamilyMember {
     required this.insurance,
     this.birthDate,
     this.medicalRecordNumber,
+    this.birthPlace = '',
+    this.motherName = '',
+    this.address = '',
+    this.religion = '',
+    this.occupation = '',
+    this.rdNomr,
     this.bloodType = '',
     this.phone = '',
     this.insuranceNumber,
@@ -82,6 +88,24 @@ class FamilyMember {
   /// Nomor Rekam Medis jika pasien lama (misal: `012345`). Null bila pasien baru.
   final String? medicalRecordNumber;
 
+  /// Tempat lahir pasien (TMP_LAHIR).
+  final String birthPlace;
+
+  /// Nama ibu kandung pasien (NAMA_IBU). Wajib untuk pendaftaran rawat jalan pasien baru.
+  final String motherName;
+
+  /// Alamat domisili pasien (ALAMAT).
+  final String address;
+
+  /// Agama pasien (AGAMA: '1'=Islam, '2'=Kristen, '3'=Katolik, '4'=Hindu, '5'=Buddha, '6'=Konghucu).
+  final String religion;
+
+  /// Pekerjaan pasien (PEKERJAAN).
+  final String occupation;
+
+  /// Status pendaftaran nomor rekam medis SIMRS (RD_NOMR: '1' = Pasien Lama, '3' = Pasien Baru).
+  final String? rdNomr;
+
   /// Golongan darah, misal `O`, `A`, `B`, `AB`.
   final String bloodType;
 
@@ -103,6 +127,9 @@ class FamilyMember {
   /// Apakah pasien baru (belum memiliki No. Rekam Medis RSUP Dr. Sitanala)
   bool get isNewPatient =>
       medicalRecordNumber == null || medicalRecordNumber!.trim().isEmpty;
+
+  /// RD_NOMR ('1' = Pasien Lama / Punya No RM, '3' = Pasien Baru)
+  String get resolvedRdNomr => rdNomr ?? (isNewPatient ? '3' : '1');
 
   /// No. RM tersamar (contoh: `0123**` atau `Pasien Baru`)
   String get maskedMedicalRecord {
@@ -147,6 +174,69 @@ class FamilyMember {
           ? insuranceNumber
           : null,
       phone: phone.isNotEmpty ? phone : null,
+      birthPlace: birthPlace,
+      motherName: motherName,
+      address: address,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'relation': relation.name,
+      'gender': gender,
+      'nik': nik,
+      'insurance': insurance.name,
+      'birthDate': birthDate?.toIso8601String(),
+      'medicalRecordNumber': medicalRecordNumber,
+      'birthPlace': birthPlace,
+      'motherName': motherName,
+      'address': address,
+      'religion': religion,
+      'occupation': occupation,
+      'rdNomr': rdNomr,
+      'bloodType': bloodType,
+      'phone': phone,
+      'insuranceNumber': insuranceNumber,
+      'lastServiceDate': lastServiceDate?.toIso8601String(),
+      'healthNote': healthNote,
+      'isPrimary': isPrimary,
+    };
+  }
+
+  factory FamilyMember.fromMap(Map<String, dynamic> map) {
+    return FamilyMember(
+      id: map['id']?.toString() ?? '',
+      fullName: map['fullName']?.toString() ?? '',
+      relation: FamilyRelation.values.firstWhere(
+        (r) => r.name == map['relation'],
+        orElse: () => FamilyRelation.child,
+      ),
+      gender: map['gender']?.toString() ?? 'L',
+      nik: map['nik']?.toString() ?? '',
+      insurance: FamilyInsurance.values.firstWhere(
+        (i) => i.name == map['insurance'],
+        orElse: () => FamilyInsurance.umum,
+      ),
+      birthDate: map['birthDate'] != null
+          ? DateTime.tryParse(map['birthDate'].toString())
+          : null,
+      medicalRecordNumber: map['medicalRecordNumber']?.toString(),
+      birthPlace: map['birthPlace']?.toString() ?? '',
+      motherName: map['motherName']?.toString() ?? '',
+      address: map['address']?.toString() ?? '',
+      religion: map['religion']?.toString() ?? '',
+      occupation: map['occupation']?.toString() ?? '',
+      rdNomr: map['rdNomr']?.toString(),
+      bloodType: map['bloodType']?.toString() ?? '',
+      phone: map['phone']?.toString() ?? '',
+      insuranceNumber: map['insuranceNumber']?.toString(),
+      lastServiceDate: map['lastServiceDate'] != null
+          ? DateTime.tryParse(map['lastServiceDate'].toString())
+          : null,
+      healthNote: map['healthNote']?.toString(),
+      isPrimary: map['isPrimary'] == true,
     );
   }
 
@@ -159,6 +249,12 @@ class FamilyMember {
     FamilyInsurance? insurance,
     DateTime? birthDate,
     String? medicalRecordNumber,
+    String? birthPlace,
+    String? motherName,
+    String? address,
+    String? religion,
+    String? occupation,
+    String? rdNomr,
     String? bloodType,
     String? phone,
     String? insuranceNumber,
@@ -175,6 +271,12 @@ class FamilyMember {
       insurance: insurance ?? this.insurance,
       birthDate: birthDate ?? this.birthDate,
       medicalRecordNumber: medicalRecordNumber ?? this.medicalRecordNumber,
+      birthPlace: birthPlace ?? this.birthPlace,
+      motherName: motherName ?? this.motherName,
+      address: address ?? this.address,
+      religion: religion ?? this.religion,
+      occupation: occupation ?? this.occupation,
+      rdNomr: rdNomr ?? this.rdNomr,
       bloodType: bloodType ?? this.bloodType,
       phone: phone ?? this.phone,
       insuranceNumber: insuranceNumber ?? this.insuranceNumber,
@@ -196,6 +298,12 @@ class FamilyMember {
         other.insurance == insurance &&
         other.birthDate == birthDate &&
         other.medicalRecordNumber == medicalRecordNumber &&
+        other.birthPlace == birthPlace &&
+        other.motherName == motherName &&
+        other.address == address &&
+        other.religion == religion &&
+        other.occupation == occupation &&
+        other.rdNomr == rdNomr &&
         other.bloodType == bloodType &&
         other.phone == phone &&
         other.insuranceNumber == insuranceNumber &&
@@ -206,7 +314,7 @@ class FamilyMember {
 
   @override
   int get hashCode {
-    return Object.hash(
+    return Object.hashAll([
       id,
       fullName,
       relation,
@@ -215,12 +323,18 @@ class FamilyMember {
       insurance,
       birthDate,
       medicalRecordNumber,
+      birthPlace,
+      motherName,
+      address,
+      religion,
+      occupation,
+      rdNomr,
       bloodType,
       phone,
       insuranceNumber,
       lastServiceDate,
       healthNote,
       isPrimary,
-    );
+    ]);
   }
 }

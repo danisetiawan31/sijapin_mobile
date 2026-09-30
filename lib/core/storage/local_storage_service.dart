@@ -39,6 +39,9 @@ class LocalStorageService implements ILocalStorage {
     _openBoxes[StorageConstants.preferencesBox] = await _getBox(
       StorageConstants.preferencesBox,
     );
+    _openBoxes[StorageConstants.familyMembersBox] = await _getBox(
+      StorageConstants.familyMembersBox,
+    );
   }
 
   Future<Box<dynamic>> _getBox(String boxName) async {

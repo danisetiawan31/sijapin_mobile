@@ -1,13 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/repositories/fake_auth_repository.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../../../core/storage/secure_storage_service.dart';
+import '../../data/datasources/auth_remote_data_source.dart';
+import '../../data/repositories/auth_repository_impl.dart';
+import '../../../profile/domain/entities/user_profile.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return const FakeAuthRepository();
+  final dioClient = ref.watch(dioClientProvider);
+  final secureStorage = ref.watch(secureStorageServiceProvider);
+  final cookieManager = ref.watch(cookieManagerServiceProvider);
+  final remoteDataSource = AuthRemoteDataSource(dioClient: dioClient);
+
+  return AuthRepositoryImpl(
+    remoteDataSource: remoteDataSource,
+    secureStorage: secureStorage,
+    cookieManagerService: cookieManager,
+  );
 });
 
 final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
@@ -64,6 +78,23 @@ class AuthController extends Notifier<AuthControllerState> {
         password: password,
         rememberMe: rememberMe,
       );
+      if (result.success) {
+        ref
+            .read(activeSessionUserProvider.notifier)
+            .setUser(
+              UserProfile(
+                fullName: 'Pasien Terdaftar',
+                phone: identifier.trim(),
+                email: identifier.contains('@') ? identifier.trim() : '',
+                nik: '',
+                birthDate: null,
+                gender: 'L',
+                bloodType: '',
+                address: '',
+                memberSince: DateTime.now(),
+              ),
+            );
+      }
       state = state.copyWith(
         status: result.success
             ? AuthSubmissionStatus.success
@@ -103,6 +134,23 @@ class AuthController extends Notifier<AuthControllerState> {
         gender: gender,
         password: password,
       );
+      if (result.success) {
+        ref
+            .read(activeSessionUserProvider.notifier)
+            .setUser(
+              UserProfile(
+                fullName: fullName.trim(),
+                phone: phone.trim(),
+                email: email.trim(),
+                nik: '',
+                birthDate: birthDate,
+                gender: gender,
+                bloodType: '',
+                address: '',
+                memberSince: DateTime.now(),
+              ),
+            );
+      }
       state = state.copyWith(
         status: result.success
             ? AuthSubmissionStatus.success

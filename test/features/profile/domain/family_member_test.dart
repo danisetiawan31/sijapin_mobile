@@ -108,6 +108,9 @@ void main() {
           insuranceNumber: '0001122334455',
           phone: '081298765432',
           birthDate: DateTime(1986, 5, 12),
+          birthPlace: 'Tangerang',
+          motherName: 'Maryam',
+          address: 'Jl. Dr. Sitanala No. 12',
         );
 
         final patient = member.toPatientMember();
@@ -120,6 +123,9 @@ void main() {
         expect(patient.birthDate, DateTime(1986, 5, 12));
         expect(patient.bpjsCardNumber, '0001122334455');
         expect(patient.phone, '081298765432');
+        expect(patient.birthPlace, 'Tangerang');
+        expect(patient.motherName, 'Maryam');
+        expect(patient.address, 'Jl. Dr. Sitanala No. 12');
         expect(patient.isNewPatient, isFalse);
       },
     );
@@ -142,6 +148,73 @@ void main() {
       final member3 = member1.copyWith();
       expect(member1 == member3, isTrue);
       expect(member1.hashCode, member3.hashCode);
+    });
+
+    test(
+      'resolvedRdNomr mengembalikan status rekam medis SIMRS yang akurat',
+      () {
+        const oldMember = FamilyMember(
+          id: '1',
+          fullName: 'Budi',
+          relation: FamilyRelation.spouse,
+          gender: 'L',
+          nik: '3671041205860005',
+          insurance: FamilyInsurance.bpjs,
+          medicalRecordNumber: '098877',
+        );
+        expect(oldMember.resolvedRdNomr, '1');
+
+        const newMember = FamilyMember(
+          id: '2',
+          fullName: 'Siti',
+          relation: FamilyRelation.child,
+          gender: 'P',
+          nik: '3671047103150008',
+          insurance: FamilyInsurance.umum,
+        );
+        expect(newMember.resolvedRdNomr, '3');
+
+        const explicitMember = FamilyMember(
+          id: '3',
+          fullName: 'Dewi',
+          relation: FamilyRelation.parent,
+          gender: 'P',
+          nik: '3671045709520003',
+          insurance: FamilyInsurance.bpjs,
+          rdNomr: '1',
+        );
+        expect(explicitMember.resolvedRdNomr, '1');
+      },
+    );
+
+    test('field database SIMRS (TMP_LAHIR, NAMA_IBU, ALAMAT) tersimpan dengan baik', () {
+      const member = FamilyMember(
+        id: '10',
+        fullName: 'Anisa',
+        relation: FamilyRelation.child,
+        gender: 'P',
+        nik: '3671047103150008',
+        insurance: FamilyInsurance.bpjs,
+        birthPlace: 'Tangerang',
+        motherName: 'Siti Aminah',
+        address: 'Jl. Dr. Sitanala No. 99',
+        religion: '1',
+        occupation: 'Pelajar',
+      );
+
+      expect(member.birthPlace, 'Tangerang');
+      expect(member.motherName, 'Siti Aminah');
+      expect(member.address, 'Jl. Dr. Sitanala No. 99');
+      expect(member.religion, '1');
+      expect(member.occupation, 'Pelajar');
+
+      final updated = member.copyWith(
+        motherName: 'Aminah',
+        occupation: 'Mahasiswa',
+      );
+      expect(updated.motherName, 'Aminah');
+      expect(updated.occupation, 'Mahasiswa');
+      expect(updated.birthPlace, 'Tangerang');
     });
   });
 }

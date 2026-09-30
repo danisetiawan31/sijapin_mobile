@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 
@@ -36,10 +37,16 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _bpjsController = TextEditingController();
   final TextEditingController _rmController = TextEditingController();
+  final TextEditingController _birthPlaceController = TextEditingController();
+  final TextEditingController _motherNameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _occupationController = TextEditingController();
 
   FamilyRelation _relation = FamilyRelation.child;
   String _gender = 'L';
+  String _religion = '1';
   FamilyInsurance _insurance = FamilyInsurance.bpjs;
+  DateTime? _birthDate;
 
   @override
   void dispose() {
@@ -48,7 +55,28 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
     _phoneController.dispose();
     _bpjsController.dispose();
     _rmController.dispose();
+    _birthPlaceController.dispose();
+    _motherNameController.dispose();
+    _addressController.dispose();
+    _occupationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickBirthDate() async {
+    final DateTime now = DateTime.now();
+    final DateTime initial = _birthDate ?? DateTime(2000, 1, 1);
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1900),
+      lastDate: now,
+      helpText: 'PILIH TANGGAL LAHIR',
+      cancelText: 'Batal',
+      confirmText: 'Pilih',
+    );
+    if (picked != null) {
+      setState(() => _birthDate = picked);
+    }
   }
 
   void _submit() {
@@ -63,6 +91,11 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
       medicalRecordNumber: _rmController.text.trim().isNotEmpty
           ? _rmController.text.trim()
           : null,
+      birthPlace: _birthPlaceController.text.trim(),
+      motherName: _motherNameController.text.trim(),
+      address: _addressController.text.trim(),
+      religion: _religion,
+      occupation: _occupationController.text.trim(),
       insurance: _insurance,
       insuranceNumber:
           _insurance == FamilyInsurance.bpjs &&
@@ -70,7 +103,7 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
           ? _bpjsController.text.trim()
           : null,
       phone: _phoneController.text.trim(),
-      birthDate: DateTime(2000, 1, 1),
+      birthDate: _birthDate,
     );
 
     widget.onSave(newMember);
@@ -161,6 +194,39 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                   },
                 ),
                 const SizedBox(height: 12),
+                InkWell(
+                  onTap: _pickBirthDate,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Tanggal Lahir',
+                      hintText: 'Pilih tanggal lahir',
+                      prefixIcon: Icon(Icons.calendar_today_outlined),
+                      suffixIcon: Icon(Icons.calendar_month_outlined),
+                    ),
+                    child: Text(
+                      _birthDate != null
+                          ? DateFormatter.tanggalPanjang(_birthDate!)
+                          : 'Pilih tanggal lahir',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _birthDate != null
+                            ? AppColors.brandDarkEspresso
+                            : AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _birthPlaceController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tempat Lahir',
+                    hintText: 'Contoh: Tangerang',
+                    prefixIcon: Icon(Icons.location_city_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
@@ -213,6 +279,39 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                 Row(
                   children: [
                     Expanded(
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _religion,
+                        isExpanded: true,
+                        decoration: const InputDecoration(labelText: 'Agama'),
+                        items: const [
+                          DropdownMenuItem(value: '1', child: Text('Islam')),
+                          DropdownMenuItem(value: '2', child: Text('Kristen')),
+                          DropdownMenuItem(value: '3', child: Text('Katolik')),
+                          DropdownMenuItem(value: '4', child: Text('Hindu')),
+                          DropdownMenuItem(value: '5', child: Text('Buddha')),
+                          DropdownMenuItem(value: '6', child: Text('Konghucu')),
+                        ],
+                        onChanged: (String? value) {
+                          if (value != null) setState(() => _religion = value);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                        controller: _occupationController,
+                        decoration: const InputDecoration(
+                          labelText: 'Pekerjaan',
+                          hintText: 'Contoh: Karyawan',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
                       child: DropdownButtonFormField<FamilyInsurance>(
                         initialValue: _insurance,
                         isExpanded: true,
@@ -257,6 +356,27 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _motherNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nama Ibu Kandung',
+                    hintText: 'Contoh: Siti Maryam',
+                    helperText:
+                        'Wajib diisi jika pasien baru (belum ada No. RM)',
+                    prefixIcon: Icon(Icons.family_restroom_outlined),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _addressController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'Alamat Domisili',
+                    hintText: 'Alamat lengkap sesuai KTP/KK',
+                    prefixIcon: Icon(Icons.home_outlined),
+                  ),
+                ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _phoneController,

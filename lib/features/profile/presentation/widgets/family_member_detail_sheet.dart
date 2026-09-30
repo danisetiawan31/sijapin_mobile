@@ -41,7 +41,7 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text(
-            'Hapus Anggota Keluarga?',
+            'Hapus dari Perangkat?',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -49,7 +49,7 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
             ),
           ),
           content: Text(
-            'Apakah Anda yakin ingin menghapus data "${member.fullName}" dari daftar anggota keluarga? Tindakan ini tidak dapat dibatalkan.',
+            'Data "${member.fullName}" akan dihapus dari perangkat ini.\n\nSesuai regulasi rekam medis RSUP Dr. Sitanala, riwayat pelayanan di server rumah sakit tetap diarsipkan secara aman.',
             style: const TextStyle(
               fontSize: 14,
               height: 1.5,
@@ -74,7 +74,7 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
                 shape: const StadiumBorder(),
               ),
               child: const Text(
-                'Hapus',
+                'Hapus dari HP',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -207,6 +207,18 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
                 label: 'Jenis Kelamin',
                 value: member.gender == 'L' ? 'Laki-laki' : 'Perempuan',
               ),
+              if (member.birthPlace.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _DetailRow(label: 'Tempat Lahir', value: member.birthPlace),
+              ],
+              if (member.motherName.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _DetailRow(label: 'Nama Ibu Kandung', value: member.motherName),
+              ],
+              if (member.address.trim().isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _DetailRow(label: 'Alamat Domisili', value: member.address),
+              ],
               const SizedBox(height: 12),
               _DetailRow(
                 label: 'Golongan Darah',

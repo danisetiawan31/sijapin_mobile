@@ -130,6 +130,31 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 8),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Kunci biometrik & PIN lokal ini hanya mengamankan pembukaan aplikasi di ponsel Anda dan tidak tersinkronisasi ke basis data rumah sakit.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                height: 1.35,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                     const SizedBox(height: 24),
 

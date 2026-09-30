@@ -140,12 +140,12 @@ void main() {
       await tester.tap(find.text('Hapus Anggota'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Hapus Anggota Keluarga?'), findsOneWidget);
+      expect(find.text('Hapus dari Perangkat?'), findsOneWidget);
       expect(find.text('Batal'), findsOneWidget);
-      expect(find.text('Hapus'), findsOneWidget);
+      expect(find.text('Hapus dari HP'), findsOneWidget);
 
       // Konfirmasi Hapus
-      await tester.tap(find.widgetWithText(FilledButton, 'Hapus'));
+      await tester.tap(find.widgetWithText(FilledButton, 'Hapus dari HP'));
       await tester.pumpAndSettle();
 
       // Verifikasi anggota terhapus dari state
