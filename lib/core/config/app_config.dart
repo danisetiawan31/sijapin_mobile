@@ -17,11 +17,14 @@ class AppConfig {
   static const String timeZoneName = 'Asia/Jakarta';
   static const String timeZoneAbbr = 'WIB';
 
-  /// Batas jam pembatalan tiket mandiri H-1 (21:00 WIB)
-  static const int cancellationDeadlineHour = 21;
+  /// Batas jam dan menit pembatalan tiket mandiri H-1 (23:59 WIB)
+  static const int cancellationDeadlineHour = 23;
+  static const int cancellationDeadlineMinute = 59;
+  static const String cancellationDeadlineTime = '23:59';
 
-  /// Batas jam penutupan pendaftaran BPJS online H-1 (14:00 WIB)
-  static const int bpjsRegistrationCutoffHour = 14;
+  /// Batas jam penutupan pendaftaran online H-1 (23:59 WIB)
+  static const String registrationCutoffTime = '23:59';
+  static const int bpjsRegistrationCutoffHour = 23;
 
   /// Jam buka operasional mesin APM / layanan pendaftaran
   static const String admissionServiceOpenTime = '06.30';

@@ -5,32 +5,33 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_loading_state.dart';
 import '../../../../core/widgets/state_widgets.dart';
-import '../../../booking/presentation/widgets/pulse_dot.dart';
 import '../../domain/entities/bed_availability.dart';
 import '../controllers/bed_availability_controller.dart';
+import '../widgets/bed_admission_banner.dart';
+import '../widgets/bed_availability_header.dart';
+import '../widgets/bed_capacity_hero_card.dart';
+import '../widgets/bed_class_filter_bar.dart';
 import '../widgets/ward_availability_card.dart';
 
-/// Layar Ketersediaan Kamar Rawat Inap & ICU.
+export '../widgets/bed_admission_banner.dart';
+export '../widgets/bed_availability_header.dart';
+export '../widgets/bed_capacity_hero_card.dart';
+export '../widgets/bed_class_filter_bar.dart';
+export '../widgets/ward_availability_card.dart';
+
+/// Layar Ketersediaan Kamar Rawat Inap & ICU RSUP Dr. Sitanala.
 ///
-/// Referensi visual: `stitch_design/Ketersedian-Kamar/screen.png`.
-/// Rute: `/bed-availability` (di luar shell, tanpa bottom nav).
+/// Terdekomposisi secara modular: Header, Hero Card BOR, Filter Bar, dan Banner Admisi.
+/// Rute: `/bed-availability`
 class BedAvailabilityScreen extends ConsumerWidget {
   const BedAvailabilityScreen({super.key});
 
-  static const List<String> _classFilters = <String>[
-    'Semua Kelas',
-    'Kelas 3',
-    'Kelas 2',
-    'Kelas 1',
-    'VIP / VVIP',
-    'ICU',
-  ];
+  static const List<String> classFilters = BedClass.filters;
 
   Future<void> _handleCall(BuildContext context) async {
-    final cleanNumber = AppConstants.emergencyPhoneDial.replaceAll(
+    final cleanNumber = AppConstants.hospitalPhoneDial.replaceAll(
       RegExp(r'[^0-9+]'),
       '',
     );
@@ -41,27 +42,24 @@ class BedAvailabilityScreen extends ConsumerWidget {
         mode: LaunchMode.externalApplication,
       );
       if (!launched && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Tidak dapat membuka panggilan telepon ke ${AppConstants.emergencyPhoneNumber}',
-            ),
-            backgroundColor: AppColors.dangerCrimson,
-          ),
-        );
+        _showCallErrorSnack(context);
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Tidak dapat membuka panggilan telepon ke ${AppConstants.emergencyPhoneNumber}',
-            ),
-            backgroundColor: AppColors.dangerCrimson,
-          ),
-        );
+        _showCallErrorSnack(context);
       }
     }
+  }
+
+  void _showCallErrorSnack(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Tidak dapat membuka panggilan telepon ke ${AppConstants.hospitalPhoneNumber}',
+        ),
+        backgroundColor: AppColors.dangerCrimson,
+      ),
+    );
   }
 
   @override
@@ -73,13 +71,13 @@ class BedAvailabilityScreen extends ConsumerWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // 1. Header: kembali + judul + status live
-            _ScreenHeader(onBack: () => context.pop()),
+            // 1. Header modular
+            BedAvailabilityHeader(onBack: () => context.pop()),
 
-            // 2. Konten scrollable
+            // 2. Konten reaktif
             Expanded(
               child: state.summary.when(
-                data: (summary) => _Content(
+                data: (summary) => _BedAvailabilityContent(
                   summary: summary,
                   selectedClass: state.selectedClass,
                   onClassSelected: (c) => ref
@@ -102,87 +100,9 @@ class BedAvailabilityScreen extends ConsumerWidget {
   }
 }
 
-/// Header layar: tombol kembali, judul tengah, pil Live SIMRS.
-class _ScreenHeader extends StatelessWidget {
-  const _ScreenHeader({required this.onBack});
-
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceBg,
-        border: Border(
-          bottom: BorderSide(color: AppColors.borderSubtle, width: 1),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Material(
-            color: AppColors.surfaceCard,
-            shape: const CircleBorder(
-              side: BorderSide(color: AppColors.borderSubtle),
-            ),
-            child: InkWell(
-              onTap: onBack,
-              customBorder: const CircleBorder(),
-              child: const SizedBox(
-                width: 40,
-                height: 40,
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  size: 20,
-                  color: AppColors.brandDarkEspresso,
-                ),
-              ),
-            ),
-          ),
-          const Text(
-            'Ketersediaan Kamar',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.brandDarkEspresso,
-              letterSpacing: -0.3,
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.successContainer,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: AppColors.successBorder.withValues(alpha: 0.6),
-              ),
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                PulseDot(color: AppColors.successEmerald, size: 8),
-                SizedBox(width: 6),
-                Text(
-                  'Live SIMRS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.successEmerald,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Konten utama setelah data tersedia.
-class _Content extends StatelessWidget {
-  const _Content({
+/// Konten scrollable utama setelah data ketersediaan kamar berhasil dimuat.
+class _BedAvailabilityContent extends StatelessWidget {
+  const _BedAvailabilityContent({
     required this.summary,
     required this.selectedClass,
     required this.onClassSelected,
@@ -201,9 +121,10 @@ class _Content extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _HeroCard(summary: summary),
+          BedCapacityHeroCard(summary: summary),
           const SizedBox(height: 16),
-          _ClassFilterChips(
+          BedClassFilterBar(
+            filters: BedAvailabilityScreen.classFilters,
             selectedClass: selectedClass,
             onSelected: onClassSelected,
           ),
@@ -243,7 +164,8 @@ class _Content extends StatelessWidget {
                 child: WardAvailabilityCard(ward: ward),
               ),
             ),
-          _AdmissionBanner(onCallTap: onCallTap),
+          const SizedBox(height: 4),
+          BedAdmissionBanner(onCallTap: onCallTap),
           const SizedBox(height: 16),
           const Text(
             'SIIJAPIN • Layanan Rawat Inap RSUP Dr. Sitanala',
@@ -256,288 +178,7 @@ class _Content extends StatelessWidget {
   }
 }
 
-/// Kartu hero ringkasan kapasitas + BOR.
-class _HeroCard extends StatelessWidget {
-  const _HeroCard({required this.summary});
-
-  final BedAvailabilitySummary summary;
-
-  @override
-  Widget build(BuildContext context) {
-    final bor = summary.borPercent;
-    return AppCard.elevated(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.all(20),
-      borderRadius: 24,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'KAPASITAS RAWAT INAP RS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              Icon(
-                Icons.hotel_rounded,
-                size: 18,
-                color: AppColors.brandGoldenCaramel,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Text(
-                '${summary.availableBeds}',
-                style: const TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.brandGoldenCaramel,
-                  height: 1,
-                  letterSpacing: -1,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'Bed Siap Huni',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.brandDarkEspresso,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text.rich(
-            TextSpan(
-              text: 'Dari total ${summary.totalBeds} kapasitas tempat tidur ',
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.textSecondary,
-                height: 1.4,
-              ),
-              children: [
-                TextSpan(
-                  text:
-                      '(Tingkat Keterisian: ${bor.toStringAsFixed(1).replaceAll('.', ',')}%)',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-          Container(
-            height: 10,
-            padding: const EdgeInsets.all(1),
-            decoration: BoxDecoration(
-              color: AppColors.brandCreamLinen,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: AppColors.borderSubtle.withValues(alpha: 0.5),
-              ),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: (bor / 100).clamp(0.0, 1.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.brandGoldenCaramel,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${summary.availableBeds} Tersedia',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Text(
-                '${summary.occupiedBeds} Terisi • ${bor.toStringAsFixed(1).replaceAll('.', ',')}% BOR',
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Strip chip filter kelas horizontal.
-class _ClassFilterChips extends StatelessWidget {
-  const _ClassFilterChips({
-    required this.selectedClass,
-    required this.onSelected,
-  });
-
-  final String selectedClass;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: BedAvailabilityScreen._classFilters.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, index) {
-          final label = BedAvailabilityScreen._classFilters[index];
-          final bool isActive = label == selectedClass;
-          return GestureDetector(
-            onTap: () => onSelected(label),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? AppColors.brandGoldenCaramel
-                    : AppColors.surfaceCard,
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: isActive
-                      ? AppColors.brandGoldenCaramel
-                      : AppColors.borderSubtle,
-                ),
-              ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: isActive
-                      ? AppColors.textWhite
-                      : AppColors.textSecondary,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-/// Banner bantuan admisi dengan tombol telepon.
-class _AdmissionBanner extends StatelessWidget {
-  const _AdmissionBanner({required this.onCallTap});
-
-  final VoidCallback onCallTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.brandCreamLinen,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: AppColors.surfaceCard,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.phone_in_talk_rounded,
-              size: 18,
-              color: AppColors.brandGoldenCaramel,
-            ),
-          ),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Butuh info rujukan ranap mende…',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  'Admisi: ${AppConstants.emergencyPhoneNumber}',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.brandDarkEspresso,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          Material(
-            color: AppColors.brandGoldenCaramel,
-            borderRadius: BorderRadius.circular(999),
-            child: InkWell(
-              onTap: onCallTap,
-              borderRadius: BorderRadius.circular(999),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      AppConstants.emergencyCallAction,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textWhite,
-                      ),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(
-                      Icons.call_rounded,
-                      size: 14,
-                      color: AppColors.textWhite,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Placeholder shimmer saat pemuatan awal.
+/// Placeholder shimmer skeleton saat pemuatan awal.
 class _LoadingContent extends StatelessWidget {
   const _LoadingContent();
 

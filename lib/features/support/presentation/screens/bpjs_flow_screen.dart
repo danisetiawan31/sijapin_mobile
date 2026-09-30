@@ -44,7 +44,7 @@ class BpjsFlowScreen extends StatelessWidget {
       icon: Icons.app_registration_rounded,
       badgeLabel: 'Booking Task 1',
       importantNote:
-          'Pendaftaran ditutup H-1 pukul ${AppConfig.bpjsRegistrationCutoffHour}.00 ${AppConfig.timeZoneAbbr}.',
+          'Pendaftaran ditutup H-1 pukul ${AppConfig.registrationCutoffTime} ${AppConfig.timeZoneAbbr}.',
     ),
     BpjsFlowStep(
       stepNumber: 3,

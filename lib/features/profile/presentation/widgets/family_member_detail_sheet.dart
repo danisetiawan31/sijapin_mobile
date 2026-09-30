@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/utils/data_masker.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
+import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_wizard_controller.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/widgets/family_member_card.dart';
 
 /// Bottom sheet profil lengkap satu anggota keluarga.
 ///
 /// Backdrop gelap hangat mengikuti DESIGN.md §5 level 3, dan aksi utama
 /// diletakkan di bagian bawah (thumb zone, DESIGN.md §4.2).
-class FamilyMemberDetailSheet extends StatelessWidget {
+class FamilyMemberDetailSheet extends ConsumerWidget {
   const FamilyMemberDetailSheet({super.key, required this.member});
 
   final FamilyMember member;
@@ -26,8 +31,78 @@ class FamilyMemberDetailSheet extends StatelessWidget {
     );
   }
 
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Text(
+            'Hapus Anggota Keluarga?',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: AppColors.brandDarkEspresso,
+            ),
+          ),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus data "${member.fullName}" dari daftar anggota keluarga? Tindakan ini tidak dapat dibatalkan.',
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.dangerCrimson,
+                shape: const StadiumBorder(),
+              ),
+              child: const Text(
+                'Hapus',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && context.mounted) {
+      ref.read(familyMembersProvider.notifier).removeMember(member.id);
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Data "${member.fullName}" berhasil dihapus.'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.brandDarkEspresso,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        );
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final int? umur = DateFormatter.umur(birthDate: member.birthDate);
 
     return Container(
@@ -115,6 +190,12 @@ class FamilyMemberDetailSheet extends StatelessWidget {
               _DetailRow(label: 'NIK', value: DataMasker.maskNik(member.nik)),
               const SizedBox(height: 12),
               _DetailRow(
+                label: 'No. Rekam Medis',
+                value: member.maskedMedicalRecord,
+                isMono: true,
+              ),
+              const SizedBox(height: 12),
+              _DetailRow(
                 label: 'Tanggal Lahir',
                 value: member.birthDate == null
                     ? 'Belum diisi'
@@ -163,13 +244,20 @@ class FamilyMemberDetailSheet extends StatelessWidget {
               AppPrimaryButton(
                 label: 'Buat Janji Temu',
                 icon: Icons.event_available_outlined,
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  ref.read(bookingWizardControllerProvider.notifier).reset();
+                  ref
+                      .read(bookingWizardControllerProvider.notifier)
+                      .setPatient(member.toPatientMember());
+                  context.push(AppRoutes.bookingWizardPath);
+                },
               ),
               const SizedBox(height: 8),
               AppSecondaryButton(
                 label: 'Hapus Anggota',
                 icon: Icons.delete_outline_rounded,
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => _confirmDelete(context, ref),
               ),
             ],
           ),
