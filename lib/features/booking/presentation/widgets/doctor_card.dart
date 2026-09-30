@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
+import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_wizard_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/doctor_avatar.dart';
 
@@ -218,16 +221,13 @@ class DoctorCard extends ConsumerWidget {
                 onPressed: isLibur
                     ? null
                     : (onActionPressed ??
-                          () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Buka pendaftaran untuk ${schedule.name}',
-                                ),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: AppColors.brandDarkEspresso,
-                              ),
-                            );
+                          () async {
+                            await ref
+                                .read(bookingWizardControllerProvider.notifier)
+                                .initializeWithDoctor(doctor: schedule);
+                            if (context.mounted) {
+                              await context.push(AppRoutes.bookingWizardPath);
+                            }
                           }),
               ),
             ],

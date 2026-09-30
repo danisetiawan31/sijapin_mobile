@@ -121,7 +121,8 @@ class HomeScreen extends StatelessWidget {
 
                       // Hero Card: Pendaftaran Rawat Jalan
                       HomeRegistrationCard(
-                        onRegisterTap: () => context.go(AppRoutes.bookingPath),
+                        onRegisterTap: () =>
+                            context.push(AppRoutes.bookingWizardPath),
                       ),
                       const SizedBox(height: 12),
 

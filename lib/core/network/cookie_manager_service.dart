@@ -1,5 +1,6 @@
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -10,8 +11,8 @@ abstract class ICookieManagerService {
   /// Instance CookieJar (Memory atau Persist)
   CookieJar get cookieJar;
 
-  /// Interceptor Dio CookieManager
-  CookieManager get cookieManager;
+  /// Interceptor Dio CookieManager (null jika berjalan di platform Web)
+  CookieManager? get cookieManager;
 
   /// Mengambil daftar cookie untuk URI tertentu
   Future<List<Cookie>> loadForRequest(Uri uri);
@@ -29,16 +30,23 @@ abstract class ICookieManagerService {
 /// Implementasi Cookie Manager dengan dukungan penyimpanan persisten disk lokal
 class CookieManagerService implements ICookieManagerService {
   final CookieJar _cookieJar;
-  late final CookieManager _cookieManager;
+  late final CookieManager? _cookieManager;
 
   CookieManagerService(this._cookieJar) {
-    _cookieManager = CookieManager(_cookieJar);
+    _cookieManager = kIsWeb ? null : CookieManager(_cookieJar);
   }
+
+  @override
+  CookieManager? get cookieManager => _cookieManager;
 
   /// Factory untuk inisialisasi persisten di direktori aman aplikasi mobile
   static Future<CookieManagerService> createPersistent([
     String? customPath,
   ]) async {
+    if (kIsWeb) {
+      return CookieManagerService(CookieJar());
+    }
+
     final String storagePath;
     if (customPath != null) {
       storagePath = customPath;
@@ -63,9 +71,6 @@ class CookieManagerService implements ICookieManagerService {
 
   @override
   CookieJar get cookieJar => _cookieJar;
-
-  @override
-  CookieManager get cookieManager => _cookieManager;
 
   @override
   Future<List<Cookie>> loadForRequest(Uri uri) {

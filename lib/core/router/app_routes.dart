@@ -17,6 +17,10 @@ abstract final class AppRoutes {
   static const String bookingPath = '/booking';
   static const String bookingName = 'booking';
 
+  // Wizard Pendaftaran Rawat Jalan 4 Tahap (Epic 05)
+  static const String bookingWizardPath = '/booking/wizard';
+  static const String bookingWizardName = 'booking_wizard';
+
   static const String doctorsPath = '/doctors';
   static const String doctorsName = 'doctors';
 
