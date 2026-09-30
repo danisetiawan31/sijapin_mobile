@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
@@ -11,142 +12,81 @@ DoctorScheduleRepository doctorScheduleRepository(Ref ref) {
   return const DoctorScheduleRepositoryImpl();
 }
 
-/// State class untuk DoctorScheduleList
-class DoctorScheduleState {
-  const DoctorScheduleState({
-    required this.schedules,
-    this.selectedSpecialty = 'Semua Poli',
-    this.searchQuery = '',
-    this.isFetching = false,
-  });
+/// Provider spesialisasi/poli yang sedang dipilih
+@riverpod
+class SelectedDoctorSpecialty extends _$SelectedDoctorSpecialty {
+  @override
+  String build() => 'Semua Poli';
 
-  final AsyncValue<List<DoctorSchedule>> schedules;
-  final String selectedSpecialty;
-  final String searchQuery;
-  final bool isFetching;
-
-  DoctorScheduleState copyWith({
-    AsyncValue<List<DoctorSchedule>>? schedules,
-    String? selectedSpecialty,
-    String? searchQuery,
-    bool? isFetching,
-  }) {
-    return DoctorScheduleState(
-      schedules: schedules ?? this.schedules,
-      selectedSpecialty: selectedSpecialty ?? this.selectedSpecialty,
-      searchQuery: searchQuery ?? this.searchQuery,
-      isFetching: isFetching ?? this.isFetching,
-    );
+  void setSpecialty(String specialty) {
+    state = specialty;
   }
 }
 
-/// Provider daftar jadwal dokter dengan filter & pencarian
+/// Provider teks pencarian jadwal dokter
+@riverpod
+class DoctorSearchQuery extends _$DoctorSearchQuery {
+  @override
+  String build() => '';
+
+  void setQuery(String query) {
+    state = query;
+  }
+}
+
+/// Provider hari operasional yang sedang dipilih (Senin – Jumat / Semua Hari)
+class SelectedDoctorDayNotifier extends Notifier<String> {
+  @override
+  String build() => 'Semua Hari';
+
+  void setDay(String day) {
+    state = day;
+  }
+}
+
+final selectedDoctorDayProvider =
+    NotifierProvider<SelectedDoctorDayNotifier, String>(
+      SelectedDoctorDayNotifier.new,
+    );
+
+/// Provider daftar jadwal dokter dengan filter & pencarian terpadu
 @riverpod
 class DoctorScheduleList extends _$DoctorScheduleList {
-  int _requestId = 0;
-
   @override
-  DoctorScheduleState build() {
-    // Trigger initial load after the provider is created
-    Future.microtask(() => loadInitial());
+  Future<List<DoctorSchedule>> build() async {
+    final repo = ref.watch(doctorScheduleRepositoryProvider);
+    final specialty = ref.watch(selectedDoctorSpecialtyProvider);
+    final query = ref.watch(doctorSearchQueryProvider);
+    final day = ref.watch(selectedDoctorDayProvider);
 
-    return const DoctorScheduleState(
-      schedules: AsyncLoading(),
-      selectedSpecialty: 'Semua Poli',
-      searchQuery: '',
-      isFetching: false,
+    return repo.getDoctorSchedules(
+      specialtyFilter: specialty == 'Semua Poli' ? null : specialty,
+      searchQuery: query.trim().isEmpty ? null : query.trim(),
+      dayFilter: day == 'Semua Hari' ? null : day,
     );
   }
 
-  /// Load initial data
-  Future<void> loadInitial() async {
-    final repo = ref.read(doctorScheduleRepositoryProvider);
-    try {
-      final result = await repo.getDoctorSchedules();
-      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
-    } catch (e, st) {
-      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
-    }
+  /// Helper untuk mencari jadwal dokter (kompatibilitas & kemudahan akses)
+  void search(String query) {
+    ref.read(doctorSearchQueryProvider.notifier).setQuery(query);
   }
 
-  /// Mencari jadwal dokter berdasarkan query
-  Future<void> search(String query) async {
-    final id = ++_requestId;
-    state = state.copyWith(searchQuery: query, isFetching: true);
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(
-        specialtyFilter: state.selectedSpecialty == 'Semua Poli'
-            ? null
-            : state.selectedSpecialty,
-        searchQuery: query,
-      );
-      if (id != _requestId) return; // stale request
-      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
-    } catch (e, st) {
-      if (id != _requestId) return;
-      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
-    }
+  /// Helper untuk memfilter spesialisasi (kompatibilitas & kemudahan akses)
+  void filterBySpecialty(String specialty) {
+    ref.read(selectedDoctorSpecialtyProvider.notifier).setSpecialty(specialty);
   }
 
-  /// Memfilter jadwal dokter berdasarkan spesialisasi
-  Future<void> filterBySpecialty(String specialty) async {
-    final id = ++_requestId;
-    state = state.copyWith(selectedSpecialty: specialty, isFetching: true);
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(
-        specialtyFilter: specialty == 'Semua Poli' ? null : specialty,
-        searchQuery: state.searchQuery,
-      );
-      if (id != _requestId) return; // stale request
-      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
-    } catch (e, st) {
-      if (id != _requestId) return;
-      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
-    }
+  /// Helper untuk memfilter hari operasional (kompatibilitas & kemudahan akses)
+  void filterByDay(String day) {
+    ref.read(selectedDoctorDayProvider.notifier).setDay(day);
   }
 
-  /// Menggabungkan pencarian dan filter
-  Future<void> searchAndFilter({String? query, String? specialty}) async {
-    final id = ++_requestId;
-    state = state.copyWith(
-      searchQuery: query ?? state.searchQuery,
-      selectedSpecialty: specialty ?? state.selectedSpecialty,
-      isFetching: true,
-    );
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules(
-        specialtyFilter: (specialty ?? state.selectedSpecialty) == 'Semua Poli'
-            ? null
-            : (specialty ?? state.selectedSpecialty),
-        searchQuery: query ?? state.searchQuery,
-      );
-      if (id != _requestId) return; // stale request
-      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
-    } catch (e, st) {
-      if (id != _requestId) return;
-      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
-    }
-  }
-
-  /// Reset ke data awal (semua dokter)
-  Future<void> reset() async {
-    final id = ++_requestId;
-    state = state.copyWith(
-      selectedSpecialty: 'Semua Poli',
-      searchQuery: '',
-      isFetching: true,
-    );
-    try {
-      final repo = ref.read(doctorScheduleRepositoryProvider);
-      final result = await repo.getDoctorSchedules();
-      if (id != _requestId) return;
-      state = state.copyWith(schedules: AsyncData(result), isFetching: false);
-    } catch (e, st) {
-      if (id != _requestId) return;
-      state = state.copyWith(schedules: AsyncError(e, st), isFetching: false);
-    }
+  /// Reset ke data awal (semua poli, semua hari & pencarian kosong)
+  void reset() {
+    ref.read(doctorSearchQueryProvider.notifier).setQuery('');
+    ref
+        .read(selectedDoctorSpecialtyProvider.notifier)
+        .setSpecialty('Semua Poli');
+    ref.read(selectedDoctorDayProvider.notifier).setDay('Semua Hari');
   }
 }

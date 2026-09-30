@@ -158,7 +158,7 @@ class AuthPrimaryButton extends StatelessWidget {
                 dimension: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  color: AppColors.white,
                 ),
               )
             : Icon(icon),
@@ -176,7 +176,7 @@ class AuthSecurityBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(999),
@@ -191,7 +191,15 @@ class AuthSecurityBadge extends StatelessWidget {
             color: AppColors.clinicalTeal,
           ),
           const SizedBox(width: 6),
-          Text(text, style: Theme.of(context).textTheme.labelSmall),
+          Flexible(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: AppColors.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -212,11 +220,11 @@ class AuthFormCard extends StatelessWidget {
         color: AppColors.surfaceCard,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.borderSubtle),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color.fromRGBO(73, 51, 6, 0.06),
+            color: AppColors.brandDarkEspresso.withValues(alpha: 0.06),
             blurRadius: 16,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),

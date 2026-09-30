@@ -52,7 +52,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // Verifikasi layar Beranda tampil
-        expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
+        expect(find.text('Layanan Poliklinik & Pasien'), findsOneWidget);
 
         // Verifikasi AppBottomNavBar dengan 4 Tab tampil
         expect(find.byType(AppBottomNavBar), findsOneWidget);
@@ -112,7 +112,7 @@ void main() {
           find.descendant(of: navBar, matching: find.text('Beranda')),
         );
         await tester.pumpAndSettle();
-        expect(find.text('Beranda RSUP Dr. Sitanala'), findsOneWidget);
+        expect(find.text('Layanan Poliklinik & Pasien'), findsOneWidget);
       },
     );
 

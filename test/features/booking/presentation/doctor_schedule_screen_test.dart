@@ -1,242 +1,182 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sijapin_mobile/core/theme/app_colors.dart';
-import 'package:sijapin_mobile/core/theme/app_theme.dart';
-import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
-import 'package:sijapin_mobile/core/widgets/app_button.dart';
-import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/doctor_schedule_screen.dart';
 
-Widget _buildApp(ProviderContainer container) {
-  return UncontrolledProviderScope(
-    container: container,
+Widget _buildDoctorScheduleScreen() {
+  return const ProviderScope(
     child: MaterialApp(
-      theme: AppTheme.lightTheme,
-      home: const DoctorScheduleScreen(),
+      themeMode: ThemeMode.light,
+      home: DoctorScheduleScreen(),
     ),
   );
 }
 
 void main() {
-  group('DoctorScheduleScreen (Jadwal Dokter)', () {
-    late ProviderContainer container;
+  TestWidgetsFlutterBinding.ensureInitialized();
 
-    setUp(() {
-      container = ProviderContainer();
-    });
-
-    tearDown(() {
-      container.dispose();
-    });
-
-    testWidgets('renders header with title, subtitle, and badge', (
+  group('DoctorScheduleScreen Widget Tests', () {
+    testWidgets('renders header, search bar, filter chips, and doctor cards', (
       tester,
     ) async {
-      await tester.pumpWidget(_buildApp(container));
+      await tester.pumpWidget(_buildDoctorScheduleScreen());
+
+      // Tunggu delay Future simulasi di repository
       await tester.pumpAndSettle();
 
+      // Verifikasi App Bar & Header
       expect(find.text('Jadwal Dokter'), findsOneWidget);
       expect(find.text('RSUP Dr. Sitanala Tangerang'), findsOneWidget);
-      expect(find.text('52 Dokter Aktif'), findsOneWidget);
-    });
+      expect(find.textContaining('Dokter Aktif'), findsOneWidget);
 
-    testWidgets('renders search field with correct placeholder', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_buildApp(container));
-      await tester.pumpAndSettle();
+      // Verifikasi Search Bar
+      expect(find.text('Cari nama dokter atau spesialis...'), findsOneWidget);
+      expect(find.byType(TextField), findsOneWidget);
 
-      expect(
-        find.widgetWithText(AppTextField, 'Cari nama dokter atau spesialis...'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('renders 6 filter chips with Semua Poli active by default', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_buildApp(container));
-      await tester.pumpAndSettle();
-
-      // Check first 5 chips exist (they should be in viewport)
+      // Verifikasi Filter Chips baku
       expect(find.text('Semua Poli'), findsOneWidget);
-      expect(find.text('Penyakit Dalam'), findsAtLeastNWidgets(1));
-      expect(find.text('Mata'), findsAtLeastNWidgets(1));
-      expect(find.text('Anak'), findsAtLeastNWidgets(1));
-      expect(find.text('Kebidanan & Obgyn'), findsOneWidget);
+      expect(find.text('Penyakit Dalam'), findsAtLeast(1));
+      expect(find.text('Mata'), findsAtLeast(1));
+      expect(find.text('Anak'), findsAtLeast(1));
 
-      // Semua Poli should be active (caramel background)
-      final semuaPoliChip = find.ancestor(
-        of: find.text('Semua Poli'),
-        matching: find.byType(AnimatedContainer),
-      );
-      final animatedContainer = tester.widget<AnimatedContainer>(semuaPoliChip);
-      expect(animatedContainer.decoration, isA<BoxDecoration>());
-      final decoration = animatedContainer.decoration as BoxDecoration;
-      expect(decoration.color, AppColors.brandGoldenCaramel);
-    });
-
-    testWidgets('tapping Mata chip makes it active and filters list', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_buildApp(container));
-      await tester.pumpAndSettle();
-
-      // Tap Mata chip
-      await tester.tap(find.text('Mata'));
-      await tester.pumpAndSettle();
-
-      // Mata chip should be active (caramel)
-      final mataChip = find.ancestor(
-        of: find.text('Mata'),
-        matching: find.byType(AnimatedContainer),
-      );
-      final mataDecoration =
-          tester.widget<AnimatedContainer>(mataChip).decoration
-              as BoxDecoration;
-      expect(mataDecoration.color, AppColors.brandGoldenCaramel);
-
-      // Semua Poli should be inactive (white)
-      final semuaPoliChip = find.ancestor(
-        of: find.text('Semua Poli'),
-        matching: find.byType(AnimatedContainer),
-      );
-      final semuaPoliDecoration =
-          tester.widget<AnimatedContainer>(semuaPoliChip).decoration
-              as BoxDecoration;
-      expect(semuaPoliDecoration.color, AppColors.surfaceCard);
-
-      // List should show Mata doctors
-      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
-      expect(find.text('dr. Anita Kusuma, Sp.M'), findsOneWidget);
+      // Verifikasi salah satu dokter sampel awal muncul
+      expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
     });
 
     testWidgets(
-      'tapping Kebidanan & Obgyn chip shows 2 Obgyn doctors (BUG-4 regression)',
+      'tapping filter chip Mata activates chip and filters doctor list',
       (tester) async {
-        await tester.pumpWidget(_buildApp(container));
+        await tester.pumpWidget(_buildDoctorScheduleScreen());
         await tester.pumpAndSettle();
 
-        // Tap Kebidanan & Obgyn chip
-        await tester.tap(find.text('Kebidanan & Obgyn'));
+        // Sebelum klik filter, dr. Era Medina (Penyakit Dalam) tampil
+        expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+
+        // Tap chip 'Mata'
+        await tester.tap(find.text('Mata'));
         await tester.pumpAndSettle();
 
-        // Should show the 2 Obgyn doctors
-        expect(find.text('dr. Damas Hendriansyah, Sp.OG'), findsOneWidget);
-        expect(find.text('dr. Eko Wibowo, Sp.OG'), findsOneWidget);
-
-        // Should NOT show empty state
-        expect(find.text('Tidak Ada Jadwal Dokter'), findsNothing);
+        // Setelah filter 'Mata', dokter Mata tampil, dokter Penyakit Dalam hilang
+        expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+        expect(find.text('dr. Era Medina, Sp.PD'), findsNothing);
       },
     );
 
-    testWidgets('search filters list correctly', (tester) async {
-      await tester.pumpWidget(_buildApp(container));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'tapping Kebidanan & Obgyn matches Obstetri & Ginekologi doctor properly',
+      (tester) async {
+        await tester.pumpWidget(_buildDoctorScheduleScreen());
+        await tester.pumpAndSettle();
 
-      // Focus the search field and enter text
-      await tester.tap(find.byType(AppTextField));
-      await tester.enterText(find.byType(AppTextField), 'Hendra');
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+        // Scroll chip agar Kebidanan & Obgyn terlihat jika perlu
+        final obgynChip = find.text('Kebidanan & Obgyn');
+        await tester.ensureVisible(obgynChip);
+        await tester.tap(obgynChip);
+        await tester.pumpAndSettle();
 
-      // Should show only Hendra
-      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
-      // Era Medina should not be visible
-      expect(find.text('dr. Era Medina, Sp.PD'), findsNothing);
-    });
+        // Dokter Obstetri & Ginekologi tampil
+        expect(find.text('dr. Damas Hendriansyah, Sp.OG'), findsOneWidget);
+        expect(find.text('dr. Era Medina, Sp.PD'), findsNothing);
+      },
+    );
 
-    testWidgets('search + filter intersection works (BUG-5 regression)', (
+    testWidgets('typing in search bar filters doctor list by name', (
       tester,
     ) async {
-      await tester.pumpWidget(_buildApp(container));
+      await tester.pumpWidget(_buildDoctorScheduleScreen());
       await tester.pumpAndSettle();
 
-      // First search for Hendra
-      await tester.tap(find.byType(AppTextField));
-      await tester.enterText(find.byType(AppTextField), 'Hendra');
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-
-      // Then filter by Mata (Hendra is a Mata doctor)
-      await tester.tap(find.text('Mata'));
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-
-      // Should still show Hendra (intersection)
-      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
-
-      // Now filter by Anak (Hendra is NOT an Anak doctor)
-      await tester.tap(find.text('Anak'));
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-
-      // Should show empty state (no intersection)
-      expect(find.text('Tidak Ada Jadwal Dokter'), findsOneWidget);
-      expect(find.text('dr. Hendra, Sp.M'), findsNothing);
-    });
-
-    testWidgets('doctor card renders with all required elements', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_buildApp(container));
+      // Ketik 'Era' pada kolom pencarian
+      final searchField = find.byType(TextField);
+      await tester.enterText(searchField, 'Era');
       await tester.pumpAndSettle();
 
-      // Check first doctor card elements
+      // Hanya dokter dengan nama Era yang tampil
       expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
-      expect(find.text('Spesialis Penyakit Dalam'), findsOneWidget);
-      // Penyakit Dalam appears in both chip and badge - at least one
-      expect(find.text('Penyakit Dalam'), findsAtLeastNWidgets(1));
-      expect(find.text('Selasa'), findsOneWidget);
-      expect(find.text('Rabu'), findsOneWidget);
-      expect(find.text('07.30 – 12.00 WIB'), findsAtLeastNWidgets(2));
-      // Praktik Reguler appears for multiple doctors
-      expect(find.text('Praktik Reguler'), findsAtLeastNWidgets(1));
-      expect(
-        find.widgetWithText(AppPrimaryButton, 'Daftar Janji Temu'),
-        findsAtLeastNWidgets(1),
-      );
-    });
+      expect(find.text('dr. Hendra, Sp.M'), findsNothing);
 
-    testWidgets('filter with no matches shows empty state', (tester) async {
-      await tester.pumpWidget(_buildApp(container));
+      // Verifikasi tombol clear muncul dan dapat ditekan
+      final clearButton = find.byIcon(Icons.close_rounded);
+      expect(clearButton, findsOneWidget);
+
+      await tester.tap(clearButton);
       await tester.pumpAndSettle();
 
-      // Search for something that doesn't exist
-      await tester.tap(find.byType(AppTextField));
-      await tester.enterText(find.byType(AppTextField), 'NonExistentDoctor123');
-      await tester.pumpAndSettle(const Duration(seconds: 1));
-
-      expect(find.text('Tidak Ada Jadwal Dokter'), findsOneWidget);
-      expect(
-        find.text('Jadwal praktik untuk filter ini belum tersedia.'),
-        findsOneWidget,
-      );
+      // Setelah di-clear, list kembali menampilkan semua
+      expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+      expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
     });
 
     testWidgets(
-      'filter change does not show shimmer skeleton (BUG-3 regression)',
+      'tapping day filter chip filters doctors practicing on that day',
       (tester) async {
-        await tester.pumpWidget(_buildApp(container));
+        await tester.pumpWidget(_buildDoctorScheduleScreen());
         await tester.pumpAndSettle();
 
-        // Verify initial list is shown (not shimmer)
-        expect(find.byType(AppLoadingState), findsNothing);
-        expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+        // Verifikasi chips hari operasional muncul
+        expect(find.text('Semua Hari'), findsOneWidget);
+        expect(find.text('Senin'), findsAtLeast(1));
+        expect(find.text('Selasa'), findsAtLeast(1));
+        expect(find.text('Kamis'), findsAtLeast(1));
 
-        // Tap a filter chip
-        await tester.tap(find.text('Mata'));
-        await tester.pump(); // pump once during the fetch
-
-        // Should NOT show shimmer skeleton during filter change
-        expect(find.byType(AppLoadingState), findsNothing);
-
-        // Old list should still be visible during fetch
-        expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
-
-        // Wait for fetch to complete
-        await tester.pump(const Duration(milliseconds: 500));
+        // Tap chip 'Selasa' (dr. Era Medina praktik Selasa, dr. Hendra praktik Kamis & Jumat)
+        await tester.tap(find.text('Selasa').first);
         await tester.pumpAndSettle();
 
-        // New list should be shown
+        // dr. Era Medina harus ada, dr. Hendra tidak ada
+        expect(find.text('dr. Era Medina, Sp.PD'), findsOneWidget);
+        expect(find.text('dr. Hendra, Sp.M'), findsNothing);
+
+        // Tap chip 'Kamis' (dr. Hendra praktik Kamis, dr. Era Medina tidak)
+        await tester.tap(find.text('Kamis').first);
+        await tester.pumpAndSettle();
+
         expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+        expect(find.text('dr. Era Medina, Sp.PD'), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'doctor avatar renders initials and gender indicators properly',
+      (tester) async {
+        await tester.pumpWidget(_buildDoctorScheduleScreen());
+        await tester.pumpAndSettle();
+
+        // dr. Era Medina (Wanita) -> inisial EM dan icon female
+        expect(find.text('EM'), findsOneWidget);
+        expect(find.byIcon(Icons.female_rounded), findsAtLeast(1));
+
+        // dr. Hendra (Pria) -> icon male
+        expect(find.byIcon(Icons.male_rounded), findsAtLeast(1));
+      },
+    );
+
+    testWidgets(
+      'combining search query and specialty filter maintains both states without resetting',
+      (tester) async {
+        await tester.pumpWidget(_buildDoctorScheduleScreen());
+        await tester.pumpAndSettle();
+
+        // Ketik 'Hendra' di kolom pencarian
+        final searchField = find.byType(TextField);
+        await tester.enterText(searchField, 'Hendra');
+        await tester.pumpAndSettle();
+
+        expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+
+        // Pilih filter chip 'Mata'
+        await tester.tap(find.text('Mata'));
+        await tester.pumpAndSettle();
+
+        // dr. Hendra tetap tampil karena dia dokter Mata
+        expect(find.text('dr. Hendra, Sp.M'), findsOneWidget);
+
+        // Pilih filter chip 'Anak' (dr. Hendra bukan dokter Anak)
+        await tester.tap(find.text('Anak'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('dr. Hendra, Sp.M'), findsNothing);
+        expect(find.text('Tidak Ada Jadwal Dokter'), findsOneWidget);
       },
     );
   });

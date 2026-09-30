@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- Success Ambient Gradient -->
+    <radialGradient id="successAura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E8F5E9" stop-opacity="0.8"/>
+      <stop offset="70%" stop-color="#E0F5F0" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#FAF8F5" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Ticket Gradient -->
+    <linearGradient id="ticketGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FCFAF7"/>
+    </linearGradient>
+
+    <!-- Emerald Success Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#15803D"/>
+      <stop offset="100%" stop-color="#2A9D8F"/>
+    </linearGradient>
+
+    <!-- Soft Drop Shadow Filter -->
+    <filter id="ticketShadow" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#1C140E" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- 1. Ambient Background Aura -->
+  <circle cx="100" cy="100" r="90" fill="url(#successAura)"/>
+
+  <!-- 2. Ground Shadow -->
+  <ellipse cx="100" cy="172" rx="62" ry="8" fill="#1C140E" opacity="0.06"/>
+
+  <!-- 3. Queue Ticket / Boarding Card (With Notched Sides) -->
+  <g filter="url(#ticketShadow)">
+    <path d="M 58 46 
+             L 142 46 
+             A 10 10 0 0 1 152 56 
+             L 152 94 
+             A 10 10 0 0 0 142 104 
+             A 10 10 0 0 0 152 114 
+             L 152 152 
+             A 10 10 0 0 1 142 162 
+             L 58 162 
+             A 10 10 0 0 1 48 152 
+             L 48 114 
+             A 10 10 0 0 0 58 104 
+             A 10 10 0 0 0 48 94 
+             L 48 56 
+             A 10 10 0 0 1 58 46 Z" 
+          fill="url(#ticketGrad)" 
+          stroke="#BCE0DA" 
+          stroke-width="1.5"/>
+
+    <!-- Ticket Top Header -->
+    <rect x="58" y="58" width="84" height="6" rx="3" fill="#1B7369"/>
+
+    <!-- Queue Number Pill Display -->
+    <rect x="68" y="72" width="64" height="22" rx="6" fill="#E8F4F2"/>
+    <text x="100" y="88" font-family="sans-serif" font-size="14" font-weight="900" fill="#1B7369" text-anchor="middle" letter-spacing="2">A-024</text>
+
+    <!-- Perforated Dashed Line -->
+    <line x1="60" y1="104" x2="140" y2="104" stroke="#BCE0DA" stroke-width="1.8" stroke-dasharray="4,4"/>
+
+    <!-- QR Code / Barcode Matrix Dummy -->
+    <!-- Mini QR Box Outer -->
+    <rect x="62" y="118" width="32" height="32" rx="4" fill="#F7F3ED" stroke="#BCE0DA" stroke-width="1"/>
+    <!-- QR Pixels -->
+    <rect x="66" y="122" width="8" height="8" rx="1.5" fill="#1B7369"/>
+    <rect x="82" y="122" width="8" height="8" rx="1.5" fill="#1B7369"/>
+    <rect x="66" y="138" width="8" height="8" rx="1.5" fill="#1B7369"/>
+    <rect x="78" y="134" width="4" height="4" fill="#AA7409"/>
+    <rect x="86" y="138" width="4" height="4" fill="#1B7369"/>
+
+    <!-- Text Lines Beside QR -->
+    <rect x="102" y="122" width="36" height="4" rx="2" fill="#AA7409"/>
+    <rect x="102" y="130" width="28" height="4" rx="2" fill="#BCE0DA"/>
+    <rect x="102" y="138" width="34" height="4" rx="2" fill="#E8F4F2"/>
+  </g>
+
+  <!-- 4. Concentric Emerald Checkmark Badge (Top Right of Ticket) -->
+  <g filter="url(#ticketShadow)">
+    <!-- Outer Ripple Ring -->
+    <circle cx="145" cy="55" r="22" fill="#15803D" opacity="0.15"/>
+    <!-- Main Check Circle -->
+    <circle cx="145" cy="55" r="17" fill="url(#emeraldGrad)"/>
+    <!-- White Checkmark Icon -->
+    <path d="M 137 55 L 143 61 L 153 49" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- 5. Celebration Confetti & Sparkles -->
+  <!-- Gold Stars/Plus -->
+  <path d="M 38 65 L 44 65 M 41 62 L 41 68" stroke="#AA7409" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M 162 120 L 168 120 M 165 117 L 165 123" stroke="#2A9D8F" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Floating Confetti Ribbons -->
+  <circle cx="48" cy="115" r="3.5" fill="#AA7409" opacity="0.7"/>
+  <circle cx="158" cy="90" r="3" fill="#15803D"/>
+  <rect x="42" y="88" width="6" height="3" rx="1.5" fill="#2A9D8F" transform="rotate(25, 45, 90)"/>
+  <rect x="150" y="145" width="6" height="3" rx="1.5" fill="#AA7409" transform="rotate(-30, 150, 145)"/>
+</svg>

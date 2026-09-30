@@ -7,6 +7,7 @@ import '../../features/auth/presentation/views/login_view.dart';
 import '../../features/auth/presentation/views/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/booking/presentation/screens/booking_screen.dart';
+import '../../features/booking/presentation/screens/booking_wizard/booking_wizard_screen.dart';
 import '../../features/booking/presentation/screens/doctor_schedule_screen.dart';
 import '../../features/profile/presentation/screens/family_members_screen.dart';
 import '../../features/profile/presentation/screens/medical_history_screen.dart';
@@ -84,6 +85,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.bpjsFlowName,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const BpjsFlowScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.bookingWizardPath,
+        name: AppRoutes.bookingWizardName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const BookingWizardScreen(),
       ),
       // Stateful Shell Route untuk 4 Tab Utama Persisten
       StatefulShellRoute.indexedStack(

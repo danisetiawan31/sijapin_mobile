@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/core/constants/app_constants.dart';
 import 'package:sijapin_mobile/features/public_services/presentation/widgets/home_header.dart';
 
 void main() {
@@ -11,8 +12,8 @@ void main() {
           const MaterialApp(home: Scaffold(body: HomeHeader())),
         );
 
-        expect(find.text('RSUP Dr. Sitanala'), findsOneWidget);
-        expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);
+        expect(find.text(AppConstants.hospitalName), findsOneWidget);
+        expect(find.text(AppConstants.hospitalTagline), findsOneWidget);
         expect(find.byIcon(Icons.local_hospital_rounded), findsOneWidget);
       },
     );
@@ -61,7 +62,7 @@ void main() {
       );
 
       expect(find.text('Masuk'), findsOneWidget);
-      expect(find.byIcon(Icons.account_circle_outlined), findsOneWidget);
+      expect(find.byIcon(Icons.login_rounded), findsOneWidget);
 
       await tester.tap(find.text('Masuk'));
       await tester.pump();
