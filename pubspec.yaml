@@ -54,6 +54,10 @@ dependencies:
   # Notifikasi & Pengingat Lokal
   flutter_local_notifications: ^22.3.1
 
+  # Keamanan Akses Biometrik (Sidik Jari / Face ID)
+  local_auth: ^2.3.0
+  crypto: ^3.0.3
+
   # Debugger Sesi & Pemantauan Error
   chucker_flutter: ^1.6.0
   sentry_flutter: ^9.30.1
