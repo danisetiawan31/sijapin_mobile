@@ -286,8 +286,13 @@ void main() {
         final container = ProviderContainer();
         addTearDown(container.dispose);
 
+        // await tester.pumpWidget(_buildAppWithRouter(container));
+        // await tester.pumpAndSettle();
+
+        // final router = container.read(appRouterProvider);
+        // router.go(AppRoutes.bedAvailabilityPath);
         await tester.pumpWidget(_buildAppWithRouter(container));
-        await tester.pumpAndSettle();
+        await tester.pump();
 
         final router = container.read(appRouterProvider);
         router.go(AppRoutes.bedAvailabilityPath);
