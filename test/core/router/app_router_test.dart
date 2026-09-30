@@ -1,11 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/core/biometrics/biometric_auth_service.dart';
 import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/router/app_router.dart';
 import 'package:sijapin_mobile/core/router/app_routes.dart';
+import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/app_bottom_nav_bar.dart';
+
+/// Fake penyimpanan aman in-memory agar tidak memicu plugin native di test.
+class _FakeSecureStorage implements ISecureStorage {
+  final Map<String, String> _store = <String, String>{};
+
+  @override
+  Future<void> write({required String key, required String value}) async {
+    _store[key] = value;
+  }
+
+  @override
+  Future<String?> read({required String key}) async => _store[key];
+
+  @override
+  Future<void> delete({required String key}) async {
+    _store.remove(key);
+  }
+
+  @override
+  Future<void> deleteAll() async {
+    _store.clear();
+  }
+
+  @override
+  Future<bool> containsKey({required String key}) async =>
+      _store.containsKey(key);
+}
+
+/// Fake biometrik: perangkat mendukung & autentikasi selalu sukses.
+class _FakeBiometricAuth implements IBiometricAuth {
+  @override
+  Future<bool> isAvailable() async => true;
+
+  @override
+  Future<bool> authenticate({required String reason}) async => true;
+}
+
+ProviderContainer _createContainer() {
+  return ProviderContainer(
+    overrides: [
+      secureStorageServiceProvider.overrideWithValue(_FakeSecureStorage()),
+      biometricAuthServiceProvider.overrideWithValue(_FakeBiometricAuth()),
+    ],
+  );
+}
 
 Widget _buildAppWithRouter(ProviderContainer container) {
   return UncontrolledProviderScope(
@@ -27,7 +74,7 @@ void main() {
     testWidgets(
       'initial route (/) loads SplashScreen and shows Sitanala branding',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -41,7 +88,7 @@ void main() {
     testWidgets(
       'navigating to /home renders MainShellScaffold with 4-tab AppBottomNavBar',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -70,7 +117,7 @@ void main() {
     testWidgets(
       'tapping navigation tabs switches between screens while keeping shell',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -123,7 +170,7 @@ void main() {
     testWidgets(
       'navigating to /login renders outside shell without AppBottomNavBar',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -148,7 +195,7 @@ void main() {
     testWidgets(
       'navigating to /register renders outside shell without AppBottomNavBar',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -173,7 +220,7 @@ void main() {
     testWidgets(
       'navigating to /mcu renders McuCatalogScreen outside shell without AppBottomNavBar',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -196,7 +243,7 @@ void main() {
     testWidgets(
       'navigating to /profile/medical-history renders MedicalHistoryScreen inside shell',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -215,7 +262,7 @@ void main() {
     testWidgets(
       'navigating to /support/complaint renders ComplaintScreen outside shell without AppBottomNavBar',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -238,7 +285,7 @@ void main() {
     testWidgets(
       'navigating to /support/service-standards renders ServiceStandardsScreen outside shell',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));
@@ -261,7 +308,7 @@ void main() {
     testWidgets(
       'navigating to /support/bpjs-flow renders BpjsFlowScreen outside shell',
       (tester) async {
-        final container = ProviderContainer();
+        final container = _createContainer();
         addTearDown(container.dispose);
 
         await tester.pumpWidget(_buildAppWithRouter(container));

@@ -11,4 +11,6 @@ class StorageConstants {
   static const String keyCustomerSession = 'customer_session_token';
   static const String keyCustomerPhoneNumber = 'customer_phone_number';
   static const String keyBiometricEnabled = 'biometric_auth_enabled';
+  static const String keyPasscodeHash = 'app_passcode_hash';
+  static const String keyPasscodeSalt = 'app_passcode_salt';
 }
