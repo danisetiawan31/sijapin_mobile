@@ -17,6 +17,9 @@ import 'package:sijapin_mobile/features/booking/domain/entities/polyclinic.dart'
 import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/booking_repository.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
+import 'package:sijapin_mobile/features/ticket/data/datasources/ticket_local_data_source.dart';
+import 'package:sijapin_mobile/features/ticket/data/models/ticket_model.dart';
+import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 
 /// Implementasi repositori pendaftaran rawat jalan RSUP Dr. Sitanala.
 ///
@@ -26,11 +29,13 @@ class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl({
     this.dioClient,
     this.secureStorage,
+    this.ticketLocalDataSource,
     required this.doctorScheduleRepository,
   });
 
   final DioClient? dioClient;
   final ISecureStorage? secureStorage;
+  final ITicketLocalDataSource? ticketLocalDataSource;
   final DoctorScheduleRepository doctorScheduleRepository;
 
   // Counter lokal untuk simulasi nomor antrean & kode booking harian
@@ -329,6 +334,16 @@ class BookingRepositoryImpl implements BookingRepository {
       isServerSynced: serverSyncSuccess,
     );
 
+    // Persistensi otomatis ke Hive NoSQL tickets_box (SSOT: PRD FR-06.1)
+    if (ticketLocalDataSource != null) {
+      try {
+        final ticket = Ticket.fromAppointment(appointment);
+        await ticketLocalDataSource!.saveTicket(TicketModel.fromEntity(ticket));
+      } catch (_) {
+        // Abaikan kegagalan I/O lokal agar alur pendaftaran tidak terhambat
+      }
+    }
+
     return appointment;
   }
 
@@ -386,10 +401,12 @@ class BookingRepositoryImpl implements BookingRepository {
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   final secureStorage = ref.watch(secureStorageServiceProvider);
+  final ticketLocalDataSource = ref.watch(ticketLocalDataSourceProvider);
 
   return BookingRepositoryImpl(
     dioClient: dioClient,
     secureStorage: secureStorage,
     doctorScheduleRepository: const DoctorScheduleRepositoryImpl(),
+    ticketLocalDataSource: ticketLocalDataSource,
   );
 });
