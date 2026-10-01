@@ -64,6 +64,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     required String gender,
     required String password,
   }) async {
+    final String genderCode = gender.toUpperCase().startsWith('P') ? 'P' : 'L';
+
     final formData = FormData.fromMap({
       'id_customer': '',
       'nomor_telepon': phoneNumber,
@@ -71,7 +73,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       'tgl_lahir': birthDate.day.toString().padLeft(2, '0'),
       'bln_lahir': birthDate.month.toString().padLeft(2, '0'),
       'thn_lahir': birthDate.year.toString(),
-      'jns_kelamin': gender,
+      'jns_kelamin': genderCode,
       'email': email,
       'kunci': password,
       'kunci_conf': password,

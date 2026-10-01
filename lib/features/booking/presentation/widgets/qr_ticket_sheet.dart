@@ -7,6 +7,7 @@ import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/pulse_dot.dart';
+
 import '../../../ticket/presentation/controllers/ticket_controller.dart';
 
 /// Bottom sheet kode QR Anjungan Mandiri untuk discan di mesin APM.
@@ -180,10 +181,14 @@ class _QrTicketSheetState extends ConsumerState<QrTicketSheet> {
               const SizedBox(height: 14),
               OutlinedButton.icon(
                 onPressed: () {
-                  ref.read(ticketControllerProvider.notifier).confirmApmCheckIn();
+                  ref
+                      .read(ticketControllerProvider.notifier)
+                      .confirmApmCheckIn();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Simulasi check-in berhasil: Status kedatangan terverifikasi'),
+                      content: Text(
+                        'Simulasi check-in berhasil: Status kedatangan terverifikasi',
+                      ),
                       duration: Duration(seconds: 2),
                     ),
                   );
@@ -251,10 +256,7 @@ class _QrTicketSheetState extends ConsumerState<QrTicketSheet> {
 
 /// Bingkai putus-putus berisi QR check-in dan kode booking.
 class _QrFrame extends StatelessWidget {
-  const _QrFrame({
-    required this.bookingCode,
-    this.isMaxBrightness = false,
-  });
+  const _QrFrame({required this.bookingCode, this.isMaxBrightness = false});
 
   final String bookingCode;
   final bool isMaxBrightness;
