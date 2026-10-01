@@ -21,6 +21,9 @@ import '../widgets/pulse_dot.dart';
 import '../widgets/qr_ticket_sheet.dart';
 import '../widgets/queue_ticket_card.dart';
 import '../widgets/visit_proof_sheet.dart';
+import '../../../ticket/presentation/controllers/ticket_controller.dart';
+import '../../../ticket/presentation/widgets/kiosk_arrival_stepper.dart';
+import '../../../ticket/presentation/widgets/offline_status_banner.dart';
 
 /// Tab 2: Janji Temu — tiket antrean digital dan riwayat kunjungan.
 class BookingScreen extends ConsumerStatefulWidget {
@@ -151,7 +154,7 @@ class _BookingScreenState extends ConsumerState<BookingScreen> {
   }
 }
 
-class _ActiveTab extends StatelessWidget {
+class _ActiveTab extends ConsumerWidget {
   const _ActiveTab({
     required this.appointment,
     required this.isCancelling,
@@ -165,13 +168,20 @@ class _ActiveTab extends StatelessWidget {
   final VoidCallback onOpenQr;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final Appointment? current = appointment;
     if (current == null) return const _NoAppointmentState();
+
+    final ticketState = ref.watch(ticketControllerProvider);
+    final isOffline = ticketState.isOffline || !current.isServerSynced;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (isOffline)
+          OfflineStatusBanner(
+            isUnsynced: !current.isServerSynced,
+          ),
         _ActiveSectionHeader(appointment: current),
         const SizedBox(height: 12),
         QueueTicketCard(
@@ -181,6 +191,10 @@ class _ActiveTab extends StatelessWidget {
           onOpenQr: onOpenQr,
         ),
         const SizedBox(height: 16),
+        if (ticketState.ticket != null) ...[
+          KioskArrivalStepper(ticket: ticketState.ticket!),
+          const SizedBox(height: 16),
+        ],
         const _ApmCallout(),
         const SizedBox(height: 16),
         const _CallCenterNote(),
