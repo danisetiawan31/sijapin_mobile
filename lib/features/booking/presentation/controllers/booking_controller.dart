@@ -6,30 +6,12 @@ import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/data/repositories/booking_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 
-/// Data sementara sampai endpoint janji temu tersedia.
+import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
+
+/// Provider tiket janji temu aktif yang terhubung secara reaktif ke modul tiket (Epic 06)
 final activeAppointmentProvider = Provider<Appointment?>((ref) {
-  final now = AppDateTime.now();
-  return Appointment(
-    bookingCode: '260930014221',
-    queueNumber: 'MAT-014',
-    patientName: 'Rhesa Panjaitan',
-    doctorName: 'dr. Hendra Prasetyo, Sp.M.',
-    specialty: 'Spesialis Mata',
-    clinic: 'Poli Mata',
-    scheduledDate: AppDateTime.wibDateTime(
-      now.year,
-      now.month,
-      now.day + 1,
-      9,
-      30,
-    ),
-    scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
-    estimatedMinutes: 15,
-    nowServingNumber: 'MAT-011',
-    remainingQueue: 3,
-    patientRelation: 'Diri Sendiri',
-    medicalRecord: '0123***',
-  );
+  final ticketState = ref.watch(ticketControllerProvider);
+  return ticketState.ticket?.toAppointment();
 });
 
 /// Riwayat kunjungan yang sudah selesai atau dibatalkan (hanya dibaca).
