@@ -374,7 +374,7 @@ class TicketBoardingPass extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    ticket.medicalRecord ?? '-',
+                    ticket.maskedMedicalRecord,
                     style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 12,

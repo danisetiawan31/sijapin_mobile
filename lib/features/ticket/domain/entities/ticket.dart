@@ -111,6 +111,15 @@ class Ticket {
   /// Dilarang membubuhkan format pipa teks guna menjamin keterbacaan scanner 2D APM
   String get qrPayload => bookingCode;
 
+  /// Masking nomor rekam medis sesuai mandat NFR-01 & UU Perlindungan Data Pribadi (UU PDP)
+  String get maskedMedicalRecord {
+    if (medicalRecord == null || medicalRecord!.trim().isEmpty) return '-';
+    final raw = medicalRecord!.trim();
+    if (raw.contains('*') || raw.contains('•')) return raw;
+    if (raw.length <= 4) return '•••';
+    return '${raw.substring(0, 2)}••${raw.substring(raw.length - 2)}';
+  }
+
   bool get isUpcoming => status == TicketStatus.upcoming;
   bool get isCheckedIn => status == TicketStatus.checkedIn;
   bool get isCompleted => status == TicketStatus.completed;

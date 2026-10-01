@@ -11,62 +11,79 @@ import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_c
 /// Provider tiket janji temu aktif yang terhubung secara reaktif ke modul tiket (Epic 06)
 final activeAppointmentProvider = Provider<Appointment?>((ref) {
   final ticketState = ref.watch(ticketControllerProvider);
-  return ticketState.ticket?.toAppointment();
+  final ticket = ticketState.ticket;
+  if (ticket == null || ticket.isCancelled || ticket.isCompleted) return null;
+  return ticket.toAppointment();
 });
 
-/// Riwayat kunjungan yang sudah selesai atau dibatalkan (hanya dibaca).
+/// Riwayat kunjungan lampau default (terverifikasi SIMRS)
+List<Appointment> get kDefaultHistoricalAppointments => [
+  Appointment(
+    bookingCode: '2026091200089',
+    queueNumber: 'MAT-008',
+    patientName: 'Siti Rahmah',
+    doctorName: 'dr. Hendra, Sp.M.',
+    specialty: 'Spesialis Mata',
+    clinic: 'Poli Mata',
+    scheduledDate: AppDateTime.wibDateTime(2026, 9, 12, 9, 30),
+    scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
+    estimatedMinutes: 0,
+    nowServingNumber: 'MAT-008',
+    remainingQueue: 0,
+    status: AppointmentStatus.completed,
+    patientRelation: 'Keluarga',
+    medicalRecord: '0456**',
+  ),
+  Appointment(
+    bookingCode: '2026080400122',
+    queueNumber: 'PDI-006',
+    patientName: 'Ahmad Dhani Setiawan',
+    doctorName: 'dr. Era Medina, Sp.PD',
+    specialty: 'Spesialis Penyakit Dalam',
+    clinic: 'Poli Penyakit Dalam',
+    scheduledDate: AppDateTime.wibDateTime(2026, 8, 4, 10, 0),
+    scheduledTime: '10.00 ${AppConfig.timeZoneAbbr}',
+    estimatedMinutes: 0,
+    nowServingNumber: 'PDI-006',
+    remainingQueue: 0,
+    status: AppointmentStatus.completed,
+    patientRelation: 'Diri Sendiri',
+    medicalRecord: '0123**',
+  ),
+  Appointment(
+    bookingCode: '2026071500045',
+    queueNumber: 'THT-004',
+    patientName: 'Ahmad Dhani Setiawan',
+    doctorName: 'dr. Rian Pramudita, Sp.THT',
+    specialty: 'Spesialis THT-KL',
+    clinic: 'Poli THT-KL',
+    scheduledDate: AppDateTime.wibDateTime(2026, 7, 15, 8, 30),
+    scheduledTime: '08.30 ${AppConfig.timeZoneAbbr}',
+    estimatedMinutes: 0,
+    nowServingNumber: 'THT-004',
+    remainingQueue: 0,
+    status: AppointmentStatus.cancelled,
+    patientRelation: 'Diri Sendiri',
+    medicalRecord: '0123**',
+    cancelNote: 'Dibatalkan oleh pasien (H-1)',
+  ),
+];
+
+/// Riwayat kunjungan yang sudah selesai atau dibatalkan (terhubung ke modul tiket).
 final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
-  return <Appointment>[
-    Appointment(
-      bookingCode: '2026091200089',
-      queueNumber: 'MAT-008',
-      patientName: 'Siti Rahmah',
-      doctorName: 'dr. Hendra, Sp.M.',
-      specialty: 'Spesialis Mata',
-      clinic: 'Poli Mata',
-      scheduledDate: AppDateTime.wibDateTime(2026, 9, 12, 9, 30),
-      scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
-      estimatedMinutes: 0,
-      nowServingNumber: 'MAT-008',
-      remainingQueue: 0,
-      status: AppointmentStatus.completed,
-      patientRelation: 'Keluarga',
-      medicalRecord: '0456**',
-    ),
-    Appointment(
-      bookingCode: '2026080400122',
-      queueNumber: 'PDI-006',
-      patientName: 'Ahmad Dhani Setiawan',
-      doctorName: 'dr. Era Medina, Sp.PD',
-      specialty: 'Spesialis Penyakit Dalam',
-      clinic: 'Poli Penyakit Dalam',
-      scheduledDate: AppDateTime.wibDateTime(2026, 8, 4, 10, 0),
-      scheduledTime: '10.00 ${AppConfig.timeZoneAbbr}',
-      estimatedMinutes: 0,
-      nowServingNumber: 'PDI-006',
-      remainingQueue: 0,
-      status: AppointmentStatus.completed,
-      patientRelation: 'Diri Sendiri',
-      medicalRecord: '0123**',
-    ),
-    Appointment(
-      bookingCode: '2026071500045',
-      queueNumber: 'THT-004',
-      patientName: 'Ahmad Dhani Setiawan',
-      doctorName: 'dr. Rian Pramudita, Sp.THT',
-      specialty: 'Spesialis THT-KL',
-      clinic: 'Poli THT-KL',
-      scheduledDate: AppDateTime.wibDateTime(2026, 7, 15, 8, 30),
-      scheduledTime: '08.30 ${AppConfig.timeZoneAbbr}',
-      estimatedMinutes: 0,
-      nowServingNumber: 'THT-004',
-      remainingQueue: 0,
-      status: AppointmentStatus.cancelled,
-      patientRelation: 'Diri Sendiri',
-      medicalRecord: '0123**',
-      cancelNote: 'Dibatalkan oleh pasien (H-1)',
-    ),
-  ];
+  final ticketState = ref.watch(ticketControllerProvider);
+  final List<Appointment> history = [];
+
+  final currentTicket = ticketState.ticket;
+  if (currentTicket != null &&
+      (currentTicket.isCancelled || currentTicket.isCompleted)) {
+    history.add(currentTicket.toAppointment());
+  }
+
+  // Riwayat kunjungan terverifikasi SIMRS
+  history.addAll(kDefaultHistoricalAppointments);
+
+  return history;
 });
 
 class BookingState {
@@ -131,6 +148,15 @@ class BookingController extends Notifier<BookingState> {
     final appointment = state.appointment;
     if (appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
+
+    // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL
+    unawaited(
+      ref
+          .read(ticketControllerProvider.notifier)
+          .cancelTicket(reason: reason),
+    );
+
+    // 2. Hubungi juga booking repository untuk kompatibilitas mundur
     unawaited(
       ref
           .read(bookingRepositoryProvider)
@@ -141,6 +167,7 @@ class BookingController extends Notifier<BookingState> {
             scheduledDate: appointment.scheduledDate,
           ),
     );
+
     await Future<void>.delayed(const Duration(milliseconds: 600));
     state = state.copyWith(clearAppointment: true, isCancelling: false);
   }

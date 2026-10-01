@@ -64,5 +64,30 @@ void main() {
       expect(convertedBack.bookingCode, equals(sampleTicket.bookingCode));
       expect(convertedBack.status, equals(TicketStatus.upcoming));
     });
+
+    test('maskedMedicalRecord applies UU PDP masking if raw unmasked RM is supplied', () {
+      final unmaskedTicket = sampleTicket.copyWith(medicalRecord: '012345');
+      expect(unmaskedTicket.maskedMedicalRecord, equals('01••45'));
+
+      final alreadyMasked = sampleTicket.copyWith(medicalRecord: '01-••-45');
+      expect(alreadyMasked.maskedMedicalRecord, equals('01-••-45'));
+
+      final nullTicket = Ticket(
+        bookingCode: '2026101500014',
+        queueNumber: 'MAT-014',
+        patientName: 'Ahmad Dhani Setiawan',
+        medicalRecord: null,
+        doctorName: 'dr. Hendra, Sp.M.',
+        specialty: 'Spesialis Mata',
+        clinic: 'Poli Mata',
+        scheduledDate: targetDate,
+        scheduledTime: '09:00 WIB',
+        estimatedMinutes: 30,
+        nowServingNumber: 'MAT-011',
+        remainingQueue: 3,
+        status: TicketStatus.upcoming,
+      );
+      expect(nullTicket.maskedMedicalRecord, equals('-'));
+    });
   });
 }
