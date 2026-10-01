@@ -1,14 +1,16 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/pulse_dot.dart';
+import '../../../ticket/presentation/controllers/ticket_controller.dart';
 
 /// Bottom sheet kode QR Anjungan Mandiri untuk discan di mesin APM.
-class QrTicketSheet extends StatelessWidget {
+class QrTicketSheet extends ConsumerStatefulWidget {
   const QrTicketSheet({super.key, required this.appointment});
 
   final Appointment appointment;
@@ -24,13 +26,24 @@ class QrTicketSheet extends StatelessWidget {
   }
 
   @override
+  ConsumerState<QrTicketSheet> createState() => _QrTicketSheetState();
+}
+
+class _QrTicketSheetState extends ConsumerState<QrTicketSheet> {
+  bool _isMaxBrightness = false;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final appointment = widget.appointment;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: _isMaxBrightness ? Colors.white : AppColors.surfaceCard,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: _isMaxBrightness
+            ? Border.all(color: AppColors.brandGoldenCaramel, width: 2)
+            : null,
       ),
       child: SafeArea(
         top: false,
@@ -50,7 +63,6 @@ class QrTicketSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
               Center(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -68,6 +80,7 @@ class QrTicketSheet extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       PulseDot(color: AppColors.successEmerald, size: 8),
+                      SizedBox(width: 6),
                       Flexible(
                         child: Text(
                           'Siap Scan di Mesin APM',
@@ -103,9 +116,92 @@ class QrTicketSheet extends StatelessWidget {
                   height: 1.4,
                 ),
               ),
-              const SizedBox(height: 20),
-              _QrFrame(bookingCode: appointment.bookingCode),
+              const SizedBox(height: 14),
+              Center(
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isMaxBrightness = !_isMaxBrightness;
+                    });
+                    ref
+                        .read(ticketControllerProvider.notifier)
+                        .setMaxBrightness(_isMaxBrightness);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _isMaxBrightness
+                          ? AppColors.brandGoldenCaramel
+                          : AppColors.brandCreamLinen,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _isMaxBrightness
+                            ? AppColors.brandGoldenCaramel
+                            : AppColors.brandSoftSand,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _isMaxBrightness
+                              ? Icons.brightness_high_rounded
+                              : Icons.brightness_6_rounded,
+                          size: 15,
+                          color: _isMaxBrightness
+                              ? Colors.white
+                              : AppColors.brandDarkEspresso,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          _isMaxBrightness ? 'Terang Maks' : 'Mode Terang',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: _isMaxBrightness
+                                ? Colors.white
+                                : AppColors.brandDarkEspresso,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
+              _QrFrame(
+                bookingCode: appointment.bookingCode,
+                isMaxBrightness: _isMaxBrightness,
+              ),
+              const SizedBox(height: 14),
+              OutlinedButton.icon(
+                onPressed: () {
+                  ref.read(ticketControllerProvider.notifier).confirmApmCheckIn();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Simulasi check-in berhasil: Status kedatangan terverifikasi'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.touch_app_rounded, size: 16),
+                label: const Text(
+                  'Simulasi Check-In Kiosk Lobi',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.brandGoldenCaramel,
+                  side: const BorderSide(color: AppColors.brandGoldenCaramel),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -155,15 +251,21 @@ class QrTicketSheet extends StatelessWidget {
 
 /// Bingkai putus-putus berisi QR check-in dan kode booking.
 class _QrFrame extends StatelessWidget {
-  const _QrFrame({required this.bookingCode});
+  const _QrFrame({
+    required this.bookingCode,
+    this.isMaxBrightness = false,
+  });
 
   final String bookingCode;
+  final bool isMaxBrightness;
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      painter: const _DashedBorderPainter(
-        color: AppColors.brandSoftSand,
+      painter: _DashedBorderPainter(
+        color: isMaxBrightness
+            ? AppColors.brandGoldenCaramel
+            : AppColors.brandSoftSand,
         strokeWidth: 2,
         radius: 16,
       ),
@@ -171,8 +273,17 @@ class _QrFrame extends StatelessWidget {
         margin: const EdgeInsets.all(1),
         padding: const EdgeInsets.all(19),
         decoration: BoxDecoration(
-          color: AppColors.surfaceBg,
+          color: isMaxBrightness ? Colors.white : AppColors.surfaceBg,
           borderRadius: BorderRadius.circular(16),
+          boxShadow: isMaxBrightness
+              ? [
+                  BoxShadow(
+                    color: AppColors.brandGoldenCaramel.withValues(alpha: 0.25),
+                    blurRadius: 18,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
