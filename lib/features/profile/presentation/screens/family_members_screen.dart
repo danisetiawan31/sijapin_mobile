@@ -4,54 +4,23 @@ import 'package:go_router/go_router.dart';
 import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
-import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:sijapin_mobile/features/profile/presentation/widgets/add_family_member_sheet.dart';
+import 'package:sijapin_mobile/features/profile/presentation/widgets/family_filter_bar.dart';
 import 'package:sijapin_mobile/features/profile/presentation/widgets/family_member_card.dart';
 import 'package:sijapin_mobile/features/profile/presentation/widgets/family_member_detail_sheet.dart';
+import 'package:sijapin_mobile/features/profile/presentation/widgets/family_policy_notice.dart';
+import 'package:sijapin_mobile/features/profile/presentation/widgets/family_summary_card.dart';
 
-/// Filter hubungan keluarga pada daftar anggota.
-enum FamilyMemberFilter { semua, spouse, child, parent, sibling }
-
-extension FamilyMemberFilterLabel on FamilyMemberFilter {
-  String get label {
-    switch (this) {
-      case FamilyMemberFilter.semua:
-        return 'Semua';
-      case FamilyMemberFilter.spouse:
-        return 'Pasangan';
-      case FamilyMemberFilter.child:
-        return 'Anak';
-      case FamilyMemberFilter.parent:
-        return 'Orang Tua';
-      case FamilyMemberFilter.sibling:
-        return 'Saudara';
-    }
-  }
-
-  FamilyRelation? get relation {
-    switch (this) {
-      case FamilyMemberFilter.semua:
-        return null;
-      case FamilyMemberFilter.spouse:
-        return FamilyRelation.spouse;
-      case FamilyMemberFilter.child:
-        return FamilyRelation.child;
-      case FamilyMemberFilter.parent:
-        return FamilyRelation.parent;
-      case FamilyMemberFilter.sibling:
-        return FamilyRelation.sibling;
-    }
-  }
-}
+export 'package:sijapin_mobile/features/profile/presentation/widgets/add_family_member_sheet.dart';
+export 'package:sijapin_mobile/features/profile/presentation/widgets/family_filter_bar.dart';
+export 'package:sijapin_mobile/features/profile/presentation/widgets/family_policy_notice.dart';
+export 'package:sijapin_mobile/features/profile/presentation/widgets/family_summary_card.dart';
 
 /// Daftar anggota keluarga terdaftar, dibuka dari menu "Anggota Keluarga".
-///
-/// Tampilan sementara sesuai DESIGN.md: kartu squircle bertahap berisi
-/// profil tiap anggota, bukan tabel datar, dengan CTA "Tambah Anggota" yang
-/// menempel di thumb zone bagian bawah.
 class FamilyMembersScreen extends ConsumerStatefulWidget {
   const FamilyMembersScreen({super.key});
 
@@ -62,6 +31,29 @@ class FamilyMembersScreen extends ConsumerStatefulWidget {
 
 class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
   FamilyMemberFilter _filter = FamilyMemberFilter.semua;
+
+  void _openAddMemberSheet() {
+    AddFamilyMemberSheet.show(
+      context,
+      onSave: (FamilyMember newMember) {
+        ref.read(familyMembersProvider.notifier).addMember(newMember);
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(
+                'Anggota keluarga "${newMember.fullName}" berhasil ditambahkan.',
+              ),
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.brandDarkEspresso,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,9 +80,9 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                     child: ListView(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       children: [
-                        _FamilySummaryCard(members: members),
+                        FamilySummaryCard(members: members),
                         const SizedBox(height: 16),
-                        _FamilyFilterBar(
+                        FamilyFilterBar(
                           selected: _filter,
                           onSelected: (FamilyMemberFilter filter) {
                             setState(() => _filter = filter);
@@ -98,13 +90,25 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                         ),
                         const SizedBox(height: 16),
                         if (visible.isEmpty)
-                          const AppEmptyState(
+                          AppEmptyState(
                             title: 'Belum Ada Anggota',
                             message:
                                 'Belum ada anggota keluarga pada kategori ini. '
                                 'Tambahkan anggota agar bisa didaftarkan berobat '
                                 'tanpa didampingi langsung.',
                             icon: Icons.group_add_outlined,
+                            actionButton: _filter != FamilyMemberFilter.semua
+                                ? AppSecondaryButton(
+                                    label: 'Tampilkan Semua',
+                                    width: 180,
+                                    onPressed: () {
+                                      setState(
+                                        () =>
+                                            _filter = FamilyMemberFilter.semua,
+                                      );
+                                    },
+                                  )
+                                : null,
                           )
                         else
                           for (int index = 0; index < visible.length; index++)
@@ -121,7 +125,7 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                               ),
                             ),
                         const SizedBox(height: 16),
-                        const _FamilyPolicyNotice(),
+                        const FamilyPolicyNotice(),
                       ],
                     ),
                   ),
@@ -146,201 +150,11 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                     child: AppPrimaryButton(
                       label: 'Tambah Anggota Keluarga',
                       icon: Icons.person_add_alt_1_rounded,
-                      onPressed: () =>
-                          _showComingSoon(context, 'Tambah Anggota Keluarga'),
+                      onPressed: _openAddMemberSheet,
                     ),
                   ),
                 ],
               ),
-      ),
-    );
-  }
-}
-
-/// Kartu ringkasan jumlah anggota, jaminan BPJS, dan anggota utama.
-class _FamilySummaryCard extends StatelessWidget {
-  const _FamilySummaryCard({required this.members});
-
-  final List<FamilyMember> members;
-
-  @override
-  Widget build(BuildContext context) {
-    final List<FamilyMember> bpjsMembers = members
-        .where(
-          (FamilyMember member) => member.insurance == FamilyInsurance.bpjs,
-        )
-        .toList();
-    FamilyMember? utama;
-    for (final FamilyMember member in members) {
-      if (member.isPrimary) {
-        utama = member;
-        break;
-      }
-    }
-
-    return AppCard.filled(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.brandGoldenCaramel.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: const Icon(
-              Icons.groups_2_outlined,
-              size: 22,
-              color: AppColors.brandGoldenCaramel,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${members.length} anggota keluarga',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.brandDarkEspresso,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${bpjsMembers.length} memakai BPJS • '
-                  'Utama: ${utama?.fullName ?? 'Belum ada'}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bilah filter hubungan keluarga: kapsul aktif warna karamel keemasan.
-class _FamilyFilterBar extends StatelessWidget {
-  const _FamilyFilterBar({required this.selected, required this.onSelected});
-
-  final FamilyMemberFilter selected;
-  final ValueChanged<FamilyMemberFilter> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.zero,
-        itemCount: FamilyMemberFilter.values.length,
-        separatorBuilder: (BuildContext _, int _) => const SizedBox(width: 8),
-        itemBuilder: (BuildContext context, int index) {
-          final FamilyMemberFilter filter = FamilyMemberFilter.values[index];
-          return _FamilyFilterChip(
-            label: filter.label,
-            isSelected: filter == selected,
-            onTap: () => onSelected(filter),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _FamilyFilterChip extends StatelessWidget {
-  const _FamilyFilterChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      selected: isSelected,
-      button: true,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(9999),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOut,
-            height: 40,
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.brandGoldenCaramel
-                  : AppColors.surfaceCard,
-              borderRadius: BorderRadius.circular(9999),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.brandGoldenCaramel
-                    : AppColors.borderSubtle,
-              ),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Catatan aturan verifikasi anggota keluarga.
-class _FamilyPolicyNotice extends StatelessWidget {
-  const _FamilyPolicyNotice();
-
-  @override
-  Widget build(BuildContext context) {
-    return const AppCard.outlined(
-      padding: EdgeInsets.all(14),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 18,
-            color: AppColors.textMuted,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Anggota keluarga dapat didaftarkan berobat dengan melampirkan '
-              'kartu identitas asli dan bukti hubungan keluarga saat '
-              'pendaftaran di loket.',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -366,17 +180,4 @@ class _SignedOutNotice extends StatelessWidget {
       ),
     );
   }
-}
-
-void _showComingSoon(BuildContext context, String feature) {
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(
-        content: Text('$feature sedang kami kembangkan.'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.brandDarkEspresso,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
-    );
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -128,6 +129,31 @@ class ProfileScreen extends ConsumerWidget {
                               context.push(AppRoutes.familyMembersPath),
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 4),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 14,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Kunci biometrik & PIN lokal ini hanya mengamankan pembukaan aplikasi di ponsel Anda dan tidak tersinkronisasi ke basis data rumah sakit.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                height: 1.35,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -422,13 +448,43 @@ Future<void> _callHospitalHotline(BuildContext context) async {
       mode: LaunchMode.externalApplication,
     );
     if (!launched && context.mounted) {
-      _showAppSnack(context, 'Tidak dapat membuka panggilan ke $hotline.');
+      _showHotlineFallbackSnack(context, hotline);
     }
   } catch (_) {
     if (context.mounted) {
-      _showAppSnack(context, 'Tidak dapat membuka panggilan ke $hotline.');
+      _showHotlineFallbackSnack(context, hotline);
     }
   }
+}
+
+void _showHotlineFallbackSnack(BuildContext context, String hotline) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text('Tidak dapat membuka panggilan ke $hotline.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.brandDarkEspresso,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        action: SnackBarAction(
+          label: 'Salin Nomor',
+          textColor: AppColors.brandGoldenCaramel,
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: hotline));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Nomor hotline disalin ke clipboard.'),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: AppColors.brandDarkEspresso,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
 }
 
 void _showAboutDialog(BuildContext context) {

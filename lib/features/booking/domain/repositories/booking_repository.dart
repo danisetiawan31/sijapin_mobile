@@ -22,9 +22,11 @@ abstract interface class BookingRepository {
   /// (`insert_daftar_rajal`) dan menerbitkan tiket janji temu.
   Future<Appointment> submitBooking({required BookingDraft draft});
 
-  /// Membatalkan janji temu (maksimal H-1 pukul 21:00 WIB).
+  /// Membatalkan janji temu (maksimal H-1 pukul 23:59 WIB).
   Future<bool> cancelBooking({
     required String bookingCode,
     required String reason,
+    int? memberId,
+    DateTime? scheduledDate,
   });
 }

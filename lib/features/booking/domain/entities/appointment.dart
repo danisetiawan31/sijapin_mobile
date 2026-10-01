@@ -20,7 +20,15 @@ class Appointment {
     this.patientRelation,
     this.medicalRecord,
     this.cancelNote,
+    this.memberId,
+    this.isServerSynced = true,
   });
+
+  /// Status sinkronisasi ke server SIMRS (false jika dibuat saat offline)
+  final bool isServerSynced;
+
+  /// ID anggota keluarga (member_id di m_customer_member & t_daftar_rj)
+  final int? memberId;
 
   /// Kodebooking 13 digit numerik untuk discan di Kiosk APM.
   final String bookingCode;
@@ -56,7 +64,7 @@ class Appointment {
   bool get isCompleted => status == AppointmentStatus.completed;
   bool get isCancelled => status == AppointmentStatus.cancelled;
 
-  /// Batas pembatalan H-1 pukul 21.00 WIB.
+  /// Batas pembatalan H-1 pukul 23:59 WIB.
   DateTime get cancelDeadline {
     final wibDate = AppDateTime.toWib(scheduledDate);
     return AppDateTime.wibDateTime(
@@ -64,6 +72,8 @@ class Appointment {
       wibDate.month,
       wibDate.day - 1,
       AppConfig.cancellationDeadlineHour,
+      AppConfig.cancellationDeadlineMinute,
+      59,
     );
   }
 
@@ -80,6 +90,9 @@ class Appointment {
     String? nowServingNumber,
     int? remainingQueue,
     int? estimatedMinutes,
+    String? cancelNote,
+    int? memberId,
+    bool? isServerSynced,
   }) {
     return Appointment(
       bookingCode: bookingCode,
@@ -96,7 +109,9 @@ class Appointment {
       status: status ?? this.status,
       patientRelation: patientRelation,
       medicalRecord: medicalRecord,
-      cancelNote: cancelNote,
+      cancelNote: cancelNote ?? this.cancelNote,
+      memberId: memberId ?? this.memberId,
+      isServerSynced: isServerSynced ?? this.isServerSynced,
     );
   }
 }

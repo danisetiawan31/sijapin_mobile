@@ -6,22 +6,8 @@ import 'package:sijapin_mobile/core/widgets/app_badge.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 
-/// Label dan ikon hubungan keluarga sesuai DESIGN.md §6 (ikon dalam kontainer
-/// bersudut lembut).
-extension FamilyRelationLabel on FamilyRelation {
-  String get label {
-    switch (this) {
-      case FamilyRelation.spouse:
-        return 'Suami / Istri';
-      case FamilyRelation.child:
-        return 'Anak';
-      case FamilyRelation.parent:
-        return 'Orang Tua';
-      case FamilyRelation.sibling:
-        return 'Saudara';
-    }
-  }
-
+/// Ikon representasi hubungan keluarga sesuai DESIGN.md §6.
+extension FamilyRelationIcon on FamilyRelation {
   IconData get icon {
     switch (this) {
       case FamilyRelation.spouse:
@@ -32,20 +18,6 @@ extension FamilyRelationLabel on FamilyRelation {
         return Icons.elderly_outlined;
       case FamilyRelation.sibling:
         return Icons.diversity_1_outlined;
-    }
-  }
-}
-
-/// Label singkat jaminan kesehatan anggota keluarga.
-extension FamilyInsuranceLabel on FamilyInsurance {
-  String get label {
-    switch (this) {
-      case FamilyInsurance.bpjs:
-        return 'BPJS';
-      case FamilyInsurance.umum:
-        return 'Umum';
-      case FamilyInsurance.selfPay:
-        return 'Biaya Sendiri';
     }
   }
 }
@@ -126,6 +98,16 @@ class FamilyMemberCard extends StatelessWidget {
                           const AppBadge.warning(
                             label: 'Belum Lengkap',
                             icon: Icons.warning_amber_rounded,
+                          ),
+                        if (!member.isNewPatient)
+                          AppBadge.neutral(
+                            label: 'RM: ${member.maskedMedicalRecord}',
+                            icon: Icons.assignment_ind_outlined,
+                          )
+                        else
+                          const AppBadge.neutral(
+                            label: 'Pasien Baru',
+                            icon: Icons.person_outline_rounded,
                           ),
                       ],
                     ),

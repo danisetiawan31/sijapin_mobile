@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
+import 'package:sijapin_mobile/features/booking/data/repositories/booking_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 
 /// Data sementara sampai endpoint janji temu tersedia.
@@ -140,9 +143,22 @@ class BookingController extends Notifier<BookingState> {
     state = state.copyWith(appointment: appointment);
   }
 
-  Future<void> cancelAppointment() async {
-    if (state.appointment == null || state.isCancelling) return;
+  Future<void> cancelAppointment({
+    String reason = 'Dibatalkan oleh pasien',
+  }) async {
+    final appointment = state.appointment;
+    if (appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
+    unawaited(
+      ref
+          .read(bookingRepositoryProvider)
+          .cancelBooking(
+            bookingCode: appointment.bookingCode,
+            reason: reason,
+            memberId: appointment.memberId,
+            scheduledDate: appointment.scheduledDate,
+          ),
+    );
     await Future<void>.delayed(const Duration(milliseconds: 600));
     state = state.copyWith(clearAppointment: true, isCancelling: false);
   }

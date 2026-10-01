@@ -201,7 +201,7 @@ Mengadopsi pola bentuk di web eksisting (`border-radius: 100px` untuk pill butto
 
 - Bagian atas: Nomor antrean besar (`MAT-014`) warna espresso dengan latar karamel keemasan lembut.
 - Bagian tengah: Detail dokter, poliklinik, dan estimasi jam periksa dengan divider titik-titik (_dashed line_).
-- Bagian bawah: QR Code check-in yang tajam dan kontras (berisi kode booking 13 digit numerik), disertai instruksi scan di Kiosk APM, tombol _"Batal Janji Temu"_ (aktif hingga H-1 21:00 WIB), dan tombol _"Petunjuk Arah RS"_.
+- Bagian bawah: QR Code check-in yang tajam dan kontras (berisi kode booking 13 digit numerik), disertai instruksi scan di Kiosk APM, tombol _"Batal Janji Temu"_ (aktif hingga H-1 23:59 WIB), dan tombol _"Petunjuk Arah RS"_.
 
 ### B. Kartu Ketersediaan Kamar (Bed Availability Card)
 

@@ -38,6 +38,8 @@ void main() {
     expect(find.text('Masuk Cepat dan aman ke Aplikasi'), findsOneWidget);
     expect(find.text('Kode Kunci (PIN)'), findsOneWidget);
     expect(find.text('Belum dibuat'), findsOneWidget);
+    expect(find.text('Hotline Rumah Sakit'), findsOneWidget);
+    expect(find.text('Tentang Sijapin'), findsOneWidget);
     expect(find.text('Keluar dari Akun'), findsOneWidget);
   });
 
