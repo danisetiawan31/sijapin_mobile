@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import '../../features/auth/presentation/views/login_view.dart';
-import '../../features/auth/presentation/views/register_view.dart';
+import '../../features/auth/presentation/screens/login_view.dart';
+import '../../features/auth/presentation/screens/register_view.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/booking/presentation/screens/booking_screen.dart';
 import '../../features/booking/presentation/screens/booking_wizard/booking_wizard_screen.dart';
