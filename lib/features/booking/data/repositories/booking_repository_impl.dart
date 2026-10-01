@@ -380,15 +380,16 @@ class BookingRepositoryImpl implements BookingRepository {
     // Perbarui juga data tiket lokal di Hive NoSQL jika tersedia
     if (ticketLocalDataSource != null) {
       try {
-        final existingModel =
-            await ticketLocalDataSource!.getTicketByBookingCode(bookingCode);
+        final existingModel = await ticketLocalDataSource!
+            .getTicketByBookingCode(bookingCode);
         if (existingModel != null) {
           final updated = existingModel.toEntity().copyWith(
-                status: TicketStatus.cancelled,
-                cancelNote: reason,
-              );
-          await ticketLocalDataSource!
-              .saveTicket(TicketModel.fromEntity(updated));
+            status: TicketStatus.cancelled,
+            cancelNote: reason,
+          );
+          await ticketLocalDataSource!.saveTicket(
+            TicketModel.fromEntity(updated),
+          );
         }
       } catch (_) {
         // Abaikan kegagalan lokal

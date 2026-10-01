@@ -151,9 +151,7 @@ class BookingController extends Notifier<BookingState> {
 
     // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL
     unawaited(
-      ref
-          .read(ticketControllerProvider.notifier)
-          .cancelTicket(reason: reason),
+      ref.read(ticketControllerProvider.notifier).cancelTicket(reason: reason),
     );
 
     // 2. Hubungi juga booking repository untuk kompatibilitas mundur

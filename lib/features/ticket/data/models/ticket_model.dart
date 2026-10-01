@@ -145,8 +145,11 @@ class TicketModel {
       doctorName: map['doctorName'] as String? ?? '',
       specialty: map['specialty'] as String? ?? '',
       clinic: map['clinic'] as String? ?? '',
-      clinicLocation: map['clinicLocation'] as String? ?? 'Lantai 2 - Gedung Rawat Jalan',
-      scheduledDate: DateTime.tryParse(map['scheduledDate'] as String? ?? '') ?? DateTime.now(),
+      clinicLocation:
+          map['clinicLocation'] as String? ?? 'Lantai 2 - Gedung Rawat Jalan',
+      scheduledDate:
+          DateTime.tryParse(map['scheduledDate'] as String? ?? '') ??
+          DateTime.now(),
       scheduledTime: map['scheduledTime'] as String? ?? '',
       estimatedMinutes: (map['estimatedMinutes'] as num?)?.toInt() ?? 0,
       nowServingNumber: map['nowServingNumber'] as String? ?? '',

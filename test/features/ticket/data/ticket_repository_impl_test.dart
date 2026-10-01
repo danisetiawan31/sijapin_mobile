@@ -61,9 +61,7 @@ void main() {
 
     setUp(() {
       fakeDataSource = FakeTicketLocalDataSource();
-      repository = TicketRepositoryImpl(
-        localDataSource: fakeDataSource,
-      );
+      repository = TicketRepositoryImpl(localDataSource: fakeDataSource);
     });
 
     test('saveTicket saves entity to local data source', () async {
@@ -113,14 +111,17 @@ void main() {
       expect(all.first.cancelNote, equals('Ada urusan dinas mendadak'));
     });
 
-    test('checkInTicket updates status to checkedIn and records timestamp', () async {
-      await repository.saveTicket(sampleTicket);
+    test(
+      'checkInTicket updates status to checkedIn and records timestamp',
+      () async {
+        await repository.saveTicket(sampleTicket);
 
-      await repository.checkInTicket(sampleTicket.bookingCode);
+        await repository.checkInTicket(sampleTicket.bookingCode);
 
-      final all = await repository.getAllTickets();
-      expect(all.first.isCheckedIn, isTrue);
-      expect(all.first.checkInTime, isNotNull);
-    });
+        final all = await repository.getAllTickets();
+        expect(all.first.isCheckedIn, isTrue);
+        expect(all.first.checkInTime, isNotNull);
+      },
+    );
   });
 }

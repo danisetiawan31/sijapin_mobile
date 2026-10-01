@@ -178,10 +178,7 @@ class _ActiveTab extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (isOffline)
-          OfflineStatusBanner(
-            isUnsynced: !current.isServerSynced,
-          ),
+        if (isOffline) OfflineStatusBanner(isUnsynced: !current.isServerSynced),
         _ActiveSectionHeader(appointment: current),
         const SizedBox(height: 12),
         QueueTicketCard(

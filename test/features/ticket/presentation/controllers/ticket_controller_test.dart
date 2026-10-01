@@ -85,36 +85,44 @@ void main() {
       expect(state.ticket!.patientName, equals('Rhesa Panjaitan'));
     });
 
-    test('saveNewTicket updates controller state and saves to repository', () async {
-      final controller = container.read(ticketControllerProvider.notifier);
-      final newTicket = kDefaultInitialTicket.copyWith(
-        bookingCode: '2026101500099',
-        patientName: 'Ahmad Dhani Setiawan',
-      );
+    test(
+      'saveNewTicket updates controller state and saves to repository',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        final newTicket = kDefaultInitialTicket.copyWith(
+          bookingCode: '2026101500099',
+          patientName: 'Ahmad Dhani Setiawan',
+        );
 
-      await controller.saveNewTicket(newTicket);
+        await controller.saveNewTicket(newTicket);
 
-      final state = container.read(ticketControllerProvider);
-      expect(state.ticket!.bookingCode, equals('2026101500099'));
-      expect(state.ticket!.patientName, equals('Ahmad Dhani Setiawan'));
-      expect(fakeRepo.activeTicket!.bookingCode, equals('2026101500099'));
-    });
+        final state = container.read(ticketControllerProvider);
+        expect(state.ticket!.bookingCode, equals('2026101500099'));
+        expect(state.ticket!.patientName, equals('Ahmad Dhani Setiawan'));
+        expect(fakeRepo.activeTicket!.bookingCode, equals('2026101500099'));
+      },
+    );
 
-    test('cancelTicket marks ticket cancelled when before cut-off deadline', () async {
-      final controller = container.read(ticketControllerProvider.notifier);
-      final futureDate = AppDateTime.now().add(const Duration(days: 3));
-      final cancellableTicket = kDefaultInitialTicket.copyWith(
-        scheduledDate: futureDate,
-      );
-      await controller.saveNewTicket(cancellableTicket);
+    test(
+      'cancelTicket marks ticket cancelled when before cut-off deadline',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        final futureDate = AppDateTime.now().add(const Duration(days: 3));
+        final cancellableTicket = kDefaultInitialTicket.copyWith(
+          scheduledDate: futureDate,
+        );
+        await controller.saveNewTicket(cancellableTicket);
 
-      final success = await controller.cancelTicket(reason: 'Perubahan jadwal dinas');
-      expect(success, isTrue);
+        final success = await controller.cancelTicket(
+          reason: 'Perubahan jadwal dinas',
+        );
+        expect(success, isTrue);
 
-      final state = container.read(ticketControllerProvider);
-      expect(state.ticket!.isCancelled, isTrue);
-      expect(state.ticket!.cancelNote, equals('Perubahan jadwal dinas'));
-    });
+        final state = container.read(ticketControllerProvider);
+        expect(state.ticket!.isCancelled, isTrue);
+        expect(state.ticket!.cancelNote, equals('Perubahan jadwal dinas'));
+      },
+    );
 
     test('confirmApmCheckIn updates ticket status to checkedIn', () async {
       final controller = container.read(ticketControllerProvider.notifier);
@@ -138,11 +146,17 @@ void main() {
 
     test('refreshQueue decrements remainingQueue safely', () async {
       final controller = container.read(ticketControllerProvider.notifier);
-      final initialRemaining = container.read(ticketControllerProvider).ticket!.remainingQueue;
+      final initialRemaining = container
+          .read(ticketControllerProvider)
+          .ticket!
+          .remainingQueue;
 
       await controller.refreshQueue();
 
-      final updatedRemaining = container.read(ticketControllerProvider).ticket!.remainingQueue;
+      final updatedRemaining = container
+          .read(ticketControllerProvider)
+          .ticket!
+          .remainingQueue;
       expect(updatedRemaining, equals(initialRemaining - 1));
     });
 

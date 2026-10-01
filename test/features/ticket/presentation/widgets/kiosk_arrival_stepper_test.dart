@@ -10,10 +10,7 @@ Widget _buildWrapper({required Widget child}) {
     theme: AppTheme.lightTheme,
     home: Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        child: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
   );
@@ -23,7 +20,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('KioskArrivalStepper Widget Tests (Task ID BPJS Progression)', () {
-    testWidgets('marks step 2 as active when ticket is upcoming', (tester) async {
+    testWidgets('marks step 2 as active when ticket is upcoming', (
+      tester,
+    ) async {
       final ticket = Ticket(
         bookingCode: '2026101500014',
         queueNumber: 'MAT-014',
@@ -41,9 +40,7 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildWrapper(
-          child: KioskArrivalStepper(ticket: ticket),
-        ),
+        _buildWrapper(child: KioskArrivalStepper(ticket: ticket)),
       );
 
       expect(find.text('Alur Kedatangan di Rumah Sakit'), findsOneWidget);
@@ -53,7 +50,9 @@ void main() {
       expect(find.text('Tahap Ini'), findsOneWidget);
     });
 
-    testWidgets('marks step 2 as completed when ticket is checked in', (tester) async {
+    testWidgets('marks step 2 as completed when ticket is checked in', (
+      tester,
+    ) async {
       final ticket = Ticket(
         bookingCode: '2026101500014',
         queueNumber: 'MAT-014',
@@ -72,12 +71,13 @@ void main() {
       );
 
       await tester.pumpWidget(
-        _buildWrapper(
-          child: KioskArrivalStepper(ticket: ticket),
-        ),
+        _buildWrapper(child: KioskArrivalStepper(ticket: ticket)),
       );
 
-      expect(find.text('Check-in terverifikasi di mesin Anjungan'), findsOneWidget);
+      expect(
+        find.text('Check-in terverifikasi di mesin Anjungan'),
+        findsOneWidget,
+      );
       expect(find.text('Menunggu dipanggil oleh perawat poli'), findsOneWidget);
     });
   });

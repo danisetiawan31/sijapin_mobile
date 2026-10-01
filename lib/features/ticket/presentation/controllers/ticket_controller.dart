@@ -80,8 +80,9 @@ class TicketState {
 }
 
 /// Provider stream perubahan status konektivitas jaringan (PRD FR-06.3)
-final connectivityStreamProvider =
-    StreamProvider<List<ConnectivityResult>>((ref) {
+final connectivityStreamProvider = StreamProvider<List<ConnectivityResult>>((
+  ref,
+) {
   try {
     WidgetsBinding.instance;
     return Connectivity().onConnectivityChanged;
@@ -157,7 +158,8 @@ class TicketController extends Notifier<TicketState> {
 
     if (!currentTicket.canCancel) {
       state = state.copyWith(
-        errorMessage: 'Pembatalan hanya dapat dilakukan maksimal H-1 pukul 23:59 WIB.',
+        errorMessage:
+            'Pembatalan hanya dapat dilakukan maksimal H-1 pukul 23:59 WIB.',
       );
       return false;
     }
@@ -179,10 +181,7 @@ class TicketController extends Notifier<TicketState> {
       status: TicketStatus.cancelled,
       cancelNote: reason,
     );
-    state = state.copyWith(
-      ticket: updated,
-      isCancelling: false,
-    );
+    state = state.copyWith(ticket: updated, isCancelling: false);
     return true;
   }
 
@@ -214,7 +213,9 @@ class TicketController extends Notifier<TicketState> {
     state = state.copyWith(isRefreshing: true);
     await Future<void>.delayed(const Duration(milliseconds: 600));
 
-    final newRemaining = ticket.remainingQueue > 0 ? ticket.remainingQueue - 1 : 0;
+    final newRemaining = ticket.remainingQueue > 0
+        ? ticket.remainingQueue - 1
+        : 0;
     state = state.copyWith(
       isRefreshing: false,
       ticket: ticket.copyWith(remainingQueue: newRemaining),
@@ -225,5 +226,5 @@ class TicketController extends Notifier<TicketState> {
 /// Provider Riverpod untuk TicketController
 final ticketControllerProvider =
     NotifierProvider<TicketController, TicketState>(() {
-  return TicketController();
-});
+      return TicketController();
+    });

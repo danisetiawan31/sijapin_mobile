@@ -11,10 +11,7 @@ Widget _buildWrapper({required Widget child}) {
     theme: AppTheme.lightTheme,
     home: Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        child: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
   );
@@ -89,7 +86,9 @@ void main() {
       expect(brightnessToggled, isTrue);
     });
 
-    testWidgets('triggers onSimulateCheckIn callback when tapped', (tester) async {
+    testWidgets('triggers onSimulateCheckIn callback when tapped', (
+      tester,
+    ) async {
       bool simulated = false;
 
       await tester.pumpWidget(

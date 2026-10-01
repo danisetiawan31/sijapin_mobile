@@ -77,47 +77,58 @@ void main() {
       dataSource = TicketLocalDataSourceImpl(fakeStorage);
     });
 
-    test('saveTicket stores ticket model in StorageConstants.ticketsBox', () async {
-      await dataSource.saveTicket(sampleModel);
+    test(
+      'saveTicket stores ticket model in StorageConstants.ticketsBox',
+      () async {
+        await dataSource.saveTicket(sampleModel);
 
-      final retrieved = await dataSource.getTicketByBookingCode('2026101500014');
-      expect(retrieved, isNotNull);
-      expect(retrieved!.bookingCode, equals('2026101500014'));
-      expect(retrieved.queueNumber, equals('MAT-014'));
-      expect(retrieved.status, equals(TicketStatus.upcoming.name));
-    });
+        final retrieved = await dataSource.getTicketByBookingCode(
+          '2026101500014',
+        );
+        expect(retrieved, isNotNull);
+        expect(retrieved!.bookingCode, equals('2026101500014'));
+        expect(retrieved.queueNumber, equals('MAT-014'));
+        expect(retrieved.status, equals(TicketStatus.upcoming.name));
+      },
+    );
 
-    test('getAllTickets returns tickets sorted descending by scheduledDate', () async {
-      final olderTicket = TicketModel(
-        bookingCode: '2026101000001',
-        queueNumber: 'PDI-001',
-        patientName: 'Siti Rahmah',
-        doctorName: 'dr. Era Medina, Sp.PD.',
-        specialty: 'Penyakit Dalam',
-        clinic: 'Poli Penyakit Dalam',
-        clinicLocation: 'Lantai 1 - Gedung A',
-        scheduledDate: DateTime(2026, 10, 10, 8, 0),
-        scheduledTime: '08:00 WIB',
-        estimatedMinutes: 0,
-        nowServingNumber: 'PDI-001',
-        remainingQueue: 0,
-        status: TicketStatus.completed.name,
-        guarantor: 'BPJS Kesehatan',
-      );
+    test(
+      'getAllTickets returns tickets sorted descending by scheduledDate',
+      () async {
+        final olderTicket = TicketModel(
+          bookingCode: '2026101000001',
+          queueNumber: 'PDI-001',
+          patientName: 'Siti Rahmah',
+          doctorName: 'dr. Era Medina, Sp.PD.',
+          specialty: 'Penyakit Dalam',
+          clinic: 'Poli Penyakit Dalam',
+          clinicLocation: 'Lantai 1 - Gedung A',
+          scheduledDate: DateTime(2026, 10, 10, 8, 0),
+          scheduledTime: '08:00 WIB',
+          estimatedMinutes: 0,
+          nowServingNumber: 'PDI-001',
+          remainingQueue: 0,
+          status: TicketStatus.completed.name,
+          guarantor: 'BPJS Kesehatan',
+        );
 
-      await dataSource.saveTicket(sampleModel);
-      await dataSource.saveTicket(olderTicket);
+        await dataSource.saveTicket(sampleModel);
+        await dataSource.saveTicket(olderTicket);
 
-      final allTickets = await dataSource.getAllTickets();
-      expect(allTickets.length, equals(2));
-      // Tiket tanggal 15 Oktober harus berada di urutan pertama dibanding 10 Oktober
-      expect(allTickets.first.bookingCode, equals('2026101500014'));
-      expect(allTickets.last.bookingCode, equals('2026101000001'));
-    });
+        final allTickets = await dataSource.getAllTickets();
+        expect(allTickets.length, equals(2));
+        // Tiket tanggal 15 Oktober harus berada di urutan pertama dibanding 10 Oktober
+        expect(allTickets.first.bookingCode, equals('2026101500014'));
+        expect(allTickets.last.bookingCode, equals('2026101000001'));
+      },
+    );
 
     test('deleteTicket removes specific ticket by bookingCode', () async {
       await dataSource.saveTicket(sampleModel);
-      expect(await dataSource.getTicketByBookingCode('2026101500014'), isNotNull);
+      expect(
+        await dataSource.getTicketByBookingCode('2026101500014'),
+        isNotNull,
+      );
 
       await dataSource.deleteTicket('2026101500014');
       expect(await dataSource.getTicketByBookingCode('2026101500014'), isNull);

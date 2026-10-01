@@ -10,10 +10,7 @@ Widget _buildWrapper({required Widget child}) {
     theme: AppTheme.lightTheme,
     home: Scaffold(
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
+        child: Padding(padding: const EdgeInsets.all(16), child: child),
       ),
     ),
   );
@@ -46,46 +43,44 @@ void main() {
       );
     });
 
-    testWidgets('renders hero queue number, clinic, doctor, and patient details',
-        (tester) async {
-      await tester.pumpWidget(
-        _buildWrapper(
-          child: TicketBoardingPass(
-            ticket: testTicket,
-            onOpenApmQr: () {},
+    testWidgets(
+      'renders hero queue number, clinic, doctor, and patient details',
+      (tester) async {
+        await tester.pumpWidget(
+          _buildWrapper(
+            child: TicketBoardingPass(ticket: testTicket, onOpenApmQr: () {}),
           ),
-        ),
-      );
+        );
 
-      // RSUP branding
-      expect(find.text('RSUP Dr. Sitanala'), findsOneWidget);
-      expect(find.text('Terdaftar'), findsOneWidget);
+        // RSUP branding
+        expect(find.text('RSUP Dr. Sitanala'), findsOneWidget);
+        expect(find.text('Terdaftar'), findsOneWidget);
 
-      // Hero queue
-      expect(find.text('NOMOR ANTREAN ANDA'), findsOneWidget);
-      expect(find.text('MAT-014'), findsOneWidget);
-      expect(find.text('09:30 WIB'), findsOneWidget);
+        // Hero queue
+        expect(find.text('NOMOR ANTREAN ANDA'), findsOneWidget);
+        expect(find.text('MAT-014'), findsOneWidget);
+        expect(find.text('09:30 WIB'), findsOneWidget);
 
-      // Live queue tracker
-      expect(
-        find.text(
-          '3 Pasien Lagi Sebelum Anda (Sekarang: MAT-011)',
-        ),
-        findsOneWidget,
-      );
+        // Live queue tracker
+        expect(
+          find.text('3 Pasien Lagi Sebelum Anda (Sekarang: MAT-011)'),
+          findsOneWidget,
+        );
 
-      // Bento cards
-      expect(find.text('dr. Hendra Prasetyo, Sp.M.'), findsOneWidget);
-      expect(
-        find.text('Poli Mata • Lantai 2 - Gedung Rawat Jalan'),
-        findsOneWidget,
-      );
-      expect(find.text('Rhesa Panjaitan'), findsOneWidget);
-      expect(find.text('0123***'), findsOneWidget);
-    });
+        // Bento cards
+        expect(find.text('dr. Hendra Prasetyo, Sp.M.'), findsOneWidget);
+        expect(
+          find.text('Poli Mata • Lantai 2 - Gedung Rawat Jalan'),
+          findsOneWidget,
+        );
+        expect(find.text('Rhesa Panjaitan'), findsOneWidget);
+        expect(find.text('0123***'), findsOneWidget);
+      },
+    );
 
-    testWidgets('triggers onOpenApmQr callback when button tapped',
-        (tester) async {
+    testWidgets('triggers onOpenApmQr callback when button tapped', (
+      tester,
+    ) async {
       bool opened = false;
 
       await tester.pumpWidget(
@@ -103,25 +98,27 @@ void main() {
       expect(opened, isTrue);
     });
 
-    testWidgets('triggers onCancel when cancellation button tapped before deadline',
-        (tester) async {
-      bool cancelled = false;
+    testWidgets(
+      'triggers onCancel when cancellation button tapped before deadline',
+      (tester) async {
+        bool cancelled = false;
 
-      await tester.pumpWidget(
-        _buildWrapper(
-          child: TicketBoardingPass(
-            ticket: testTicket,
-            onOpenApmQr: () {},
-            onCancel: () => cancelled = true,
+        await tester.pumpWidget(
+          _buildWrapper(
+            child: TicketBoardingPass(
+              ticket: testTicket,
+              onOpenApmQr: () {},
+              onCancel: () => cancelled = true,
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(find.text('Batalkan Janji Temu'), findsOneWidget);
-      await tester.tap(find.text('Batalkan Janji Temu'));
-      await tester.pump();
+        expect(find.text('Batalkan Janji Temu'), findsOneWidget);
+        await tester.tap(find.text('Batalkan Janji Temu'));
+        await tester.pump();
 
-      expect(cancelled, isTrue);
-    });
+        expect(cancelled, isTrue);
+      },
+    );
   });
 }

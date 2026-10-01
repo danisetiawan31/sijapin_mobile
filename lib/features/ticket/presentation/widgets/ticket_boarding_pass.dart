@@ -3,6 +3,7 @@ import 'package:sijapin_mobile/core/config/app_config.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/pulse_dot.dart';
+
 import '../../domain/entities/ticket.dart';
 
 /// Kartu Fisik Digital Boarding Pass Antrean Poliklinik RSUP Dr. Sitanala
@@ -283,8 +284,9 @@ class TicketBoardingPass extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor:
-                    AppColors.brandGoldenCaramel.withValues(alpha: 0.2),
+                backgroundColor: AppColors.brandGoldenCaramel.withValues(
+                  alpha: 0.2,
+                ),
                 child: const Icon(
                   Icons.person_rounded,
                   color: AppColors.brandDarkEspresso,
@@ -402,15 +404,17 @@ class TicketBoardingPass extends StatelessWidget {
             builder: (context, constraints) {
               const dashWidth = 6.0;
               const dashSpace = 4.0;
-              final dashCount =
-                  (constraints.maxWidth / (dashWidth + dashSpace)).floor();
+              final dashCount = (constraints.maxWidth / (dashWidth + dashSpace))
+                  .floor();
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(dashCount, (_) {
                   return Container(
                     width: dashWidth,
                     height: 1.5,
-                    margin: const EdgeInsets.symmetric(horizontal: dashSpace / 2),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: dashSpace / 2,
+                    ),
                     color: AppColors.brandSoftSand,
                   );
                 }),
@@ -457,10 +461,7 @@ class TicketBoardingPass extends StatelessWidget {
             icon: const Icon(Icons.qr_code_2_rounded, size: 20),
             label: const Text(
               'Buka QR Mesin APM Lobi',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.brandGoldenCaramel,
@@ -483,7 +484,9 @@ class TicketBoardingPass extends StatelessWidget {
                       height: 14,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation(AppColors.dangerCrimson),
+                        valueColor: AlwaysStoppedAnimation(
+                          AppColors.dangerCrimson,
+                        ),
                       ),
                     )
                   : const Icon(
@@ -503,10 +506,7 @@ class TicketBoardingPass extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               'Batas pembatalan mandiri: ${DateFormatter.hariTanggalPanjang(ticket.cancelDeadline)} pukul 23:59 WIB',
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
               textAlign: TextAlign.center,
             ),
           ],

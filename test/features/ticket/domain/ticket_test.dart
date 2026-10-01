@@ -40,18 +40,21 @@ void main() {
       expect(deadline.minute, equals(AppConfig.cancellationDeadlineMinute));
     });
 
-    test('canCancel returns true when before deadline and status is upcoming', () {
-      // Waktu periksa di masa depan
-      expect(sampleTicket.canCancel, isTrue);
+    test(
+      'canCancel returns true when before deadline and status is upcoming',
+      () {
+        // Waktu periksa di masa depan
+        expect(sampleTicket.canCancel, isTrue);
 
-      // Jika sudah dibatalkan, canCancel harus false
-      final cancelled = sampleTicket.copyWith(status: TicketStatus.cancelled);
-      expect(cancelled.canCancel, isFalse);
+        // Jika sudah dibatalkan, canCancel harus false
+        final cancelled = sampleTicket.copyWith(status: TicketStatus.cancelled);
+        expect(cancelled.canCancel, isFalse);
 
-      // Jika sudah check-in, canCancel harus false
-      final checkedIn = sampleTicket.copyWith(status: TicketStatus.checkedIn);
-      expect(checkedIn.canCancel, isFalse);
-    });
+        // Jika sudah check-in, canCancel harus false
+        final checkedIn = sampleTicket.copyWith(status: TicketStatus.checkedIn);
+        expect(checkedIn.canCancel, isFalse);
+      },
+    );
 
     test('bidirectional mapping with Appointment preserves all fields', () {
       final appointment = sampleTicket.toAppointment();

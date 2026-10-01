@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/storage/local_storage_service.dart';
 import 'package:sijapin_mobile/core/storage/storage_constants.dart';
+
 import '../models/ticket_model.dart';
 
 /// Kontrak data source lokal untuk tiket antrean di Hive NoSQL
@@ -79,9 +80,7 @@ class TicketLocalDataSourceImpl implements ITicketLocalDataSource {
 
   @override
   Future<void> clearAllTickets() async {
-    await _localStorage.clearBox(
-      boxName: StorageConstants.ticketsBox,
-    );
+    await _localStorage.clearBox(boxName: StorageConstants.ticketsBox);
   }
 }
 

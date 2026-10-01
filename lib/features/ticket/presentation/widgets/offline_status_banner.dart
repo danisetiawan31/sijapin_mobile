@@ -3,11 +3,7 @@ import 'package:sijapin_mobile/core/theme/app_colors.dart';
 
 /// Banner status offline penenteram pasien saat berada di area blank spot RS (PRD FR-06.3)
 class OfflineStatusBanner extends StatelessWidget {
-  const OfflineStatusBanner({
-    super.key,
-    this.message,
-    this.isUnsynced = false,
-  });
+  const OfflineStatusBanner({super.key, this.message, this.isUnsynced = false});
 
   final String? message;
   final bool isUnsynced;
@@ -46,7 +42,9 @@ class OfflineStatusBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isUnsynced ? 'Tiket Menunggu Sinkronisasi' : 'Mode Offline Aktif',
+                  isUnsynced
+                      ? 'Tiket Menunggu Sinkronisasi'
+                      : 'Mode Offline Aktif',
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -55,8 +53,7 @@ class OfflineStatusBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  message ??
-                      'Tiket tersimpan aman di perangkat. QR Code tetap valid untuk check-in di mesin Kiosk APM lobi RS.',
+                  message ?? 'Tiket tersimpan aman di perangkat. QR Code tetap valid untuk check-in di mesin Kiosk APM lobi RS.',
                   style: TextStyle(
                     fontSize: 11,
                     height: 1.35,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+
 import '../controllers/ticket_controller.dart';
 import 'apm_qr_card.dart';
 
@@ -30,7 +31,9 @@ class ApmQrSheet extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: ticketState.isMaxBrightness ? Colors.white : AppColors.surfaceCard,
+        color: ticketState.isMaxBrightness
+            ? Colors.white
+            : AppColors.surfaceCard,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SafeArea(
@@ -87,10 +90,7 @@ class ApmQrSheet extends ConsumerWidget {
                 ),
                 child: const Text(
                   'Tutup',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
                 ),
               ),
             ],

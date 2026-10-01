@@ -62,7 +62,8 @@ class TicketRepositoryImpl implements TicketRepository {
     if (dioClient != null) {
       try {
         final customerId =
-            await secureStorage?.read(key: StorageConstants.keyCustomerId) ?? '';
+            await secureStorage?.read(key: StorageConstants.keyCustomerId) ??
+            '';
         final targetDate = scheduledDate ?? AppDateTime.now();
         final tgl =
             '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
@@ -85,13 +86,15 @@ class TicketRepositoryImpl implements TicketRepository {
     }
 
     // 2. Perbarui status tiket di penyimpanan lokal Hive
-    final existingModel = await localDataSource.getTicketByBookingCode(bookingCode);
+    final existingModel = await localDataSource.getTicketByBookingCode(
+      bookingCode,
+    );
     if (existingModel != null) {
       final updatedEntity = existingModel.toEntity().copyWith(
-            status: TicketStatus.cancelled,
-            cancelNote: reason,
-            isServerSynced: remoteCancelled,
-          );
+        status: TicketStatus.cancelled,
+        cancelNote: reason,
+        isServerSynced: remoteCancelled,
+      );
       await localDataSource.saveTicket(TicketModel.fromEntity(updatedEntity));
     }
 
@@ -100,12 +103,14 @@ class TicketRepositoryImpl implements TicketRepository {
 
   @override
   Future<void> checkInTicket(String bookingCode) async {
-    final existingModel = await localDataSource.getTicketByBookingCode(bookingCode);
+    final existingModel = await localDataSource.getTicketByBookingCode(
+      bookingCode,
+    );
     if (existingModel != null) {
       final updatedEntity = existingModel.toEntity().copyWith(
-            status: TicketStatus.checkedIn,
-            checkInTime: AppDateTime.now(),
-          );
+        status: TicketStatus.checkedIn,
+        checkInTime: AppDateTime.now(),
+      );
       await localDataSource.saveTicket(TicketModel.fromEntity(updatedEntity));
     }
   }

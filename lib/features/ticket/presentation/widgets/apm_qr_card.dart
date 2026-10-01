@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+
 import '../../domain/entities/ticket.dart';
 
 /// Kartu Pemindai Optik Kiosk APM (High-Contrast QR Code & Kontrol Kecerahan)
@@ -54,7 +55,9 @@ class ApmQrCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: AppColors.brandGoldenCaramel.withValues(alpha: 0.15),
+                      color: AppColors.brandGoldenCaramel.withValues(
+                        alpha: 0.15,
+                      ),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -146,7 +149,8 @@ class ApmQrCard extends StatelessWidget {
                 ],
               ),
               child: Semantics(
-                label: 'QR Code untuk pemindaian di mesin Anjungan Pasien Mandiri',
+                label:
+                    'QR Code untuk pemindaian di mesin Anjungan Pasien Mandiri',
                 value: ticket.qrPayload,
                 child: QrImageView(
                   data: ticket.qrPayload,
@@ -173,9 +177,7 @@ class ApmQrCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.brandCreamLinen,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: AppColors.brandSoftSand,
-              ),
+              border: Border.all(color: AppColors.brandSoftSand),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -233,14 +235,13 @@ class ApmQrCard extends StatelessWidget {
 
           const SizedBox(height: 12),
           Text(
-            ticket.isCheckedIn
-                ? '✓ Tiket ini telah diverifikasi di Kiosk APM'
-                : 'Arahkan QR Code ini ke lensa pemindai mesin Kiosk APM saat tiba di lobi RS.',
+            ticket.isCheckedIn ? '✓ Tiket ini telah diverifikasi di Kiosk APM' : 'Arahkan QR Code ini ke lensa pemindai mesin Kiosk APM saat tiba di lobi RS.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 11,
-              fontWeight:
-                  ticket.isCheckedIn ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: ticket.isCheckedIn
+                  ? FontWeight.w700
+                  : FontWeight.w500,
               color: ticket.isCheckedIn
                   ? AppColors.clinicalTeal
                   : AppColors.textMuted,
@@ -294,21 +295,39 @@ class _ScannerBracketPainter extends CustomPainter {
 
     // Top-Right
     canvas.drawLine(
-        Offset(size.width, 0), Offset(size.width - cornerLength, 0), paint);
+      Offset(size.width, 0),
+      Offset(size.width - cornerLength, 0),
+      paint,
+    );
     canvas.drawLine(
-        Offset(size.width, 0), Offset(size.width, cornerLength), paint);
+      Offset(size.width, 0),
+      Offset(size.width, cornerLength),
+      paint,
+    );
 
     // Bottom-Left
     canvas.drawLine(
-        Offset(0, size.height), Offset(cornerLength, size.height), paint);
+      Offset(0, size.height),
+      Offset(cornerLength, size.height),
+      paint,
+    );
     canvas.drawLine(
-        Offset(0, size.height), Offset(0, size.height - cornerLength), paint);
+      Offset(0, size.height),
+      Offset(0, size.height - cornerLength),
+      paint,
+    );
 
     // Bottom-Right
-    canvas.drawLine(Offset(size.width, size.height),
-        Offset(size.width - cornerLength, size.height), paint);
-    canvas.drawLine(Offset(size.width, size.height),
-        Offset(size.width, size.height - cornerLength), paint);
+    canvas.drawLine(
+      Offset(size.width, size.height),
+      Offset(size.width - cornerLength, size.height),
+      paint,
+    );
+    canvas.drawLine(
+      Offset(size.width, size.height),
+      Offset(size.width, size.height - cornerLength),
+      paint,
+    );
   }
 
   @override

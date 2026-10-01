@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+
 import '../../domain/entities/ticket.dart';
 
 /// Stepper 3 Tahap Kedatangan Fisik Pasien di RSUP Dr. Sitanala (Task ID BPJS)
 class KioskArrivalStepper extends StatelessWidget {
-  const KioskArrivalStepper({
-    super.key,
-    required this.ticket,
-  });
+  const KioskArrivalStepper({super.key, required this.ticket});
 
   final Ticket ticket;
 
@@ -86,8 +84,8 @@ class KioskArrivalStepper extends StatelessWidget {
             subtitle: isStep3Done
                 ? 'Pemeriksaan dokter selesai'
                 : (isStep3Active
-                    ? 'Menunggu dipanggil oleh perawat poli'
-                    : 'Menunggu proses check-in APM'),
+                      ? 'Menunggu dipanggil oleh perawat poli'
+                      : 'Menunggu proses check-in APM'),
             isCompleted: isStep3Done,
             isActive: isStep3Active,
             isLast: true,
@@ -149,8 +147,9 @@ class KioskArrivalStepper extends StatelessWidget {
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: AppColors.brandGoldenCaramel
-                                .withValues(alpha: 0.35),
+                            color: AppColors.brandGoldenCaramel.withValues(
+                              alpha: 0.35,
+                            ),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -186,13 +185,14 @@ class KioskArrivalStepper extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 13,
-                            fontWeight:
-                                isActive ? FontWeight.w700 : FontWeight.w600,
+                            fontWeight: isActive
+                                ? FontWeight.w700
+                                : FontWeight.w600,
                             color: isActive
                                 ? AppColors.brandDarkEspresso
                                 : (isCompleted
-                                    ? AppColors.brandDarkEspresso
-                                    : AppColors.textMuted),
+                                      ? AppColors.brandDarkEspresso
+                                      : AppColors.textMuted),
                           ),
                         ),
                       ),
@@ -204,8 +204,9 @@ class KioskArrivalStepper extends StatelessWidget {
                             vertical: 1,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.brandGoldenCaramel
-                                .withValues(alpha: 0.15),
+                            color: AppColors.brandGoldenCaramel.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
