@@ -14,6 +14,15 @@ class AppConstants {
   static const String hospitalOperatingHours =
       'Buka 24 jam untuk layanan IGD & Ambulans.';
 
+  // Tautan universal Google Maps menuju RSUP Dr. Sitanala Tangerang.
+  // Dipakai tombol "Lokasi RS" di Beranda agar user langsung mendapat
+  // halaman navigasi/arah jalan tanpa harus mengetik alamat secara manual.
+  static const String hospitalMapsUrl =
+      'https://www.google.com/maps/dir//RSUP+Dr.+Sitanala+Tangerang,+Jl.+DR.+'
+      'Sitanala+No.99,+RT.002%2FRW.003,+Karang+Sari,+Kec.+Neglasari,+Kota+'
+      'Tangerang,+Banten+15121/data=!4m6!4m5!1m1!4e2!1m2!1m1!1s'
+      '0x2e69f8ca0d055a17:0x743efba65114c9ca?sa=X&ved=1t:57443&ictx=111';
+
   // 2. Kontak Tunggal & Hotline Resmi RSUP Dr. Sitanala (Single Source of Truth)
   // Menyatukan seluruh nomor panggilan IGD, Ambulans, Admisi, dan Call Center
   static const String hospitalPhoneNumber = '(021) 552-3059';
