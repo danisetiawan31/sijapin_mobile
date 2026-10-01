@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sijapin_mobile/features/auth/presentation/views/login_view.dart';
+import 'package:sijapin_mobile/features/auth/presentation/screens/login_view.dart';
 
 void main() {
   testWidgets('login view renders required authentication controls', (
