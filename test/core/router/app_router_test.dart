@@ -156,7 +156,7 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 400));
         expect(find.text('Tiket Aktif'), findsOneWidget);
-        expect(find.text('Tiket Kunjungan Aktif'), findsOneWidget);
+        expect(find.text('Belum Ada Janji Temu'), findsOneWidget);
 
         // Tap Tab 3: Jadwal
         await tester.tap(

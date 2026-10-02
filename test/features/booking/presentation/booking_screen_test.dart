@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/booking_screen.dart';
@@ -61,15 +62,41 @@ final _testHistory = [
   ),
 ];
 
+Appointment get _defaultActiveAppointment {
+  final now = AppDateTime.now();
+  return Appointment(
+    bookingCode: '260930014221',
+    queueNumber: 'MAT-014',
+    patientName: 'Rhesa Panjaitan',
+    doctorName: 'dr. Hendra Prasetyo, Sp.M.',
+    specialty: 'Spesialis Mata',
+    clinic: 'Poli Mata',
+    scheduledDate: AppDateTime.wibDateTime(
+      now.year,
+      now.month,
+      now.day + 1,
+      9,
+      30,
+    ),
+    scheduledTime: '09:30 WIB',
+    estimatedMinutes: 15,
+    nowServingNumber: 'MAT-011',
+    remainingQueue: 3,
+    patientRelation: 'Diri Sendiri',
+    medicalRecord: '0123***',
+    isServerSynced: true,
+  );
+}
+
 ProviderContainer _createContainer({
   Appointment? activeAppointment,
   bool overrideActive = false,
 }) {
+  final effective = overrideActive ? activeAppointment : (activeAppointment ?? _defaultActiveAppointment);
   return ProviderContainer(
     overrides: [
       appointmentHistoryProvider.overrideWithValue(_testHistory),
-      if (overrideActive)
-        activeAppointmentProvider.overrideWithValue(activeAppointment),
+      activeAppointmentProvider.overrideWithValue(effective),
     ],
   );
 }

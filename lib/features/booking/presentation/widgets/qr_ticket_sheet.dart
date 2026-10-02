@@ -34,6 +34,14 @@ class _QrTicketSheetState extends ConsumerState<QrTicketSheet> {
   bool _isMaxBrightness = false;
 
   @override
+  void dispose() {
+    if (_isMaxBrightness) {
+      ref.read(ticketControllerProvider.notifier).setMaxBrightness(false);
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appointment = widget.appointment;

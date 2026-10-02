@@ -3,18 +3,28 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/features/booking/data/repositories/booking_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
-
+import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
 
-/// Provider tiket janji temu aktif yang terhubung secara reaktif ke modul tiket (Epic 06)
+/// Provider tiket janji temu aktif yang terhubung secara reaktif ke TicketController (SSOT)
 final activeAppointmentProvider = Provider<Appointment?>((ref) {
   final ticketState = ref.watch(ticketControllerProvider);
   final ticket = ticketState.ticket;
-  if (ticket == null || ticket.isCancelled || ticket.isCompleted) return null;
-  return ticket.toAppointment();
+  if (ticket != null && !ticket.isCancelled && !ticket.isCompleted) {
+    return ticket.toAppointment();
+  }
+  return null;
 });
 
-/// Riwayat kunjungan yang sudah selesai atau dibatalkan (terhubung ke modul tiket).
+/// Provider riwayat janji temu live dari backend SIMRS (`Daftar_Log`)
+final liveBookingHistoryProvider = FutureProvider<List<Appointment>>((
+  ref,
+) async {
+  final repo = ref.watch(bookingRepositoryProvider);
+  return repo.getBookingHistory();
+});
+
+/// Riwayat kunjungan yang sudah selesai atau dibatalkan (terhubung ke modul tiket & riwayat lokal).
 final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
   final ticketState = ref.watch(ticketControllerProvider);
   final List<Appointment> history = [];
@@ -58,19 +68,25 @@ class BookingController extends Notifier<BookingState> {
   BookingState build() =>
       BookingState(appointment: ref.watch(activeAppointmentProvider));
 
-  /// Muat ulang status antrean; sisa antrean berkurang satu tiap penyegaran
-  /// sampai nomor Anda dipanggil. Placeholder sampai endpoint asli tersedia.
+  /// Muat ulang status antrean; sinkronkan ke modul tiket dan backend SIMRS.
   Future<void> refreshQueue() async {
     if (state.isRefreshing) return;
     state = state.copyWith(isRefreshing: true);
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+
+    // 1. Sinkronkan antrean & outbox ke TicketController
+    await ref.read(ticketControllerProvider.notifier).refreshQueue();
+
+    // 2. Refresh live booking history dari backend
+    ref.invalidate(liveBookingHistoryProvider);
+
     final Appointment? appointment = state.appointment;
     if (appointment != null) {
       state = state.copyWith(
         appointment: appointment.copyWith(
-          remainingQueue: appointment.remainingQueue > 0
-              ? appointment.remainingQueue - 1
-              : 0,
+          remainingQueue:
+              appointment.remainingQueue > 0
+                  ? appointment.remainingQueue - 1
+                  : 0,
         ),
         isRefreshing: false,
       );
@@ -79,9 +95,14 @@ class BookingController extends Notifier<BookingState> {
     state = state.copyWith(isRefreshing: false);
   }
 
-  /// Menetapkan janji temu aktif hasil booking baru
+  /// Menetapkan janji temu aktif hasil booking baru dan menyinkronkannya ke TicketController
   void setAppointment(Appointment appointment) {
     state = state.copyWith(appointment: appointment);
+    unawaited(
+      ref
+          .read(ticketControllerProvider.notifier)
+          .saveNewTicket(Ticket.fromAppointment(appointment)),
+    );
   }
 
   Future<void> cancelAppointment({

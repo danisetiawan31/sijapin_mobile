@@ -381,6 +381,79 @@ class BookingRepositoryImpl implements BookingRepository {
     return cancelSuccess;
   }
 
+  @override
+  Future<List<Appointment>> getBookingHistory() async {
+    final List<Appointment> list = [];
+
+    // 1. Ambil riwayat live dari backend CI3 (Daftar_Log)
+    if (bookingRemoteDataSource != null) {
+      try {
+        final remoteLogs = await bookingRemoteDataSource!.fetchBookingHistory();
+        for (final item in remoteLogs) {
+          final isCancelled = item['isCancelled'] == true;
+          final desc = item['description']?.toString() ?? '';
+          final rawDate = item['rawDate']?.toString() ?? '';
+          final verifCode = item['verificationCode']?.toString() ?? '';
+
+          DateTime date = AppDateTime.now();
+          if (rawDate.isNotEmpty && rawDate.length >= 8) {
+            final y = int.tryParse(rawDate.substring(0, 4)) ?? 2026;
+            final m = int.tryParse(rawDate.substring(4, 6)) ?? 1;
+            final d = int.tryParse(rawDate.substring(6, 8)) ?? 1;
+            date = DateTime(y, m, d);
+          }
+
+          list.add(
+            Appointment(
+              bookingCode: verifCode.isNotEmpty
+                  ? verifCode
+                  : 'HIST-${date.millisecondsSinceEpoch}',
+              queueNumber: '-',
+              patientName: 'Pasien Terdaftar',
+              medicalRecord: '-',
+              doctorName:
+                  desc.isNotEmpty
+                      ? desc.split('\n').first.trim()
+                      : 'Dokter Spesialis',
+              specialty: 'Spesialis RSUP Sitanala',
+              clinic: 'Poliklinik Rawat Jalan',
+              scheduledDate: date,
+              scheduledTime: '08:00 - 12:00 WIB',
+              estimatedMinutes: 30,
+              nowServingNumber: '-',
+              remainingQueue: 0,
+              status:
+                  isCancelled
+                      ? AppointmentStatus.cancelled
+                      : AppointmentStatus.completed,
+              patientRelation: 'Diri Sendiri',
+              isServerSynced: true,
+            ),
+          );
+        }
+      } catch (_) {}
+    }
+
+    // 2. Gabungkan dengan data tiket lokal Hive NoSQL (status cancelled / completed)
+    if (ticketLocalDataSource != null) {
+      try {
+        final localTickets = await ticketLocalDataSource!.getAllTickets();
+        for (final model in localTickets) {
+          final entity = model.toEntity();
+          if (entity.isCancelled || entity.isCompleted) {
+            if (!list.any((a) => a.bookingCode == entity.bookingCode)) {
+              list.add(entity.toAppointment());
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Urutkan riwayat dari tanggal terbaru (descending)
+    list.sort((a, b) => b.scheduledDate.compareTo(a.scheduledDate));
+    return list;
+  }
+
   int _calculateQueueIndex(String time) {
     try {
       final parts = time.split(':');

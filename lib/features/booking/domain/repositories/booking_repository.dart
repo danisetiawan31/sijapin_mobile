@@ -29,4 +29,9 @@ abstract interface class BookingRepository {
     int? memberId,
     DateTime? scheduledDate,
   });
+
+  /// Mengambil riwayat kunjungan lampau dari server CI3 (`Daftar_Log`)
+  /// digabungkan dengan tiket yang tersimpan di basis data lokal.
+  Future<List<Appointment>> getBookingHistory();
 }
+

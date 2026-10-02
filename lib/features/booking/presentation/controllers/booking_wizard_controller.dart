@@ -10,6 +10,8 @@ import 'package:sijapin_mobile/features/profile/domain/entities/family_member.da
 import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
 
 import 'booking_controller.dart';
+import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
+import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
 
 /// State wizard pendaftaran rawat jalan
 class BookingWizardState {
@@ -227,6 +229,9 @@ class BookingWizardController extends Notifier<BookingWizardState> {
 
       // Integrasikan hasil booking langsung ke Tab Janji Temu rekan!
       ref.read(bookingControllerProvider.notifier).setAppointment(appointment);
+      await ref
+          .read(ticketControllerProvider.notifier)
+          .saveNewTicket(Ticket.fromAppointment(appointment));
 
       return appointment;
     } catch (e) {
