@@ -166,42 +166,43 @@ void main() {
         expect(appointment.bookingCode, startsWith('20261015'));
         expect(appointment.queueNumber, startsWith('MAT-'));
 
-        // Verifikasi 5 tahapan panggilan CI3 (termasuk session cleanup finish_daftar)
-        expect(mockDio.callPaths.length, equals(5));
-        expect(mockDio.callPaths[0], equals(ApiConstants.bookingInputPasien));
+        // Verifikasi 6 tahapan panggilan CI3 (termasuk get_jam_pelayanan & session cleanup finish_daftar)
+        expect(mockDio.callPaths.length, equals(6));
+        expect(mockDio.callPaths[0], equals(ApiConstants.bookingJamPelayanan));
+        expect(mockDio.callPaths[1], equals(ApiConstants.bookingInputPasien));
         expect(
-          mockDio.callPaths[1],
+          mockDio.callPaths[2],
           equals(ApiConstants.bookingInputKunjungan),
         );
         expect(
-          mockDio.callPaths[2],
+          mockDio.callPaths[3],
           equals(ApiConstants.bookingInputPembayaran),
         );
-        expect(mockDio.callPaths[3], equals(ApiConstants.bookingInsertRajal));
-        expect(mockDio.callPaths[4], equals(ApiConstants.bookingFinishDaftar));
+        expect(mockDio.callPaths[4], equals(ApiConstants.bookingInsertRajal));
+        expect(mockDio.callPaths[5], equals(ApiConstants.bookingFinishDaftar));
         expect(appointment.isServerSynced, isTrue);
 
         // Verifikasi payload Step 1: Pasien
-        final step1Data = mockDio.callData[0] as FormData;
+        final step1Data = mockDio.callData[1] as FormData;
         final step1Map = Map.fromEntries(step1Data.fields);
         expect(step1Map['id_member'], equals('101'));
         expect(step1Map['rd_nomr'], equals('1'));
         expect(step1Map['nama_pasien'], equals('Ahmad Fauzi Rahman'));
 
         // Verifikasi payload Step 2: Kunjungan
-        final step2Data = mockDio.callData[1] as FormData;
+        final step2Data = mockDio.callData[2] as FormData;
         final step2Map = Map.fromEntries(step2Data.fields);
         expect(step2Map['poli_tujuan'], equals('2'));
         expect(step2Map['dokter_tujuan'], equals('doc-02'));
         expect(step2Map['tgl_kunjungan'], equals('15-10-2026'));
 
         // Verifikasi payload Step 3: Pembayaran
-        final step3Data = mockDio.callData[2] as FormData;
+        final step3Data = mockDio.callData[3] as FormData;
         final step3Map = Map.fromEntries(step3Data.fields);
         expect(step3Map['cara_bayar'], equals('BPJS'));
 
         // Verifikasi payload Step 4: Final Insert
-        final step4Data = mockDio.callData[3] as FormData;
+        final step4Data = mockDio.callData[4] as FormData;
         final step4Map = Map.fromEntries(step4Data.fields);
         expect(step4Map['member_id'], equals('101'));
         expect(step4Map['poli'], equals('2'));

@@ -23,7 +23,7 @@ class DoctorScheduleRemoteDataSource
       );
 
       final html = response.data;
-      if (html == null || html.isEmpty) return _defaultPolyclinics;
+      if (html == null || html.isEmpty) return const [];
 
       final document = html_parser.parse(html);
       final cards = document.querySelectorAll('.ruangan-card, .keterangan-cards');
@@ -55,9 +55,9 @@ class DoctorScheduleRemoteDataSource
         }
       }
 
-      return clinics.isNotEmpty ? clinics : _defaultPolyclinics;
+      return clinics;
     } catch (_) {
-      return _defaultPolyclinics;
+      return const [];
     }
   }
 
@@ -194,71 +194,4 @@ class DoctorScheduleRemoteDataSource
     if (id <= 30) return 'Lantai 2';
     return 'Lantai 3';
   }
-
-  static const List<Polyclinic> _defaultPolyclinics = [
-    Polyclinic(
-      id: 1,
-      name: 'Penyakit Dalam',
-      code: 'PDI',
-      bpjsCode: 'INT',
-      floor: 'Lantai 1',
-      description: 'Layanan spesialis penyakit dalam & organ tubuh',
-    ),
-    Polyclinic(
-      id: 2,
-      name: 'Kebidanan & Kandungan',
-      code: 'OBG',
-      bpjsCode: 'OBG',
-      floor: 'Lantai 2',
-      description: 'Antenatal care (ANC), USG, ginekologi, & KB',
-    ),
-    Polyclinic(
-      id: 3,
-      name: 'Anak',
-      code: 'ANA',
-      bpjsCode: 'ANA',
-      floor: 'Lantai 1',
-      description: 'Tumbuh kembang anak, imunisasi dasar, & pediatri',
-    ),
-    Polyclinic(
-      id: 4,
-      name: 'Bedah Umum',
-      code: 'BED',
-      bpjsCode: 'BED',
-      floor: 'Lantai 2',
-      description: 'Konsultasi & tindakan bedah umum',
-    ),
-    Polyclinic(
-      id: 5,
-      name: 'Gigi',
-      code: 'GIG',
-      bpjsCode: 'GND',
-      floor: 'Lantai 1',
-      description: 'Konservasi gigi, bedah mulut, & periodonsia',
-    ),
-    Polyclinic(
-      id: 29,
-      name: 'Mata',
-      code: 'MAT',
-      bpjsCode: 'MAT',
-      floor: 'Lantai 2',
-      description: 'Pemeriksaan refraksi, katarak, glaukoma, & retina',
-    ),
-    Polyclinic(
-      id: 30,
-      name: 'Paru',
-      code: 'PAR',
-      bpjsCode: 'PAR',
-      floor: 'Lantai 2',
-      description: 'Pemeriksaan paru, asma, & penyakit pernapasan',
-    ),
-    Polyclinic(
-      id: 43,
-      name: 'Saraf',
-      code: 'SAR',
-      bpjsCode: 'SAR',
-      floor: 'Lantai 2',
-      description: 'Pemeriksaan saraf, stroke, vertigo, & neurologi',
-    ),
-  ];
 }

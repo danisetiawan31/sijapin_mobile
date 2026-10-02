@@ -2,11 +2,77 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
+import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/booking_screen.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/history_filter_bar.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/qr_ticket_sheet.dart';
 import 'package:sijapin_mobile/features/booking/presentation/widgets/visit_proof_sheet.dart';
+
+final _testHistory = [
+  Appointment(
+    bookingCode: '2026091200089',
+    queueNumber: 'MAT-008',
+    patientName: 'Siti Rahmah',
+    doctorName: 'dr. Hendra, Sp.M.',
+    specialty: 'Spesialis Mata',
+    clinic: 'Poli Mata',
+    scheduledDate: DateTime(2026, 9, 12, 9, 30),
+    scheduledTime: '09.30 WIB',
+    estimatedMinutes: 0,
+    nowServingNumber: 'MAT-008',
+    remainingQueue: 0,
+    status: AppointmentStatus.completed,
+    patientRelation: 'Keluarga',
+    medicalRecord: '0456**',
+  ),
+  Appointment(
+    bookingCode: '2026080400122',
+    queueNumber: 'PDI-006',
+    patientName: 'Ahmad Dhani Setiawan',
+    doctorName: 'dr. Era Medina, Sp.PD',
+    specialty: 'Spesialis Penyakit Dalam',
+    clinic: 'Poli Penyakit Dalam',
+    scheduledDate: DateTime(2026, 8, 4, 10, 0),
+    scheduledTime: '10.00 WIB',
+    estimatedMinutes: 0,
+    nowServingNumber: 'PDI-006',
+    remainingQueue: 0,
+    status: AppointmentStatus.completed,
+    patientRelation: 'Diri Sendiri',
+    medicalRecord: '0123**',
+  ),
+  Appointment(
+    bookingCode: '2026071500045',
+    queueNumber: 'THT-004',
+    patientName: 'Ahmad Dhani Setiawan',
+    doctorName: 'dr. Rian Pramudita, Sp.THT',
+    specialty: 'Spesialis THT-KL',
+    clinic: 'Poli THT-KL',
+    scheduledDate: DateTime(2026, 7, 15, 8, 30),
+    scheduledTime: '08.30 WIB',
+    estimatedMinutes: 0,
+    nowServingNumber: 'THT-004',
+    remainingQueue: 0,
+    status: AppointmentStatus.cancelled,
+    patientRelation: 'Diri Sendiri',
+    medicalRecord: '0123**',
+    cancelNote: 'Dibatalkan oleh pasien (H-1)',
+  ),
+];
+
+ProviderContainer _createContainer({
+  Appointment? activeAppointment,
+  bool overrideActive = false,
+}) {
+  return ProviderContainer(
+    overrides: [
+      appointmentHistoryProvider.overrideWithValue(_testHistory),
+      if (overrideActive)
+        activeAppointmentProvider.overrideWithValue(activeAppointment),
+    ],
+  );
+}
 
 Widget _buildApp(ProviderContainer container) {
   return UncontrolledProviderScope(
@@ -18,7 +84,7 @@ Widget _buildApp(ProviderContainer container) {
 void main() {
   group('BookingScreen (tiket antrean digital)', () {
     testWidgets('menampilkan tiket aktif sesuai desain tiket', (tester) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -56,7 +122,7 @@ void main() {
     });
 
     testWidgets('tiket aktif tetap utuh pada layar sempit', (tester) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
       tester.view.physicalSize = const Size(360, 640);
       tester.view.devicePixelRatio = 1;
@@ -84,7 +150,7 @@ void main() {
     testWidgets('Buka Tiket QR APM menampilkan bottom sheet QR', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -115,7 +181,7 @@ void main() {
     testWidgets('membatalkan janji temu melalui dialog konfirmasi', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -140,9 +206,7 @@ void main() {
     testWidgets('menampilkan state kosong saat tidak ada janji temu', (
       tester,
     ) async {
-      final container = ProviderContainer(
-        overrides: [activeAppointmentProvider.overrideWithValue(null)],
-      );
+      final container = _createContainer(overrideActive: true);
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -155,7 +219,7 @@ void main() {
     testWidgets('berpindah ke Riwayat Selesai menampilkan daftar kunjungan', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -195,7 +259,7 @@ void main() {
     testWidgets('filter Riwayat Selesai menyaring kartu sesuai status', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -229,7 +293,7 @@ void main() {
     testWidgets('Lihat Bukti Kunjungan membuka bottom sheet bukti', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -277,7 +341,7 @@ void main() {
     testWidgets('ikon sinkron menampilkan status antrean terbaru', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));

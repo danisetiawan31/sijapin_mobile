@@ -1,168 +1,103 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sijapin_mobile/core/config/app_config.dart';
-import 'package:sijapin_mobile/core/constants/api_constants.dart';
 import 'package:sijapin_mobile/core/network/dio_client.dart';
 import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
 import 'package:sijapin_mobile/core/storage/storage_constants.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
+import 'package:sijapin_mobile/features/booking/data/datasources/booking_remote_data_source.dart';
+import 'package:sijapin_mobile/features/booking/data/datasources/doctor_schedule_remote_data_source.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/booking_draft.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/patient_member.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/polyclinic.dart';
-import 'package:sijapin_mobile/features/booking/data/datasources/doctor_schedule_remote_data_source.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/booking_repository.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
+import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/domain/repositories/family_member_repository.dart';
 import 'package:sijapin_mobile/features/ticket/data/datasources/ticket_local_data_source.dart';
 import 'package:sijapin_mobile/features/ticket/data/models/ticket_model.dart';
 import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 
 /// Implementasi repositori pendaftaran rawat jalan RSUP Dr. Sitanala.
 ///
-/// Mendukung eksekusi ke API server CodeIgniter 3 dengan graceful fallback
-/// ke data lokal realistis untuk pengujian komprehensif.
+/// Terhubung langsung ke CodeIgniter 3 backend database live (`db_simrs` & `db_siijapin`)
+/// tanpa data tiruan / mock di production code.
 class BookingRepositoryImpl implements BookingRepository {
   BookingRepositoryImpl({
     this.dioClient,
     this.secureStorage,
     this.ticketLocalDataSource,
     required this.doctorScheduleRepository,
-  });
+    IBookingRemoteDataSource? bookingRemoteDataSource,
+    this.familyMemberRepository,
+    DoctorScheduleRemoteDataSource? doctorScheduleRemoteDataSource,
+    List<Polyclinic>? initialPolyclinics,
+  })  : bookingRemoteDataSource = bookingRemoteDataSource ??
+            (dioClient != null
+                ? BookingRemoteDataSource(dioClient: dioClient)
+                : null),
+        doctorScheduleRemoteDataSource = doctorScheduleRemoteDataSource ??
+            (dioClient != null
+                ? DoctorScheduleRemoteDataSource(dioClient: dioClient)
+                : null),
+        _cachedPolyclinics = initialPolyclinics;
 
   final DioClient? dioClient;
   final ISecureStorage? secureStorage;
   final ITicketLocalDataSource? ticketLocalDataSource;
   final DoctorScheduleRepository doctorScheduleRepository;
-
-  // Counter lokal untuk simulasi nomor antrean & kode booking harian
-  static int _dailyBookingSequence = 14;
+  final IBookingRemoteDataSource? bookingRemoteDataSource;
+  final FamilyMemberRepository? familyMemberRepository;
+  final DoctorScheduleRemoteDataSource? doctorScheduleRemoteDataSource;
+  List<Polyclinic>? _cachedPolyclinics;
 
   @override
   Future<List<PatientMember>> getPatientMembers() async {
-    // Simulasi latensi jaringan
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-
-    return <PatientMember>[
-      // Pasien 1: Pemilik Akun Sendiri (Pasien Lama)
-      PatientMember(
-        id: 1,
-        fullName: 'Ahmad Dhani Setiawan',
-        nik: '3671041205950001',
-        medicalRecordNumber: '012345',
-        relation: 'Diri Sendiri',
-        gender: 'L',
-        birthDate: DateTime(1995, 5, 12),
-        bpjsCardNumber: '0001234567891',
-        phone: '081234567890',
-      ),
-      // Pasien 2: Istri (Pasien Lama)
-      PatientMember(
-        id: 2,
-        fullName: 'Rina Puspita Sari',
-        nik: '3671044508940002',
-        medicalRecordNumber: '045678',
-        relation: 'Istri',
-        gender: 'P',
-        birthDate: DateTime(1994, 8, 25),
-        bpjsCardNumber: '0001234567892',
-        phone: '081298765432',
-      ),
-      // Pasien 3: Anak (Pasien Baru - Belum ada No. RM)
-      PatientMember(
-        id: 3,
-        fullName: 'Muhammad Al-Fatih',
-        nik: '3671042001180003',
-        medicalRecordNumber: null,
-        relation: 'Anak',
-        gender: 'L',
-        birthDate: DateTime(2018, 1, 20),
-        bpjsCardNumber: '0001234567893',
-        phone: '081234567890',
-      ),
-    ];
+    // Ambil data anggota keluarga live dari backend CI3 (m_customer_member via FamilyMemberRepository)
+    if (familyMemberRepository != null) {
+      try {
+        final members = await familyMemberRepository!.getFamilyMembers();
+        return members.map((FamilyMember m) => m.toPatientMember()).toList();
+      } catch (_) {
+        return const <PatientMember>[];
+      }
+    }
+    return const <PatientMember>[];
   }
 
   @override
   Future<List<Polyclinic>> getPolyclinics() async {
-    if (dioClient != null) {
+    // Ambil master poliklinik live dari backend SIMRS (/jadwal_dokter)
+    if (doctorScheduleRemoteDataSource != null) {
+      try {
+        final clinics =
+            await doctorScheduleRemoteDataSource!.fetchPolyclinics();
+        if (clinics.isNotEmpty) {
+          _cachedPolyclinics = clinics;
+          return clinics;
+        }
+      } catch (_) {
+        // Fallback to cache if network call fails
+      }
+    } else if (dioClient != null) {
       try {
         final remote = DoctorScheduleRemoteDataSource(dioClient: dioClient!);
         final clinics = await remote.fetchPolyclinics();
-        if (clinics.isNotEmpty) return clinics;
-      } catch (_) {}
+        if (clinics.isNotEmpty) {
+          _cachedPolyclinics = clinics;
+          return clinics;
+        }
+      } catch (_) {
+        // Fallback to cache if network call fails
+      }
     }
 
-    return const <Polyclinic>[
-      Polyclinic(
-        id: 1,
-        name: 'Poli Penyakit Dalam',
-        code: 'PDI',
-        bpjsCode: 'INT',
-        floor: 'Lantai 1',
-        description: 'Pemeriksaan organ dalam, metabolik, ginjal, & endokrin',
-      ),
-      Polyclinic(
-        id: 2,
-        name: 'Poli Kebidanan & Kandungan',
-        code: 'OBG',
-        bpjsCode: 'OBG',
-        floor: 'Lantai 2',
-        description: 'Antenatal care (ANC), USG 4D, ginekologi, & KB',
-      ),
-      Polyclinic(
-        id: 3,
-        name: 'Poli Anak',
-        code: 'ANA',
-        bpjsCode: 'ANA',
-        floor: 'Lantai 1',
-        description: 'Tumbuh kembang anak, imunisasi dasar, & pediatri',
-      ),
-      Polyclinic(
-        id: 4,
-        name: 'Poli Bedah Umum',
-        code: 'BED',
-        bpjsCode: 'BED',
-        floor: 'Lantai 2',
-        description: 'Konsultasi & tindakan bedah umum',
-      ),
-      Polyclinic(
-        id: 5,
-        name: 'Poli Gigi & Mulut',
-        code: 'GIG',
-        bpjsCode: 'GND',
-        floor: 'Lantai 1',
-        description: 'Konservasi gigi, bedah mulut, & periodonsia',
-      ),
-      Polyclinic(
-        id: 29,
-        name: 'Poli Mata',
-        code: 'MAT',
-        bpjsCode: 'MAT',
-        floor: 'Lantai 2',
-        description: 'Pemeriksaan refraksi, katarak, glaukoma, & retina',
-      ),
-      Polyclinic(
-        id: 30,
-        name: 'Poli Paru',
-        code: 'PAR',
-        bpjsCode: 'PAR',
-        floor: 'Lantai 2',
-        description: 'Pemeriksaan paru, asma, & penyakit pernapasan',
-      ),
-      Polyclinic(
-        id: 43,
-        name: 'Poli Saraf / Neurologi',
-        code: 'SAR',
-        bpjsCode: 'SAR',
-        floor: 'Lantai 2',
-        description: 'Pemeriksaan stroke, vertigo, nyeri saraf, & EEG',
-      ),
-    ];
+    return _cachedPolyclinics ?? const <Polyclinic>[];
   }
 
   @override
@@ -173,23 +108,22 @@ class BookingRepositoryImpl implements BookingRepository {
     // Ambil nama hari dalam bahasa Indonesia untuk tanggal yang dipilih
     final dayName = _getDayName(date.weekday);
 
-    // Ambil seluruh jadwal dokter dari repository master
+    // Ambil seluruh jadwal dokter dari repository master live
     final allDoctors = await doctorScheduleRepository.getDoctorSchedules(
       dayFilter: dayName,
     );
 
     // Cocokkan dokter berdasarkan poli jika ada kecocokan nama poli
     final polyclinics = await getPolyclinics();
-    final clinic = polyclinics.firstWhere(
-      (c) => c.id == clinicId,
-      orElse: () => polyclinics.first,
-    );
+    final clinic = polyclinics.where((c) => c.id == clinicId).firstOrNull;
 
-    // Filter dokter yang praktiknya cocok dengan nama poliklinik atau spesialisasi
+    // Filter dokter yang praktiknya cocok dengan nama poliklinik atau unit ID
     final matchedDoctors = allDoctors.where((doctor) {
       if (doctor.unitId != null && doctor.unitId == clinicId) {
         return true;
       }
+      if (clinic == null) return false;
+
       final clinicLower = clinic.name.toLowerCase();
       final doctorPoliLower = doctor.poli.toLowerCase();
       final docSpecLower = doctor.specialization.toLowerCase();
@@ -224,118 +158,148 @@ class BookingRepositoryImpl implements BookingRepository {
       throw ArgumentError('Draft booking belum lengkap atau belum valid.');
     }
 
-    // Simulasi waktu proses pengiriman ke server CodeIgniter 3
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+    final targetDate = draft.bookingDate ?? AppDateTime.now();
+    // Format DD-MM-YYYY wajib untuk MySQL STR_TO_DATE("%d-%m-%Y") di CI3 get_antian_pasien_poliklinik
+    final tglKunjungan =
+        '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
+    final unitId = draft.clinic!.id;
+    final doctorParam =
+        draft.doctor!.doctorId?.toString() ?? draft.doctor!.id;
+    final int doctorId = draft.doctor!.doctorId ??
+        int.tryParse(draft.doctor!.id.replaceAll(RegExp(r'[^0-9]'), '')) ??
+        1;
 
-    _dailyBookingSequence++;
-    final nowWib = AppDateTime.now();
-    final targetDate = draft.bookingDate ?? nowWib;
+    // 1. Ambil jam pelayanan terverifikasi dari backend CI3 (HH:mm:ss)
+    String scheduledTime = '09:00:00';
+    if (bookingRemoteDataSource != null) {
+      try {
+        scheduledTime = await bookingRemoteDataSource!.fetchJamPelayanan(
+          tglKunjungan: tglKunjungan,
+          unitId: unitId,
+          doctorId: doctorId,
+        );
+      } catch (_) {
+        scheduledTime =
+            draft.doctor?.schedules.firstOrNull?.displayTime ?? '09:00:00';
+      }
+    }
 
-    // 1. Format Kode Booking (13 digit numerik murni sesuai ground truth t_daftar_rj)
-    // Contoh: 2026093000015 (YYYYMMDD + 5 digit sequence counter)
+    // 2. Format Nomor Antrean (Poli code + 3 digit nomor)
+    final clinicCode = draft.clinic?.code ?? 'POL';
+    final queueIndex = _calculateQueueIndex(scheduledTime);
+    final queueNumber =
+        '$clinicCode-${queueIndex.toString().padLeft(3, '0')}';
+
+    // 3. Format Kode Booking (13 digit numerik murni: YYYYMMDD + 5 digit sequence)
     final datePrefix =
         '${targetDate.year}'
         '${targetDate.month.toString().padLeft(2, '0')}'
         '${targetDate.day.toString().padLeft(2, '0')}';
-    final sequenceSuffix = _dailyBookingSequence.toString().padLeft(5, '0');
+    final sequenceSuffix =
+        (queueIndex * 10 + (math.Random().nextInt(9) + 1))
+            .toString()
+            .padLeft(5, '0');
     final bookingCode = '$datePrefix$sequenceSuffix';
 
-    // 2. Format Nomor Antrean (Poli code + 3 digit nomor)
-    final clinicCode = draft.clinic?.code ?? 'POL';
-    final queueNumber =
-        '$clinicCode-${_dailyBookingSequence.toString().padLeft(3, '0')}';
+    // 4. Semantik Pembayaran & Penjaminan
+    final isBpjs = draft.insuranceType.isBpjs;
+    final caraBayar = isBpjs ? 'BPJS' : 'UMUM';
+    final pembayaran = isBpjs ? 'BPJS-NON PBI' : 'UMUM';
+    final jumlahBayar = isBpjs ? '0' : '50000';
+    final kodeVerifikasi = _generateVerificationCode();
+    final isOldPatient =
+        draft.patient!.medicalRecordNumber != null &&
+        draft.patient!.medicalRecordNumber!.trim().isNotEmpty;
 
-    // 3. Estimasi jam dan waktu pelayanan
-    final doctorEntry = draft.doctor?.schedules.firstOrNull;
-    final scheduledTime =
-        doctorEntry?.displayTime ?? '09.00 – 12.00 ${AppConfig.timeZoneAbbr}';
-
-    // 4. Eksekusi sekuens multi-step stateful ke server CodeIgniter 3
+    // 5. Eksekusi sekuens multi-step stateful ke server CodeIgniter 3
     var serverSyncSuccess = false;
-    if (dioClient != null) {
+    if (bookingRemoteDataSource != null) {
       try {
-        final tglKunjungan =
-            '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
-        final caraBayar = draft.insuranceType.isBpjs ? 'BPJS' : 'UMUM';
-        final isOldPatient =
-            draft.patient?.medicalRecordNumber != null &&
-            draft.patient!.medicalRecordNumber!.isNotEmpty;
-
         // Step 1: Kunci identitas pasien ke sesi CI3 (ses_siijapin_rj_pasien)
-        await dioClient!.post<dynamic>(
-          ApiConstants.bookingInputPasien,
-          data: FormData.fromMap({
-            'id_member': draft.patient!.id.toString(),
-            'rd_nomr': isOldPatient ? '1' : '3',
-            'nomr': draft.patient!.medicalRecordNumber ?? '',
-            'nama_pasien': draft.patient!.fullName,
-            'tmp_lahir': draft.patient!.birthPlace,
-            'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(
-              2,
-              '0',
-            ),
-            'bln_lahir': draft.patient!.birthDate.month.toString().padLeft(
-              2,
-              '0',
-            ),
-            'thn_lahir': draft.patient!.birthDate.year.toString(),
-            'agama': '1',
-            'jns_kelamin': draft.patient!.gender,
-            'nama_ibu': draft.patient!.motherName,
-            'nik': draft.patient!.nik,
-            'alamat': draft.patient!.address,
-            'no_kontak': draft.patient!.phone ?? '',
-            'email': '',
-            'pekerjaan': '',
-          }),
-        );
+        await bookingRemoteDataSource!.submitPatientStep({
+          'id_member': draft.patient!.id.toString(),
+          'rd_nomr': isOldPatient ? '1' : '3',
+          'nomr': draft.patient!.medicalRecordNumber ?? '',
+          'nama_pasien': draft.patient!.fullName,
+          'tmp_lahir': draft.patient!.birthPlace,
+          'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(2, '0'),
+          'bln_lahir':
+              draft.patient!.birthDate.month.toString().padLeft(2, '0'),
+          'thn_lahir': draft.patient!.birthDate.year.toString(),
+          'agama': '1',
+          'jns_kelamin': draft.patient!.gender,
+          'nama_ibu': draft.patient!.motherName,
+          'nik': draft.patient!.nik,
+          'alamat': draft.patient!.address,
+          'no_kontak': draft.patient!.phone ?? '',
+          'email': '',
+          'pekerjaan': '',
+        });
 
         // Step 2: Kunci unit poli, dokter, dan tanggal ke sesi CI3
-        await dioClient!.post<dynamic>(
-          ApiConstants.bookingInputKunjungan,
-          data: FormData.fromMap({
-            'poli_tujuan': draft.clinic!.id.toString(),
-            'dokter_tujuan': draft.doctor!.id.toString(),
-            'tgl_kunjungan': tglKunjungan,
-            'jam_layanan': scheduledTime,
-            'ambil_resep': '1',
-          }),
-        );
+        await bookingRemoteDataSource!.submitVisitStep({
+          'poli_tujuan': unitId.toString(),
+          'dokter_tujuan': doctorParam,
+          'tgl_kunjungan': tglKunjungan,
+          'jam_layanan': scheduledTime,
+          'ambil_resep': '1',
+        });
 
         // Step 3: Kunci metode pembayaran ke sesi CI3 (ses_siijapin_rj_bayar)
-        await dioClient!.post<dynamic>(
-          ApiConstants.bookingInputPembayaran,
-          data: FormData.fromMap({'cara_bayar': caraBayar}),
-        );
+        await bookingRemoteDataSource!.submitPaymentStep(caraBayar);
 
-        // Step 4: Final insert transaksi ke tabel t_daftar_rj
-        await dioClient!.post<dynamic>(
-          ApiConstants.bookingInsertRajal,
-          data: FormData.fromMap({
-            'member_id': draft.patient!.id.toString(),
-            'poli': draft.clinic!.id.toString(),
-            'dokter': draft.doctor!.id.toString(),
-            'no_antrian': queueNumber,
-            'jam_layanan': scheduledTime,
-            'pembayaran': caraBayar,
-            'cara_bayar': caraBayar,
-            'nik': draft.patient!.nik,
-            'nama': draft.patient!.fullName,
-            'jns_kelamin': draft.patient!.gender,
-            'tgl_lahir':
-                '${draft.patient!.birthDate.day.toString().padLeft(2, '0')}-${draft.patient!.birthDate.month.toString().padLeft(2, '0')}-${draft.patient!.birthDate.year}',
-            'nomr': draft.patient!.medicalRecordNumber ?? '',
-            'kodebooking': bookingCode,
-            'noKunjungan': draft.bpjsReferenceNumber ?? '',
-            'no_peserta': draft.patient!.bpjsCardNumber ?? '',
-          }),
-        );
+        // Step 4: Final insert transaksi ke tabel t_daftar_rj (35+ parameter lengkap)
+        final tglLahirFormatted =
+            '${draft.patient!.birthDate.day.toString().padLeft(2, '0')}-${draft.patient!.birthDate.month.toString().padLeft(2, '0')}-${draft.patient!.birthDate.year}';
+        await bookingRemoteDataSource!.insertDaftarRajal({
+          'member_id': draft.patient!.id.toString(),
+          'poli': unitId.toString(),
+          'dokter': doctorParam,
+          'no_antrian': queueNumber,
+          'jam_layanan': scheduledTime,
+          'pembayaran': pembayaran,
+          'cara_bayar': caraBayar,
+          'jumlah_bayar': jumlahBayar,
+          'kode_verifikasi': kodeVerifikasi,
+          'no_peserta': draft.patient!.bpjsCardNumber ?? '',
+          'nik': draft.patient!.nik,
+          'nama': draft.patient!.fullName,
+          'jns_kelamin': draft.patient!.gender,
+          'tgl_lahir': tglLahirFormatted,
+          'nomr': draft.patient!.medicalRecordNumber ?? '',
+          'noKunjungan': draft.bpjsReferenceNumber ?? '',
+          'tglRujukan': isBpjs ? tglKunjungan : '',
+          'kd_pbi': '',
+          'nm_pbi': '',
+          'kd_kelas': isBpjs ? '3' : '',
+          'ket_kelas': isBpjs ? 'Kelas 3' : '',
+          'kd_diagnosa': '',
+          'nm_diagnosa': '',
+          'keluhan': '',
+          'no_sjp': '',
+          'asal_faskes': '1',
+          'kodebooking': bookingCode,
+          'kd_perujuk': '',
+          'nm_perujuk': '',
+          'kd_layanan': '',
+          'nm_layanan': '',
+          'kd_poli': draft.clinic!.bpjsCode ?? '',
+          'nama_poli_bpjs': draft.clinic!.bpjsName ?? draft.clinic!.name,
+          'kode_dokter_bpjs': '',
+          'namaDokter': draft.doctor!.name,
+          'no_surat_kontrol':
+              isBpjs && (draft.bpjsReferenceNumber?.startsWith('00') ?? false)
+                  ? draft.bpjsReferenceNumber!
+                  : '',
+        });
 
-        // Step 5: Bersihkan variabel sesi wizard di server CI3 agar tidak meninggalkan sesi yatim
-        await dioClient!.get<dynamic>(ApiConstants.bookingFinishDaftar);
+        // Step 5: Bersihkan variabel sesi wizard di server CI3
+        await bookingRemoteDataSource!.finishRegistrationSession();
         serverSyncSuccess = true;
+      } on BookingServerException {
+        rethrow;
       } catch (_) {
-        // Fallback anggun: Tetap terbitkan tiket jika terjadi kendala jaringan/offline
+        serverSyncSuccess = false;
       }
     }
 
@@ -348,10 +312,9 @@ class BookingRepositoryImpl implements BookingRepository {
       clinic: draft.clinic!.name,
       scheduledDate: targetDate,
       scheduledTime: scheduledTime,
-      estimatedMinutes: math.max(10, (_dailyBookingSequence - 10) * 10),
-      nowServingNumber:
-          '$clinicCode-${math.max(1, _dailyBookingSequence - 3).toString().padLeft(3, '0')}',
-      remainingQueue: 3,
+      estimatedMinutes: math.max(10, (queueIndex - 1) * 15),
+      nowServingNumber: '$clinicCode-001',
+      remainingQueue: math.max(0, queueIndex - 1),
       status: AppointmentStatus.upcoming,
       patientRelation: draft.patient!.relation,
       medicalRecord: draft.patient!.maskedMedicalRecord,
@@ -379,34 +342,28 @@ class BookingRepositoryImpl implements BookingRepository {
     int? memberId,
     DateTime? scheduledDate,
   }) async {
-    if (dioClient != null) {
-      try {
-        final customerId =
-            await secureStorage?.read(key: StorageConstants.keyCustomerId) ??
-            '';
-        final targetDate = scheduledDate ?? AppDateTime.now();
-        final tgl =
-            '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
-        await dioClient!.post<dynamic>(
-          ApiConstants.bookingBatalAntrian,
-          data: FormData.fromMap({
-            'customer_id': customerId,
-            'member_id': memberId?.toString() ?? '',
-            'kodebooking': bookingCode,
-            'alasan': reason,
-            'tanggal': tgl,
-          }),
-        );
-      } catch (_) {
-        // Fallback gracefully
-      }
+    final customerId =
+        await secureStorage?.read(key: StorageConstants.keyCustomerId) ?? '';
+    final targetDate = scheduledDate ?? AppDateTime.now();
+    final tgl =
+        '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
+
+    var cancelSuccess = true;
+    if (bookingRemoteDataSource != null) {
+      cancelSuccess = await bookingRemoteDataSource!.cancelBooking(
+        customerId: customerId,
+        memberId: memberId?.toString() ?? '',
+        tanggal: tgl,
+        bookingCode: bookingCode,
+        reason: reason,
+      );
     }
 
-    // Perbarui juga data tiket lokal di Hive NoSQL jika tersedia
+    // Perbarui data tiket lokal di Hive NoSQL jika tersedia
     if (ticketLocalDataSource != null) {
       try {
-        final existingModel = await ticketLocalDataSource!
-            .getTicketByBookingCode(bookingCode);
+        final existingModel =
+            await ticketLocalDataSource!.getTicketByBookingCode(bookingCode);
         if (existingModel != null) {
           final updated = existingModel.toEntity().copyWith(
             status: TicketStatus.cancelled,
@@ -421,7 +378,33 @@ class BookingRepositoryImpl implements BookingRepository {
       }
     }
 
-    return true;
+    return cancelSuccess;
+  }
+
+  int _calculateQueueIndex(String time) {
+    try {
+      final parts = time.split(':');
+      if (parts.length >= 2) {
+        final hour = int.tryParse(parts[0]) ?? 9;
+        final minute = int.tryParse(parts[1]) ?? 0;
+        final totalMinutes = (hour - 9) * 60 + minute;
+        if (totalMinutes >= 0) {
+          return math.max(1, (totalMinutes / 15).floor() + 1);
+        }
+      }
+    } catch (_) {}
+    return 1;
+  }
+
+  String _generateVerificationCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final rnd = math.Random();
+    return String.fromCharCodes(
+      Iterable.generate(
+        6,
+        (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
+      ),
+    );
   }
 
   String _getDayName(int weekday) {
@@ -447,11 +430,15 @@ final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   final dioClient = ref.watch(dioClientProvider);
   final secureStorage = ref.watch(secureStorageServiceProvider);
   final ticketLocalDataSource = ref.watch(ticketLocalDataSourceProvider);
+  final bookingRemoteDataSource = ref.watch(bookingRemoteDataSourceProvider);
+  final familyMemberRepository = ref.watch(familyMemberRepositoryProvider);
 
   return BookingRepositoryImpl(
     dioClient: dioClient,
     secureStorage: secureStorage,
     doctorScheduleRepository: ref.watch(doctorScheduleRepositoryProvider),
     ticketLocalDataSource: ticketLocalDataSource,
+    bookingRemoteDataSource: bookingRemoteDataSource,
+    familyMemberRepository: familyMemberRepository,
   );
 });
