@@ -10,7 +10,16 @@ class FamilyMembersNotifier extends Notifier<List<FamilyMember>> {
 
   @override
   List<FamilyMember> build() {
+    Future.microtask(() => loadMembers());
     return ref.watch(familyMemberRepositoryProvider).getCachedFamilyMembers();
+  }
+
+  /// Memuat daftar anggota keluarga terbaru dari server SIMRS CI3 / Hive cache.
+  Future<void> loadMembers() async {
+    try {
+      final members = await _repository.getFamilyMembers();
+      state = members;
+    } catch (_) {}
   }
 
   /// Menambahkan anggota keluarga baru ke dalam daftar dan repositori.

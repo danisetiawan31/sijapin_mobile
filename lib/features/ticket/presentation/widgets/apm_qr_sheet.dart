@@ -6,7 +6,7 @@ import '../controllers/ticket_controller.dart';
 import 'apm_qr_card.dart';
 
 /// Modal Bottom Sheet untuk Pemindaian QR Code di Mesin Kiosk APM Lobi RS
-class ApmQrSheet extends ConsumerWidget {
+class ApmQrSheet extends ConsumerStatefulWidget {
   const ApmQrSheet({super.key});
 
   static Future<void> show(BuildContext context) {
@@ -20,7 +20,21 @@ class ApmQrSheet extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ApmQrSheet> createState() => _ApmQrSheetState();
+}
+
+class _ApmQrSheetState extends ConsumerState<ApmQrSheet> {
+  @override
+  void dispose() {
+    // Kembalikan kecerahan layar ke normal saat modal sheet ditutup
+    if (ref.read(ticketControllerProvider).isMaxBrightness) {
+      ref.read(ticketControllerProvider.notifier).setMaxBrightness(false);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ticketState = ref.watch(ticketControllerProvider);
     final ticket = ticketState.ticket;
     final controller = ref.read(ticketControllerProvider.notifier);

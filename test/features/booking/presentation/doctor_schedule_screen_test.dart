@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
+import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/doctor_schedule_screen.dart';
 
+import '../../../fixtures/mock_doctor_schedules.dart';
+
 Widget _buildDoctorScheduleScreen() {
-  return const ProviderScope(
-    child: MaterialApp(
+  final testRepo = DoctorScheduleRepositoryImpl(
+    initialSchedules: MockDoctorSchedulesFixture.getSampleSchedules(),
+  );
+
+  return ProviderScope(
+    overrides: [
+      doctorScheduleRepositoryProvider.overrideWithValue(testRepo),
+      activePolyclinicsProvider.overrideWith(
+        (ref) async => MockDoctorSchedulesFixture.getSamplePolyclinics(),
+      ),
+    ],
+    child: const MaterialApp(
       themeMode: ThemeMode.light,
       home: DoctorScheduleScreen(),
     ),

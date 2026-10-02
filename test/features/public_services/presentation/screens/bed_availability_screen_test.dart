@@ -4,10 +4,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
+import 'package:sijapin_mobile/features/public_services/data/repositories/bed_availability_repository_impl.dart';
 import 'package:sijapin_mobile/features/public_services/domain/entities/bed_availability.dart';
 import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_availability_repository.dart';
 import 'package:sijapin_mobile/features/public_services/presentation/controllers/bed_availability_controller.dart';
 import 'package:sijapin_mobile/features/public_services/presentation/screens/bed_availability_screen.dart';
+
+import '../../../../fixtures/mock_bed_availability.dart';
+
+ProviderContainer _createTestContainer() {
+  final repo = BedAvailabilityRepositoryImpl(
+    initialSummary: MockBedAvailabilityFixture.getSampleSummary(),
+  );
+  return ProviderContainer(
+    overrides: [bedAvailabilityRepositoryProvider.overrideWithValue(repo)],
+  );
+}
 
 /// Membangun aplikasi uji. Hindari `pumpAndSettle`: pil Live SIMRS memakai
 /// `PulseDot` beranimasi terus-menerus sehingga settle tidak pernah selesai.
@@ -33,7 +45,7 @@ void main() {
     testWidgets('renders header with title and Live SIMRS badge', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -46,7 +58,7 @@ void main() {
     });
 
     testWidgets('renders hero summary with bed counts and BOR', (tester) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -66,7 +78,7 @@ void main() {
     testWidgets('renders 6 filter chips with Semua Kelas active by default', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -101,7 +113,7 @@ void main() {
     testWidgets('tapping Kelas 3 makes it active and filters wards', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -147,7 +159,7 @@ void main() {
     testWidgets('ward cards render identity, schedule and actions', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -170,7 +182,7 @@ void main() {
     testWidgets('ICU card shows full state with alert and protocol action', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -191,7 +203,7 @@ void main() {
     testWidgets('filter with no matching ward shows empty state', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -209,7 +221,7 @@ void main() {
     });
 
     testWidgets('filter change does not show shimmer skeleton', (tester) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));
@@ -240,7 +252,7 @@ void main() {
     testWidgets('admission banner renders contact and call action', (
       tester,
     ) async {
-      final container = ProviderContainer();
+      final container = _createTestContainer();
       addTearDown(container.dispose);
 
       await tester.pumpWidget(_buildApp(container));

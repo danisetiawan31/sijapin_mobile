@@ -4,6 +4,8 @@ import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../../../core/storage/storage_constants.dart';
+import '../../../profile/data/datasources/profile_remote_data_source.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../domain/entities/auth_result.dart';
@@ -79,21 +81,46 @@ class AuthController extends Notifier<AuthControllerState> {
         rememberMe: rememberMe,
       );
       if (result.success) {
-        ref
-            .read(activeSessionUserProvider.notifier)
-            .setUser(
-              UserProfile(
-                fullName: 'Pasien Terdaftar',
-                phone: identifier.trim(),
-                email: identifier.contains('@') ? identifier.trim() : '',
-                nik: '',
-                birthDate: null,
-                gender: 'L',
-                bloodType: '',
-                address: '',
-                memberSince: DateTime.now(),
-              ),
+        UserProfile? fetchedUser;
+        try {
+          final dioClient = ref.read(dioClientProvider);
+          fetchedUser = await ProfileRemoteDataSource(dioClient: dioClient)
+              .fetchProfile();
+        } catch (_) {}
+
+        final user =
+            fetchedUser ??
+            UserProfile(
+              fullName: 'Pasien Terdaftar',
+              phone: identifier.trim(),
+              email: identifier.contains('@') ? identifier.trim() : '',
+              nik: '',
+              birthDate: null,
+              gender: 'L',
+              bloodType: '',
+              address: '',
+              memberSince: DateTime.now(),
             );
+
+        if (user.customerId.isNotEmpty) {
+          final secureStorage = ref.read(secureStorageServiceProvider);
+          await secureStorage.write(
+            key: StorageConstants.keyCustomerId,
+            value: user.customerId,
+          );
+          await secureStorage.write(
+            key: StorageConstants.keyCustomerFullName,
+            value: user.fullName,
+          );
+          if (user.email.isNotEmpty) {
+            await secureStorage.write(
+              key: StorageConstants.keyCustomerEmail,
+              value: user.email,
+            );
+          }
+        }
+
+        ref.read(activeSessionUserProvider.notifier).setUser(user);
       }
       state = state.copyWith(
         status: result.success

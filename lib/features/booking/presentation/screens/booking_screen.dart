@@ -21,6 +21,7 @@ import '../widgets/pulse_dot.dart';
 import '../widgets/qr_ticket_sheet.dart';
 import '../widgets/queue_ticket_card.dart';
 import '../widgets/visit_proof_sheet.dart';
+import '../../../ticket/domain/entities/ticket.dart';
 import '../../../ticket/presentation/controllers/ticket_controller.dart';
 import '../../../ticket/presentation/widgets/kiosk_arrival_stepper.dart';
 import '../../../ticket/presentation/widgets/offline_status_banner.dart';
@@ -174,6 +175,7 @@ class _ActiveTab extends ConsumerWidget {
 
     final ticketState = ref.watch(ticketControllerProvider);
     final isOffline = ticketState.isOffline || !current.isServerSynced;
+    final displayTicket = ticketState.ticket ?? Ticket.fromAppointment(current);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -188,10 +190,8 @@ class _ActiveTab extends ConsumerWidget {
           onOpenQr: onOpenQr,
         ),
         const SizedBox(height: 16),
-        if (ticketState.ticket != null) ...[
-          KioskArrivalStepper(ticket: ticketState.ticket!),
-          const SizedBox(height: 16),
-        ],
+        KioskArrivalStepper(ticket: displayTicket),
+        const SizedBox(height: 16),
         const _ApmCallout(),
         const SizedBox(height: 16),
         const _CallCenterNote(),
@@ -438,7 +438,16 @@ class _HistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Appointment> history = ref.watch(appointmentHistoryProvider);
+    final localHistory = ref.watch(appointmentHistoryProvider);
+    final liveAsync = ref.watch(liveBookingHistoryProvider);
+    final List<Appointment> history = [...localHistory];
+    liveAsync.whenData((items) {
+      for (final item in items) {
+        if (!history.any((a) => a.bookingCode == item.bookingCode)) {
+          history.add(item);
+        }
+      }
+    });
     final List<Appointment> filtered = history.where(_matchesFilter).toList();
 
     return Column(

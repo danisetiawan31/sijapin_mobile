@@ -7,17 +7,12 @@ import 'package:sijapin_mobile/features/booking/domain/entities/polyclinic.dart'
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_controller.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_wizard_controller.dart';
 
+import 'package:sijapin_mobile/features/booking/data/repositories/booking_repository_impl.dart';
+import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
+
 void main() {
   group('BookingWizardController Tests', () {
     late ProviderContainer container;
-
-    setUp(() {
-      container = ProviderContainer();
-    });
-
-    tearDown(() {
-      container.dispose();
-    });
 
     final samplePatient = PatientMember(
       id: 1,
@@ -46,6 +41,22 @@ void main() {
       ],
       status: DoctorPracticeStatus.reguler,
     );
+
+    setUp(() {
+      final doctorScheduleRepo = DoctorScheduleRepositoryImpl();
+      final repository = BookingRepositoryImpl(
+        doctorScheduleRepository: doctorScheduleRepo,
+        bookingRemoteDataSource: null,
+        initialPolyclinics: [sampleClinic],
+      );
+      container = ProviderContainer(
+        overrides: [bookingRepositoryProvider.overrideWithValue(repository)],
+      );
+    });
+
+    tearDown(() {
+      container.dispose();
+    });
 
     test('Initial wizard state is step 0 and empty', () {
       final state = container.read(bookingWizardControllerProvider);

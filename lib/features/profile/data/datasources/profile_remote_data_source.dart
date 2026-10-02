@@ -4,9 +4,13 @@ import 'package:html/parser.dart' as html_parser;
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../domain/entities/family_member.dart';
+import '../../domain/entities/user_profile.dart';
 
 /// Kontrak sumber data remote profil pasien dan anggota keluarga SIMRS
 abstract class IProfileRemoteDataSource {
+  /// Mengambil profil akun pengguna/customer yang sedang login dari backend CI3 (m_customer)
+  Future<UserProfile?> fetchProfile();
+
   /// Menyimpan anggota keluarga baru atau memperbarui data anggota yang sudah ada
   Future<Map<String, dynamic>> saveFamilyMember(
     FamilyMember member, {
@@ -33,6 +37,63 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
   final DioClient dioClient;
 
   ProfileRemoteDataSource({required this.dioClient});
+
+  @override
+  Future<UserProfile?> fetchProfile() async {
+    try {
+      final response = await dioClient.get<dynamic>('profile');
+      final htmlContent = response.data?.toString() ?? '';
+      if (htmlContent.isEmpty) return null;
+
+      final document = html_parser.parse(htmlContent);
+
+      final idCustomerEl = document.querySelector('input[name="id_customer"]');
+      final customerId = idCustomerEl?.attributes['value']?.trim() ?? '';
+
+      final nameEl = document.querySelector('input[name="nama"]');
+      final fullName = nameEl?.attributes['value']?.trim() ?? '';
+
+      final phoneEl = document.querySelector('input[name="nomor_telepon"]');
+      final phone = phoneEl?.attributes['value']?.trim() ?? '';
+
+      final emailEl = document.querySelector('input[name="email"]');
+      final email = emailEl?.attributes['value']?.trim() ?? '';
+
+      final tglEl = document.querySelector('input[name="tgl_lahir"]');
+      final tgl = int.tryParse(tglEl?.attributes['value']?.trim() ?? '');
+
+      final blnEl = document.querySelector(
+        'select[name="bln_lahir"] option[selected]',
+      );
+      final bln = int.tryParse(blnEl?.attributes['value']?.trim() ?? '');
+
+      final thnEl = document.querySelector('input[name="thn_lahir"]');
+      final thn = int.tryParse(thnEl?.attributes['value']?.trim() ?? '');
+
+      DateTime? birthDate;
+      if (tgl != null && bln != null && thn != null) {
+        birthDate = DateTime(thn, bln, tgl);
+      }
+
+      final genderEl = document.querySelector(
+        'select[name="jns_kelamin"] option[selected]',
+      );
+      final gender = genderEl?.attributes['value']?.trim() ?? 'L';
+
+      if (fullName.isEmpty && phone.isEmpty) return null;
+
+      return UserProfile(
+        customerId: customerId,
+        fullName: fullName.isNotEmpty ? fullName : 'Pasien Terdaftar',
+        phone: phone,
+        email: email,
+        birthDate: birthDate,
+        gender: gender,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   Future<Map<String, dynamic>> saveFamilyMember(
@@ -118,6 +179,130 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
     };
   }
 
+  Future<FamilyMember?> _fetchMemberDetails(String id) async {
+    try {
+      final response = await dioClient.get<dynamic>('pasien/form_data/$id');
+      final html = response.data?.toString() ?? '';
+      if (html.isEmpty) return null;
+
+      final doc = html_parser.parse(html);
+
+      final name =
+          doc
+              .querySelector('input[name="nama_pasien"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      if (name.isEmpty) return null;
+
+      final tmpLahir =
+          doc
+              .querySelector('input[name="tmp_lahir"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+
+      final tglStr =
+          doc
+              .querySelector('input[name="tgl_lahir"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final blnStr =
+          doc
+              .querySelector('select[name="bln_lahir"] option[selected]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final thnStr =
+          doc
+              .querySelector('input[name="thn_lahir"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+
+      DateTime? birthDate;
+      final tgl = int.tryParse(tglStr);
+      final bln = int.tryParse(blnStr);
+      final thn = int.tryParse(thnStr);
+      if (tgl != null && bln != null && thn != null) {
+        birthDate = DateTime(thn, bln, tgl);
+      }
+
+      final gender =
+          doc
+              .querySelector('select[name="jns_kelamin"] option[selected]')
+              ?.attributes['value']
+              ?.trim() ??
+          'L';
+      final religion =
+          doc
+              .querySelector('select[name="agama"] option[selected]')
+              ?.attributes['value']
+              ?.trim() ??
+          '1';
+      final motherName =
+          doc
+              .querySelector('input[name="nama_ibu"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final address =
+          doc.querySelector('textarea[name="alamat"]')?.text.trim() ?? '';
+      final occupation =
+          doc
+              .querySelector('input[name="pekerjaan"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final phone =
+          doc
+              .querySelector('input[name="no_kontak"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final nik =
+          doc.querySelector('input[name="nik"]')?.attributes['value']?.trim() ??
+          '';
+      final nomr =
+          doc
+              .querySelector('input[name="nomr"]')
+              ?.attributes['value']
+              ?.trim() ??
+          '';
+      final rdNomr =
+          doc
+              .querySelector('select[name="rd_nomr"] option[selected]')
+              ?.attributes['value']
+              ?.trim() ??
+          doc
+              .querySelector('input[name="rd_nomr"]')
+              ?.attributes['value']
+              ?.trim() ??
+          (nomr.isNotEmpty ? '1' : '3');
+
+      return FamilyMember(
+        id: id,
+        fullName: name,
+        relation: FamilyRelation.child,
+        gender: gender,
+        nik: nik,
+        insurance: FamilyInsurance.umum,
+        birthDate: birthDate,
+        medicalRecordNumber: nomr.isNotEmpty ? nomr : null,
+        birthPlace: tmpLahir,
+        motherName: motherName,
+        address: address,
+        religion: religion,
+        occupation: occupation,
+        rdNomr: rdNomr,
+        phone: phone,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Future<List<FamilyMember>?> fetchFamilyMembers() async {
     try {
@@ -129,7 +314,7 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
       final memberCards = document.querySelectorAll(
         'a[href*="pasien/form_data"]',
       );
-      if (memberCards.isEmpty) return null;
+      if (memberCards.isEmpty) return <FamilyMember>[];
 
       final List<FamilyMember> members = [];
       for (final anchor in memberCards) {
@@ -138,31 +323,37 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
         final id = idMatch?.group(1) ?? '';
         if (id.isEmpty) continue;
 
-        final titleEl =
-            anchor.querySelector('.card-title') ??
-            anchor.querySelector('h5') ??
-            anchor.querySelector('h4') ??
-            anchor.querySelector('strong') ??
-            anchor.querySelector('b');
-        final name = titleEl != null && titleEl.text.trim().isNotEmpty
-            ? titleEl.text.trim()
-            : (anchor.text.trim().isNotEmpty
-                  ? anchor.text.trim()
-                  : 'Anggota Keluarga');
+        // Ambil data detail pasien dari form_data
+        final detailed = await _fetchMemberDetails(id);
+        if (detailed != null) {
+          members.add(detailed);
+        } else {
+          final titleEl =
+              anchor.querySelector('.card-title') ??
+              anchor.querySelector('h5') ??
+              anchor.querySelector('h4') ??
+              anchor.querySelector('strong') ??
+              anchor.querySelector('b');
+          final name = titleEl != null && titleEl.text.trim().isNotEmpty
+              ? titleEl.text.trim()
+              : (anchor.text.trim().isNotEmpty
+                    ? anchor.text.trim()
+                    : 'Anggota Keluarga');
 
-        members.add(
-          FamilyMember(
-            id: id,
-            fullName: name,
-            relation: FamilyRelation.child,
-            nik: '',
-            gender: 'L',
-            insurance: FamilyInsurance.umum,
-          ),
-        );
+          members.add(
+            FamilyMember(
+              id: id,
+              fullName: name,
+              relation: FamilyRelation.child,
+              nik: '',
+              gender: 'L',
+              insurance: FamilyInsurance.umum,
+            ),
+          );
+        }
       }
 
-      return members.isNotEmpty ? members : null;
+      return members;
     } catch (_) {
       return null;
     }

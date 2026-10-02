@@ -5,6 +5,27 @@ import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/screens/profile_screen.dart';
 
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
+
+const testUser = UserProfile(
+  customerId: '4',
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+  nik: '3671044508940002',
+  gender: 'P',
+  bloodType: 'O',
+  address: 'Jl. Cileduk Raya No. 24, Tangerang',
+);
+
+class _TestSessionNotifier extends ActiveSessionUserNotifier {
+  _TestSessionNotifier(this._initial);
+  final UserProfile? _initial;
+
+  @override
+  UserProfile? build() => _initial;
+}
+
 Future<void> _pumpProfile(WidgetTester tester, {bool signedIn = true}) async {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 1;
@@ -13,7 +34,9 @@ Future<void> _pumpProfile(WidgetTester tester, {bool signedIn = true}) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        if (!signedIn) currentUserProfileProvider.overrideWithValue(null),
+        activeSessionUserProvider.overrideWith(
+          () => _TestSessionNotifier(signedIn ? testUser : null),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,

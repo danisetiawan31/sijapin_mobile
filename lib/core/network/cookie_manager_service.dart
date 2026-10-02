@@ -91,7 +91,9 @@ class CookieManagerService implements ICookieManagerService {
   Future<String?> getCiSessionToken(Uri baseUri) async {
     final cookies = await _cookieJar.loadForRequest(baseUri);
     for (final cookie in cookies) {
-      if (cookie.name == ApiConstants.sessionCookieName) {
+      if (cookie.name == ApiConstants.sessionCookieName ||
+          cookie.name == 'cisession' ||
+          cookie.name == 'ci_session') {
         return cookie.value;
       }
     }

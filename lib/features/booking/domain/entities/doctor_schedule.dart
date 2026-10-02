@@ -10,11 +10,19 @@ class DoctorSchedule {
     this.poli = '',
     this.photoUrl,
     required this.schedules,
-    required this.status,
+    this.status = DoctorPracticeStatus.reguler,
+    this.doctorId,
+    this.unitId,
   });
 
-  /// ID unik dokter (digunakan untuk routing/detail)
+  /// ID unik dokter (string untuk routing/detail, atau ID string angka)
   final String id;
+
+  /// ID pegawai dokter di database SIMRS (`PEGAWAI_ID` di `m_pegawai`)
+  final int? doctorId;
+
+  /// ID poliklinik tujuan di database SIMRS (`UNIT_ID` di `m_unit`)
+  final int? unitId;
 
   /// Nama lengkap dokter dengan gelar, contoh: `dr. Era Medina, Sp.PD`
   final String name;
@@ -34,7 +42,7 @@ class DoctorSchedule {
   /// Daftar jadwal praktik per hari
   final List<DoctorScheduleEntry> schedules;
 
-  /// Status praktik: praktik reguler, libur, cuti, dll.
+  /// Status praktik umum dokter
   final DoctorPracticeStatus status;
 
   /// Apakah dokter berjenis kelamin pria
@@ -42,6 +50,34 @@ class DoctorSchedule {
 
   /// Apakah dokter berjenis kelamin wanita
   bool get isFemale => gender.toUpperCase() == 'P';
+
+  /// Mengecek apakah dokter aktif berpraktik pada hari tertentu
+  bool isPracticingOnDay(String dayName) {
+    final lower = dayName.toLowerCase().trim();
+    if (lower == 'semua hari') {
+      return schedules.any((e) => e.isAvailable);
+    }
+    return schedules.any(
+      (e) => e.day.toLowerCase().trim() == lower && e.isAvailable,
+    );
+  }
+
+  /// Menghitung status praktik dokter dinamis pada hari tertentu
+  DoctorPracticeStatus statusForDay(String dayName) {
+    if (status == DoctorPracticeStatus.cuti) return DoctorPracticeStatus.cuti;
+    if (status == DoctorPracticeStatus.libur) return DoctorPracticeStatus.libur;
+    final lower = dayName.toLowerCase().trim();
+    if (lower == 'semua hari') {
+      return schedules.any((e) => e.isAvailable)
+          ? DoctorPracticeStatus.reguler
+          : DoctorPracticeStatus.libur;
+    }
+    final match = schedules.where((e) => e.day.toLowerCase().trim() == lower);
+    if (match.isEmpty) return DoctorPracticeStatus.libur;
+    return match.any((e) => e.isAvailable)
+        ? DoctorPracticeStatus.reguler
+        : DoctorPracticeStatus.libur;
+  }
 }
 
 /// Entri jadwal praktik per hari.
@@ -50,6 +86,9 @@ class DoctorScheduleEntry {
     required this.day,
     required this.startTime,
     required this.endTime,
+    this.hariId,
+    this.isLibur = false,
+    this.quota,
   });
 
   /// Nama hari, contoh: `Selasa`, `Rabu`
@@ -61,8 +100,31 @@ class DoctorScheduleEntry {
   /// Jam selesai praktik (24h format), contoh: `12:00`
   final String endTime;
 
-  /// Format tampilan jam praktik, contoh: `07.30 – 12.00 WIB`
-  String get displayTime => '$startTime – $endTime ${AppConfig.timeZoneAbbr}';
+  /// ID hari operasional (1 = Senin, 2 = Selasa, ..., 5 = Jumat)
+  final int? hariId;
+
+  /// Penanda apakah pada hari ini dokter libur/tidak berpraktik
+  final bool isLibur;
+
+  /// Kuota antrean dokter untuk hari ini (jika ada)
+  final int? quota;
+
+  /// Apakah dokter aktif membuka pelayanan pada entri hari ini
+  bool get isAvailable =>
+      !isLibur &&
+      startTime.isNotEmpty &&
+      !startTime.toLowerCase().contains('libur');
+
+  /// Format tampilan jam praktik, contoh: `07.30 – 12.00 WIB` atau `Sedang Libur`
+  String get displayTime {
+    if (!isAvailable) {
+      return 'Sedang Libur';
+    }
+    if (endTime.isEmpty || endTime == startTime) {
+      return '$startTime ${AppConfig.timeZoneAbbr}';
+    }
+    return '$startTime – $endTime ${AppConfig.timeZoneAbbr}';
+  }
 }
 
 /// Status praktik dokter.

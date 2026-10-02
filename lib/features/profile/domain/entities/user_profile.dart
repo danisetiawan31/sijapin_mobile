@@ -1,38 +1,54 @@
-/// Entitas domain profil pasien yang sedang login.
+/// Entitas domain profil akun pengguna / customer yang sedang login (m_customer).
 class UserProfile {
   const UserProfile({
+    this.customerId = '',
     required this.fullName,
     required this.email,
     required this.phone,
-    required this.nik,
-    required this.birthDate,
-    required this.gender,
-    required this.bloodType,
-    required this.address,
-    required this.memberSince,
+    this.nik = '',
+    this.birthDate,
+    this.gender = 'L',
+    this.bloodType = '',
+    this.address = '',
+    this.memberSince,
   });
 
+  /// ID Customer di database SIMRS (CUSTOMER_ID pada tabel m_customer).
+  final String customerId;
+
+  /// Nama lengkap pemilik akun (NAMA_CUSTOMER).
   final String fullName;
+
+  /// Alamat email terdaftar (EMAIL).
   final String email;
+
+  /// Nomor telepon seluler terdaftar (NO_TELEPON).
   final String phone;
+
+  /// NIK opsional (NIK utama dicatat pada entitas pasien/m_customer_member).
   final String nik;
 
-  /// Tanggal lahir; `null` bila pasien belum melengkapinya.
+  /// Tanggal lahir (TANGGAL_LAHIR); `null` bila belum dilengkapi.
   final DateTime? birthDate;
 
-  /// Kode jenis kelamin: `L` (Laki-laki) atau `P` (Perempuan).
+  /// Kode jenis kelamin (JENIS_KELAMIN): `L` (Laki-laki) atau `P` (Perempuan).
   final String gender;
 
-  /// Golongan darah, misal `O`, `A`, `B`, `AB`. Kosong bila belum diisi.
+  /// Golongan darah opsional, misal `O`, `A`, `B`, `AB`.
   final String bloodType;
+
+  /// Alamat domisili pemilik akun (ALAMAT).
   final String address;
 
-  /// Tanggal pasien pertama kali terdaftar sebagai anggota.
-  final DateTime memberSince;
+  /// Tanggal akun pertama kali terdaftar.
+  final DateTime? memberSince;
 
-  /// NIK dan tanggal lahir adalah data minimum untuk expedite layanan (DESIGN.md §2).
+  /// Data minimum akun customer untuk kelayakan pendaftaran: nama, email, nomor HP, dan tanggal lahir.
   bool get hasProfileComplete {
-    return nik.trim().isNotEmpty && birthDate != null;
+    return fullName.trim().isNotEmpty &&
+        email.trim().isNotEmpty &&
+        phone.trim().isNotEmpty &&
+        birthDate != null;
   }
 
   /// Inisial nama untuk avatar, misal `Rina Puspita Sari` menjadi `RS`.
@@ -49,6 +65,7 @@ class UserProfile {
   }
 
   UserProfile copyWith({
+    String? customerId,
     String? fullName,
     String? email,
     String? phone,
@@ -57,8 +74,10 @@ class UserProfile {
     String? gender,
     String? bloodType,
     String? address,
+    DateTime? memberSince,
   }) {
     return UserProfile(
+      customerId: customerId ?? this.customerId,
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
@@ -67,7 +86,7 @@ class UserProfile {
       gender: gender ?? this.gender,
       bloodType: bloodType ?? this.bloodType,
       address: address ?? this.address,
-      memberSince: memberSince,
+      memberSince: memberSince ?? this.memberSince,
     );
   }
 }

@@ -77,56 +77,61 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
             : Column(
                 children: [
                   Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      children: [
-                        FamilySummaryCard(members: members),
-                        const SizedBox(height: 16),
-                        FamilyFilterBar(
-                          selected: _filter,
-                          onSelected: (FamilyMemberFilter filter) {
-                            setState(() => _filter = filter);
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        if (visible.isEmpty)
-                          AppEmptyState(
-                            title: 'Belum Ada Anggota',
-                            message:
-                                'Belum ada anggota keluarga pada kategori ini. '
-                                'Tambahkan anggota agar bisa didaftarkan berobat '
-                                'tanpa didampingi langsung.',
-                            icon: Icons.group_add_outlined,
-                            actionButton: _filter != FamilyMemberFilter.semua
-                                ? AppSecondaryButton(
-                                    label: 'Tampilkan Semua',
-                                    width: 180,
-                                    onPressed: () {
-                                      setState(
-                                        () =>
-                                            _filter = FamilyMemberFilter.semua,
-                                      );
-                                    },
-                                  )
-                                : null,
-                          )
-                        else
-                          for (int index = 0; index < visible.length; index++)
-                            Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index == visible.length - 1 ? 0 : 12,
-                              ),
-                              child: FamilyMemberCard(
-                                member: visible[index],
-                                onTap: () => FamilyMemberDetailSheet.show(
-                                  context,
-                                  visible[index],
+                    child: RefreshIndicator(
+                      onRefresh: () => ref
+                          .read(familyMembersProvider.notifier)
+                          .loadMembers(),
+                      child: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                        children: [
+                          FamilySummaryCard(members: members),
+                          const SizedBox(height: 16),
+                          FamilyFilterBar(
+                            selected: _filter,
+                            onSelected: (FamilyMemberFilter filter) {
+                              setState(() => _filter = filter);
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          if (visible.isEmpty)
+                            AppEmptyState(
+                              title: 'Belum Ada Anggota',
+                              message:
+                                  'Belum ada anggota keluarga pada kategori ini. '
+                                  'Tambahkan anggota agar bisa didaftarkan berobat '
+                                  'tanpa didampingi langsung.',
+                              icon: Icons.group_add_outlined,
+                              actionButton: _filter != FamilyMemberFilter.semua
+                                  ? AppSecondaryButton(
+                                      label: 'Tampilkan Semua',
+                                      width: 180,
+                                      onPressed: () {
+                                        setState(
+                                          () => _filter =
+                                              FamilyMemberFilter.semua,
+                                        );
+                                      },
+                                    )
+                                  : null,
+                            )
+                          else
+                            for (int index = 0; index < visible.length; index++)
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index == visible.length - 1 ? 0 : 12,
+                                ),
+                                child: FamilyMemberCard(
+                                  member: visible[index],
+                                  onTap: () => FamilyMemberDetailSheet.show(
+                                    context,
+                                    visible[index],
+                                  ),
                                 ),
                               ),
-                            ),
-                        const SizedBox(height: 16),
-                        const FamilyPolicyNotice(),
-                      ],
+                          const SizedBox(height: 16),
+                          const FamilyPolicyNotice(),
+                        ],
+                      ),
                     ),
                   ),
                   Container(

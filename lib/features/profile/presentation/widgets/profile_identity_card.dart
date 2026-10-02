@@ -215,12 +215,14 @@ class ProfileDataCard extends StatelessWidget {
             value: user.address.trim().isEmpty ? 'Belum diisi' : user.address,
             icon: Icons.location_on_outlined,
           ),
-          const SizedBox(height: 12),
-          ProfileInfoRow(
-            label: 'Anggota Sejak',
-            value: DateFormatter.tanggalPendek(user.memberSince),
-            icon: Icons.verified_user_outlined,
-          ),
+          if (user.memberSince != null) ...[
+            const SizedBox(height: 12),
+            ProfileInfoRow(
+              label: 'Anggota Sejak',
+              value: DateFormatter.tanggalPendek(user.memberSince!),
+              icon: Icons.verified_user_outlined,
+            ),
+          ],
         ],
       ),
     );

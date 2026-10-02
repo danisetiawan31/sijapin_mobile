@@ -8,6 +8,19 @@ import 'package:sijapin_mobile/features/profile/presentation/controllers/profile
 import 'package:sijapin_mobile/features/profile/presentation/screens/medical_history_screen.dart';
 import 'package:sijapin_mobile/features/profile/presentation/widgets/medical_record_detail_sheet.dart';
 
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
+
+const testUser = UserProfile(
+  customerId: '4',
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+  nik: '3671044508940002',
+  gender: 'P',
+  bloodType: 'O',
+  address: 'Jl. Cileduk Raya No. 24, Tangerang',
+);
+
 Future<void> _pumpHistory(
   WidgetTester tester, {
   bool signedIn = true,
@@ -36,7 +49,9 @@ Future<void> _pumpHistory(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        if (!signedIn) currentUserProfileProvider.overrideWithValue(null),
+        currentUserProfileProvider.overrideWithValue(
+          signedIn ? testUser : null,
+        ),
       ],
       child: MaterialApp.router(
         theme: AppTheme.lightTheme,

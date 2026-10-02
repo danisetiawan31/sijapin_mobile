@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
+import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
 import 'package:sijapin_mobile/core/widgets/app_loading_state.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
@@ -20,6 +23,7 @@ class DoctorScheduleScreen extends ConsumerStatefulWidget {
 
 class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
   late final TextEditingController _searchController;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -30,6 +34,7 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -115,7 +120,12 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                       )
                     : null,
                 onChanged: (value) {
-                  ref.read(doctorSearchQueryProvider.notifier).setQuery(value);
+                  _debounceTimer?.cancel();
+                  _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                    ref
+                        .read(doctorSearchQueryProvider.notifier)
+                        .setQuery(value);
+                  });
                 },
               ),
             ),
@@ -127,32 +137,65 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
             // Specialty Filter Chips
             const SizedBox(height: 38, child: _SpecialtyFilterChips()),
 
-            // Doctor Cards List
+            // Doctor Cards List with Pull-to-Refresh
             Expanded(
-              child: schedulesAsync.when(
-                data: (schedules) {
-                  if (schedules.isEmpty) {
-                    return const AppEmptyState(
-                      title: 'Tidak Ada Jadwal Dokter',
-                      message:
-                          'Jadwal praktik untuk filter ini belum tersedia.',
-                      icon: Icons.event_busy_rounded,
-                    );
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                    itemCount: schedules.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (_, index) =>
-                        DoctorCard(schedule: schedules[index]),
-                  );
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(doctorScheduleListProvider);
+                  ref.invalidate(activePolyclinicsProvider);
                 },
-                loading: () =>
-                    const AppLoadingState.list(itemCount: 5, itemHeight: 180),
-                error: (error, stack) => AppErrorState(
-                  title: 'Gagal Memuat Jadwal',
-                  message: 'Terjadi kesalahan saat memuat jadwal dokter. Silakan coba lagi.',
-                  onRetry: () => ref.invalidate(doctorScheduleListProvider),
+                color: AppColors.brandGoldenCaramel,
+                child: schedulesAsync.when(
+                  data: (schedules) {
+                    if (schedules.isEmpty) {
+                      return LayoutBuilder(
+                        builder: (context, constraints) =>
+                            SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: Center(
+                                  child: AppEmptyState(
+                                    title: 'Tidak Ada Jadwal Dokter',
+                                    message: 'Jadwal praktik untuk filter ini belum tersedia.',
+                                    icon: Icons.event_busy_rounded,
+                                    actionButton: AppSecondaryButton(
+                                      label: 'Reset Filter',
+                                      icon: Icons.refresh_rounded,
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        ref
+                                            .read(
+                                              doctorScheduleListProvider
+                                                  .notifier,
+                                            )
+                                            .reset();
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                      );
+                    }
+                    return ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                      itemCount: schedules.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
+                      itemBuilder: (_, index) =>
+                          DoctorCard(schedule: schedules[index]),
+                    );
+                  },
+                  loading: () =>
+                      const AppLoadingState.list(itemCount: 5, itemHeight: 180),
+                  error: (error, stack) => AppErrorState(
+                    title: 'Gagal Memuat Jadwal',
+                    message: 'Terjadi kesalahan saat memuat jadwal dokter. Silakan coba lagi.',
+                    onRetry: () => ref.invalidate(doctorScheduleListProvider),
+                  ),
                 ),
               ),
             ),
@@ -265,30 +308,27 @@ class _DayChip extends StatelessWidget {
   }
 }
 
-/// Specialty filter chips horizontal scroll
+/// Specialty filter chips horizontal scroll dinamis dari m_unit SIMRS
 class _SpecialtyFilterChips extends ConsumerWidget {
   const _SpecialtyFilterChips();
-
-  static const List<String> _specialties = <String>[
-    'Semua Poli',
-    'Penyakit Dalam',
-    'Mata',
-    'Anak',
-    'Kebidanan & Obgyn',
-    'THT-KL',
-  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activeSpecialty = ref.watch(selectedDoctorSpecialtyProvider);
+    final clinicsAsync = ref.watch(activePolyclinicsProvider);
+
+    final List<String> specialties = [
+      'Semua Poli',
+      ...?clinicsAsync.value?.map((c) => c.name),
+    ];
 
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       scrollDirection: Axis.horizontal,
-      itemCount: _specialties.length,
+      itemCount: specialties.length,
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, index) {
-        final specialty = _specialties[index];
+        final specialty = specialties[index];
         final isActive = specialty == activeSpecialty;
         return _FilterChip(
           label: specialty,

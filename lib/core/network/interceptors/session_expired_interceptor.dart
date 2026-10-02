@@ -28,8 +28,9 @@ class SessionExpiredInterceptor extends Interceptor {
   }
 
   bool _isSessionExpiredResponse(Response<dynamic> response) {
-    // 1. Cek Redirect HTTP 302 / 301 ke halaman Login CI3
-    if (response.statusCode == 301 || response.statusCode == 302) {
+    // 1. Cek Redirect HTTP 301, 302, 303, 307, 308 ke halaman Login CI3
+    final statusCode = response.statusCode ?? 0;
+    if (statusCode >= 300 && statusCode < 400) {
       final location = response.headers.value('location') ?? '';
       if (location.toLowerCase().contains('login')) {
         return true;
@@ -45,7 +46,8 @@ class SessionExpiredInterceptor extends Interceptor {
       final msg = data['msg']?.toString().toLowerCase() ?? '';
       if (msg.contains('sesi telah habis') ||
           msg.contains('session expired') ||
-          msg.contains('silahkan login')) {
+          msg.contains('silahkan login') ||
+          msg.contains('login terlebih dahulu')) {
         return true;
       }
     }
