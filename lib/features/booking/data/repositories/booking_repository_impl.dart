@@ -14,9 +14,10 @@ import 'package:sijapin_mobile/features/booking/domain/entities/booking_draft.da
 import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/patient_member.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/polyclinic.dart';
-import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
+import 'package:sijapin_mobile/features/booking/data/datasources/doctor_schedule_remote_data_source.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/booking_repository.dart';
 import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
+import 'package:sijapin_mobile/features/booking/presentation/controllers/doctor_schedule_controller.dart';
 import 'package:sijapin_mobile/features/ticket/data/datasources/ticket_local_data_source.dart';
 import 'package:sijapin_mobile/features/ticket/data/models/ticket_model.dart';
 import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
@@ -88,62 +89,76 @@ class BookingRepositoryImpl implements BookingRepository {
 
   @override
   Future<List<Polyclinic>> getPolyclinics() async {
-    await Future<void>.delayed(const Duration(milliseconds: 250));
+    if (dioClient != null) {
+      try {
+        final remote = DoctorScheduleRemoteDataSource(dioClient: dioClient!);
+        final clinics = await remote.fetchPolyclinics();
+        if (clinics.isNotEmpty) return clinics;
+      } catch (_) {}
+    }
 
     return const <Polyclinic>[
       Polyclinic(
         id: 1,
         name: 'Poli Penyakit Dalam',
         code: 'PDI',
+        bpjsCode: 'INT',
         floor: 'Lantai 1',
         description: 'Pemeriksaan organ dalam, metabolik, ginjal, & endokrin',
       ),
       Polyclinic(
         id: 2,
-        name: 'Poli Mata',
-        code: 'MAT',
-        floor: 'Lantai 2',
-        description: 'Pemeriksaan refraksi, katarak, glaukoma, & retina',
-      ),
-      Polyclinic(
-        id: 3,
-        name: 'Poli THT-KL',
-        code: 'THT',
-        floor: 'Lantai 2',
-        description: 'Telinga, hidung, tenggorokan, kepala & leher',
-      ),
-      Polyclinic(
-        id: 4,
         name: 'Poli Kebidanan & Kandungan',
         code: 'OBG',
+        bpjsCode: 'OBG',
         floor: 'Lantai 2',
         description: 'Antenatal care (ANC), USG 4D, ginekologi, & KB',
       ),
       Polyclinic(
-        id: 5,
+        id: 3,
         name: 'Poli Anak',
         code: 'ANA',
+        bpjsCode: 'ANA',
         floor: 'Lantai 1',
         description: 'Tumbuh kembang anak, imunisasi dasar, & pediatri',
       ),
       Polyclinic(
-        id: 6,
+        id: 4,
+        name: 'Poli Bedah Umum',
+        code: 'BED',
+        bpjsCode: 'BED',
+        floor: 'Lantai 2',
+        description: 'Konsultasi & tindakan bedah umum',
+      ),
+      Polyclinic(
+        id: 5,
         name: 'Poli Gigi & Mulut',
         code: 'GIG',
+        bpjsCode: 'GND',
         floor: 'Lantai 1',
         description: 'Konservasi gigi, bedah mulut, & periodonsia',
       ),
       Polyclinic(
-        id: 7,
-        name: 'Poli Jantung & Pembuluh Darah',
-        code: 'JAN',
-        floor: 'Lantai 3',
-        description: 'EKG, treadmill test, ekokardiografi, & kardiologi',
+        id: 29,
+        name: 'Poli Mata',
+        code: 'MAT',
+        bpjsCode: 'MAT',
+        floor: 'Lantai 2',
+        description: 'Pemeriksaan refraksi, katarak, glaukoma, & retina',
       ),
       Polyclinic(
-        id: 8,
+        id: 30,
+        name: 'Poli Paru',
+        code: 'PAR',
+        bpjsCode: 'PAR',
+        floor: 'Lantai 2',
+        description: 'Pemeriksaan paru, asma, & penyakit pernapasan',
+      ),
+      Polyclinic(
+        id: 43,
         name: 'Poli Saraf / Neurologi',
         code: 'SAR',
+        bpjsCode: 'SAR',
         floor: 'Lantai 2',
         description: 'Pemeriksaan stroke, vertigo, nyeri saraf, & EEG',
       ),
@@ -172,22 +187,32 @@ class BookingRepositoryImpl implements BookingRepository {
 
     // Filter dokter yang praktiknya cocok dengan nama poliklinik atau spesialisasi
     final matchedDoctors = allDoctors.where((doctor) {
+      if (doctor.unitId != null && doctor.unitId == clinicId) {
+        return true;
+      }
       final clinicLower = clinic.name.toLowerCase();
       final doctorPoliLower = doctor.poli.toLowerCase();
       final docSpecLower = doctor.specialization.toLowerCase();
 
-      return doctorPoliLower.contains(clinic.code.toLowerCase()) ||
-          clinicLower.contains(doctorPoliLower) ||
-          (clinic.code == 'PDI' && docSpecLower.contains('penyakit dalam')) ||
+      return (doctorPoliLower.isNotEmpty &&
+              (doctorPoliLower.contains(clinic.code.toLowerCase()) ||
+                  clinicLower.contains(doctorPoliLower) ||
+                  doctorPoliLower.contains(clinicLower))) ||
+          ((clinic.code == 'INT' || clinic.code == 'PDI') &&
+              docSpecLower.contains('penyakit dalam')) ||
           (clinic.code == 'MAT' && docSpecLower.contains('mata')) ||
           (clinic.code == 'THT' && docSpecLower.contains('tht')) ||
           (clinic.code == 'OBG' &&
               (docSpecLower.contains('kandungan') ||
-                  docSpecLower.contains('obgyn'))) ||
+                  docSpecLower.contains('obgyn') ||
+                  docSpecLower.contains('kebidanan'))) ||
           (clinic.code == 'ANA' && docSpecLower.contains('anak')) ||
-          (clinic.code == 'GIG' && docSpecLower.contains('gigi')) ||
+          ((clinic.code == 'GIG' || clinic.code == 'GND') &&
+              docSpecLower.contains('gigi')) ||
           (clinic.code == 'JAN' && docSpecLower.contains('jantung')) ||
-          (clinic.code == 'SAR' && docSpecLower.contains('saraf'));
+          (clinic.code == 'SAR' && docSpecLower.contains('saraf')) ||
+          (clinic.code == 'BED' && docSpecLower.contains('bedah')) ||
+          (clinic.code == 'PAR' && docSpecLower.contains('paru'));
     }).toList();
 
     return matchedDoctors;
@@ -426,7 +451,7 @@ final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
   return BookingRepositoryImpl(
     dioClient: dioClient,
     secureStorage: secureStorage,
-    doctorScheduleRepository: const DoctorScheduleRepositoryImpl(),
+    doctorScheduleRepository: ref.watch(doctorScheduleRepositoryProvider),
     ticketLocalDataSource: ticketLocalDataSource,
   );
 });
