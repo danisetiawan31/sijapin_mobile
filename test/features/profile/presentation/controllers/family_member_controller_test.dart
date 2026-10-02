@@ -1,21 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
+import '../../../../fixtures/mock_family_members.dart';
 
 void main() {
   group('FamilyMembersNotifier Unit Tests', () {
     late ProviderContainer container;
 
     setUp(() {
-      container = ProviderContainer();
+      final repository = FamilyMemberRepositoryImpl(
+        remoteDataSource: null,
+        initialMembers: kMockFamilyMembers,
+      );
+      container = ProviderContainer(
+        overrides: [
+          familyMemberRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
     });
 
     tearDown(() {
       container.dispose();
     });
 
-    test('initial state memuat daftar 5 anggota keluarga mock', () {
+    test('initial state tanpa data cached menghasilkan daftar kosong', () {
+      final emptyContainer = ProviderContainer();
+      final members = emptyContainer.read(familyMembersProvider);
+      expect(members.isEmpty, isTrue);
+      emptyContainer.dispose();
+    });
+
+    test('initial state dengan test fixture memuat 5 anggota keluarga', () {
       final members = container.read(familyMembersProvider);
       expect(members.length, 5);
       expect(members.first.fullName, 'Ahmad Fauzi Rahman');

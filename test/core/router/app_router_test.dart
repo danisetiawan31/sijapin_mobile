@@ -8,6 +8,8 @@ import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/app_bottom_nav_bar.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 
 /// Fake penyimpanan aman in-memory agar tidak memicu plugin native di test.
 class _FakeSecureStorage implements ISecureStorage {
@@ -45,11 +47,25 @@ class _FakeBiometricAuth implements IBiometricAuth {
   Future<bool> authenticate({required String reason}) async => true;
 }
 
-ProviderContainer _createContainer() {
+const _kRouterTestUser = UserProfile(
+  customerId: '4',
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+  nik: '3671044508940002',
+  gender: 'P',
+  bloodType: 'O',
+  address: 'Jl. Cileduk Raya No. 24, Tangerang',
+);
+
+ProviderContainer _createContainer({bool signedIn = true}) {
   return ProviderContainer(
     overrides: [
       secureStorageServiceProvider.overrideWithValue(_FakeSecureStorage()),
       biometricAuthServiceProvider.overrideWithValue(_FakeBiometricAuth()),
+      currentUserProfileProvider.overrideWithValue(
+        signedIn ? _kRouterTestUser : null,
+      ),
     ],
   );
 }
