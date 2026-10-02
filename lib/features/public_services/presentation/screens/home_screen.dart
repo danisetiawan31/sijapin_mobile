@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
@@ -20,6 +21,32 @@ import '../widgets/home_widgets.dart';
 /// - Banner darurat IGD yang compact
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
+
+  /// Membuka aplikasi peta (Google Maps) langsung menuju lokasi RSUP Dr. Sitanala.
+  static Future<void> _openHospitalMap(BuildContext context) async {
+    try {
+      final launched = await launchUrl(
+        Uri.parse(AppConstants.hospitalMapsUrl),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        _showMapErrorSnack(context);
+      }
+    } catch (_) {
+      if (context.mounted) {
+        _showMapErrorSnack(context);
+      }
+    }
+  }
+
+  static void _showMapErrorSnack(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Tidak dapat membuka peta lokasi rumah sakit'),
+        backgroundColor: AppColors.dangerCrimson,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,24 +202,8 @@ class HomeScreen extends ConsumerWidget {
                             context.push(AppRoutes.serviceStandardsPath),
                         onBpjsFlowTap: () =>
                             context.push(AppRoutes.bpjsFlowPath),
-                        onHospitalLocationTap: () {
-                          showDialog<void>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text(
-                                'Lokasi ${AppConstants.hospitalName}',
-                              ),
-                              content: const Text(
-                                '${AppConstants.hospitalAddress}\n\n${AppConstants.hospitalOperatingHours}',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('Tutup'),
-                                ),
-                              ],
-                            ),
-                          );
+                        onHospitalLocationTap: () async {
+                          await _openHospitalMap(context);
                         },
                       ),
                       const SizedBox(height: 14),
