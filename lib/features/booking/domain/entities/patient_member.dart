@@ -43,7 +43,7 @@ class PatientMember {
   /// Nomor kartu BPJS Kesehatan (13 digit) jika ada
   final String? bpjsCardNumber;
 
-  /// Nomor telepon / WhatsApp pasien
+  /// Nomor kontak telepon pasien (NO_CONTACT)
   final String? phone;
 
   /// Tempat lahir pasien (TMP_LAHIR)

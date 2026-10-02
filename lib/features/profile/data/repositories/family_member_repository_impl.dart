@@ -5,7 +5,6 @@ import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/storage/storage_constants.dart';
 import '../../domain/entities/family_member.dart';
 import '../../domain/repositories/family_member_repository.dart';
-import '../datasources/family_members_mock_data.dart';
 import '../datasources/profile_remote_data_source.dart';
 
 /// Implementasi repositori anggota keluarga yang terhubung ke server CI3 SIMRS
@@ -15,7 +14,9 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
     this.remoteDataSource,
     this.localStorage,
     List<FamilyMember>? initialMembers,
-  }) : _members = List<FamilyMember>.from(initialMembers ?? kMockFamilyMembers);
+  }) : _members = List<FamilyMember>.from(
+         initialMembers ?? const <FamilyMember>[],
+       );
 
   final IProfileRemoteDataSource? remoteDataSource;
   final ILocalStorage? localStorage;
@@ -104,51 +105,71 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
     if (remoteDataSource != null) {
       try {
         final remoteList = await remoteDataSource!.fetchFamilyMembers();
-        if (remoteList != null && remoteList.isNotEmpty) {
+        if (remoteList != null) {
+          final remoteIds = remoteList.map((m) => m.id).toSet();
+          // Pertahankan hanya data lokal yang belum tersinkronisasi (ID lokal diawali keluarga-)
+          final localUnsynced = _members
+              .where(
+                (m) =>
+                    m.id.startsWith('keluarga-') &&
+                    !remoteIds.contains(m.id) &&
+                    !hiddenIds.contains(m.id),
+              )
+              .toList();
+
+          final List<FamilyMember> mergedList = [...localUnsynced];
           for (final remote in remoteList) {
             if (hiddenIds.contains(remote.id)) continue;
-            final idx = _members.indexWhere((m) => m.id == remote.id);
-            if (idx != -1) {
-              final existing = _members[idx];
-              _members[idx] = existing.copyWith(
-                fullName: remote.fullName.isNotEmpty
-                    ? remote.fullName
-                    : existing.fullName,
-                nik: remote.nik.isNotEmpty ? remote.nik : existing.nik,
-                birthDate: remote.birthDate ?? existing.birthDate,
-                birthPlace: remote.birthPlace.isNotEmpty
-                    ? remote.birthPlace
-                    : existing.birthPlace,
-                motherName: remote.motherName.isNotEmpty
-                    ? remote.motherName
-                    : existing.motherName,
-                address: remote.address.isNotEmpty
-                    ? remote.address
-                    : existing.address,
-                phone: remote.phone.isNotEmpty ? remote.phone : existing.phone,
-                religion: remote.religion.isNotEmpty
-                    ? remote.religion
-                    : existing.religion,
-                occupation: remote.occupation.isNotEmpty
-                    ? remote.occupation
-                    : existing.occupation,
-                medicalRecordNumber:
-                    remote.medicalRecordNumber ?? existing.medicalRecordNumber,
-                rdNomr: remote.rdNomr ?? existing.rdNomr,
+            final localIdx = _members.indexWhere((m) => m.id == remote.id);
+            if (localIdx != -1) {
+              final existing = _members[localIdx];
+              mergedList.add(
+                existing.copyWith(
+                  fullName: remote.fullName.isNotEmpty
+                      ? remote.fullName
+                      : existing.fullName,
+                  nik: remote.nik.isNotEmpty ? remote.nik : existing.nik,
+                  birthDate: remote.birthDate ?? existing.birthDate,
+                  birthPlace: remote.birthPlace.isNotEmpty
+                      ? remote.birthPlace
+                      : existing.birthPlace,
+                  motherName: remote.motherName.isNotEmpty
+                      ? remote.motherName
+                      : existing.motherName,
+                  address: remote.address.isNotEmpty
+                      ? remote.address
+                      : existing.address,
+                  phone: remote.phone.isNotEmpty ? remote.phone : existing.phone,
+                  religion: remote.religion.isNotEmpty
+                      ? remote.religion
+                      : existing.religion,
+                  occupation: remote.occupation.isNotEmpty
+                      ? remote.occupation
+                      : existing.occupation,
+                  medicalRecordNumber:
+                      remote.medicalRecordNumber ?? existing.medicalRecordNumber,
+                  rdNomr: remote.rdNomr ?? existing.rdNomr,
+                ),
               );
             } else {
-              _members.add(remote);
+              mergedList.add(remote);
             }
-            if (localStorage != null) {
-              try {
+          }
+
+          _members
+            ..clear()
+            ..addAll(mergedList);
+
+          if (localStorage != null) {
+            try {
+              for (final member in _members) {
                 await localStorage!.put<dynamic>(
                   boxName: StorageConstants.familyMembersBox,
-                  key: _members[idx != -1 ? idx : _members.length - 1].id,
-                  value: _members[idx != -1 ? idx : _members.length - 1]
-                      .toMap(),
+                  key: member.id,
+                  value: member.toMap(),
                 );
-              } catch (_) {}
-            }
+              }
+            } catch (_) {}
           }
         }
       } catch (_) {
