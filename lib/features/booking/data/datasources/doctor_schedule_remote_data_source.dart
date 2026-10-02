@@ -168,8 +168,9 @@ class DoctorScheduleRemoteDataSource
   static String _mapCode(String unitName) {
     final lower = unitName.toLowerCase();
     if (lower.contains('dalam')) return 'PDI';
-    if (lower.contains('kandungan') || lower.contains('kebidanan'))
+    if (lower.contains('kandungan') || lower.contains('kebidanan')) {
       return 'OBG';
+    }
     if (lower.contains('anak')) return 'ANA';
     if (lower.contains('bedah')) return 'BED';
     if (lower.contains('gigi')) return 'GIG';
@@ -186,8 +187,9 @@ class DoctorScheduleRemoteDataSource
   static String _mapBpjsCode(String unitName, int id) {
     final lower = unitName.toLowerCase();
     if (lower.contains('dalam')) return 'INT';
-    if (lower.contains('kandungan') || lower.contains('kebidanan'))
+    if (lower.contains('kandungan') || lower.contains('kebidanan')) {
       return 'OBG';
+    }
     if (lower.contains('anak')) return 'ANA';
     if (lower.contains('bedah')) return 'BED';
     if (lower.contains('gigi')) return 'GND';

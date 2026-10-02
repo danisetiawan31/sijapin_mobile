@@ -465,8 +465,9 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                             ),
                           ],
                           onChanged: (String? value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _religion = value);
+                            }
                           },
                         ),
                       ),
@@ -524,8 +525,9 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                               )
                               .toList(),
                           onChanged: (FamilyRelation? value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _relation = value);
+                            }
                           },
                         ),
                       ),
@@ -561,8 +563,9 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                               )
                               .toList(),
                           onChanged: (FamilyInsurance? value) {
-                            if (value != null)
+                            if (value != null) {
                               setState(() => _insurance = value);
+                            }
                           },
                         ),
                       ),
