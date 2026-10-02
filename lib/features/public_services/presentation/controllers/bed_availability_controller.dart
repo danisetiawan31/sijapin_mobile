@@ -3,11 +3,17 @@ import 'package:sijapin_mobile/features/public_services/data/repositories/bed_av
 import 'package:sijapin_mobile/features/public_services/domain/entities/bed_availability.dart';
 import 'package:sijapin_mobile/features/public_services/domain/repositories/bed_availability_repository.dart';
 
-/// Provider repository ketersediaan kamar rawat inap
+import '../../../../core/network/dio_client.dart';
+import '../../data/datasources/bed_availability_remote_data_source.dart';
+
+/// Provider repository ketersediaan kamar rawat inap yang terhubung ke live SIMRS
 final bedAvailabilityRepositoryProvider = Provider<BedAvailabilityRepository>((
   ref,
 ) {
-  return const BedAvailabilityRepositoryImpl();
+  final dioClient = ref.watch(dioClientProvider);
+  return BedAvailabilityRepositoryImpl(
+    remoteDataSource: BedAvailabilityRemoteDataSource(dioClient: dioClient),
+  );
 });
 
 /// State untuk BedAvailabilityList

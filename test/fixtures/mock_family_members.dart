@@ -1,28 +1,8 @@
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 
-/// Data fixture mock anggota keluarga terdaftar.
-///
-/// Data ini merepresentasikan baris pada tabel `m_customer_member` di database
-/// backend CodeIgniter 3 RSUP Dr. Sitanala:
-///
-/// - `id`                  -> `cust_member_id` (Primary key anggota keluarga)
-/// - `fullName`            -> `nama_member` (Nama lengkap sesuai e-KTP/KK)
-/// - `relation`            -> `hubungan` ('Diri Sendiri', 'Istri', 'Suami', 'Anak', 'Orang Tua')
-/// - `gender`              -> `jk` ('L' / 'P')
-/// - `nik`                 -> `nik` (16 digit nomor kependudukan Dukcapil)
-/// - `medicalRecordNumber` -> `norm` (Nomor Rekam Medis lokal RSUP Dr. Sitanala jika pasien lama)
-/// - `birthDate`           -> `tgl_lahir` (Tanggal lahir)
-/// - `bloodType`           -> `gol_darah` ('A', 'B', 'AB', 'O')
-/// - `phone`               -> `no_hp` / `telepon` (Nomor kontak WhatsApp)
-/// - `insurance`           -> `penjamin` (BPJS, Umum/Biaya Sendiri)
-/// - `insuranceNumber`     -> `no_bpjs` (13 digit nomor kartu BPJS Kesehatan)
-///
-/// Catatan Arsitektur:
-/// Fixture statis terstruktur dipilih dibanding pustaka acak seperti `faker` untuk:
-/// 1. Menjaga tes widget & unit test tetap deterministik (bebas flaky test).
-/// 2. Menghindari ketergantungan paket eksternal (zero-bloat).
-/// 3. Memastikan validasi domain medis Indonesia (NIK 16 digit, No. BPJS 13 digit)
-///    terpenuhi secara akurat saat bridging ke backend nyata.
+/// Test fixture mock anggota keluarga terdaftar.
+/// Eksklusif HANYA untuk kebutuhan unit & widget testing di folder test/.
+/// Tidak boleh diimpor oleh kode produksi di lib/.
 final List<FamilyMember> kMockFamilyMembers = <FamilyMember>[
   FamilyMember(
     id: 'keluarga-1',

@@ -44,9 +44,13 @@ class _LoginViewState extends ConsumerState<LoginView> {
     ref.listen(authControllerProvider, (previous, next) {
       if (!mounted) return;
       if (next.status == AuthSubmissionStatus.success) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Login dummy berhasil.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              next.message ?? 'Berhasil masuk ke layanan SIIJAPIN.',
+            ),
+          ),
+        );
         context.go('/profile');
       }
     });
@@ -88,14 +92,31 @@ class _LoginViewState extends ConsumerState<LoginView> {
                           children: [
                             AuthTextField(
                               controller: _identifierController,
-                              label: 'Nomor WhatsApp / Email',
-                              hint: '0812xxx atau email@domain.com',
-                              icon: Icons.contact_mail_outlined,
+                              label: 'Nomor Telepon / Email',
+                              hint:
+                                  'Contoh: 081234567890 atau email@domain.com',
+                              icon: Icons.person_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Masukkan nomor WhatsApp atau email.';
+                                final trimmed = value?.trim() ?? '';
+                                if (trimmed.isEmpty) {
+                                  return 'Masukkan nomor telepon atau email terdaftar.';
+                                }
+                                if (trimmed.contains('@')) {
+                                  if (!trimmed.contains('.') ||
+                                      trimmed.length < 5) {
+                                    return 'Format email belum benar.';
+                                  }
+                                  return null;
+                                }
+                                final digitsOnly = trimmed.replaceAll(
+                                  RegExp(r'\D'),
+                                  '',
+                                );
+                                if (digitsOnly.length < 10 ||
+                                    digitsOnly.length > 15) {
+                                  return 'Nomor telepon harus 10–15 digit angka.';
                                 }
                                 return null;
                               },

@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../booking/presentation/controllers/doctor_schedule_controller.dart';
 import '../controllers/bed_availability_controller.dart';
 import '../widgets/home_widgets.dart';
 
@@ -56,6 +57,14 @@ class HomeScreen extends ConsumerWidget {
           data: (summary) => summary.availableBeds,
           loading: () => AppConstants.defaultAvailableBeds,
           error: (_, _) => AppConstants.defaultAvailableBeds,
+        );
+
+    final int activeDoctors = ref
+        .watch(doctorScheduleListProvider)
+        .when(
+          data: (list) => list.length,
+          loading: () => AppConstants.defaultActiveDoctors,
+          error: (_, _) => AppConstants.defaultActiveDoctors,
         );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -117,14 +126,18 @@ class HomeScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Layanan Poliklinik & Pasien',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.brandDarkEspresso,
+                          const Expanded(
+                            child: Text(
+                              'Layanan Poliklinik & Pasien',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandDarkEspresso,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           InkWell(
                             onTap: () => context.go(AppRoutes.doctorsPath),
                             borderRadius: BorderRadius.circular(6),
@@ -164,9 +177,10 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Status Bento: Kamar & Dokter
+                      // Status Bento: Kamar & Dokter (Reaktif terhadap live data)
                       HomeBentoStatusCards(
                         availableBedsCount: availableBeds,
+                        activeDoctorsCount: activeDoctors,
                         onBedAvailabilityTap: () =>
                             context.push(AppRoutes.bedAvailabilityPath),
                         onDoctorScheduleTap: () =>

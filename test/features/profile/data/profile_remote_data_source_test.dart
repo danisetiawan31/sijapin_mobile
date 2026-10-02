@@ -7,6 +7,7 @@ import 'package:sijapin_mobile/core/storage/storage_constants.dart';
 import 'package:sijapin_mobile/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 
 class MockLocalStorage implements ILocalStorage {
   final Map<String, Map<String, dynamic>> storage = {};
@@ -51,6 +52,10 @@ class MockLocalStorage implements ILocalStorage {
 
 class MockProfileRemoteDataSource implements IProfileRemoteDataSource {
   List<FamilyMember>? mockFetchResult;
+  UserProfile? mockProfileResult;
+
+  @override
+  Future<UserProfile?> fetchProfile() async => mockProfileResult;
 
   @override
   Future<List<FamilyMember>?> fetchFamilyMembers() async => mockFetchResult;

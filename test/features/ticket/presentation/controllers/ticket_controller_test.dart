@@ -7,10 +7,13 @@ import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 import 'package:sijapin_mobile/features/ticket/domain/repositories/ticket_repository.dart';
 import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
 
+import '../../../../fixtures/mock_ticket.dart';
+
 class FakeTicketRepository implements TicketRepository {
   Ticket? activeTicket;
   final List<Ticket> allTickets = [];
   bool cancelSuccess = true;
+  int syncCallCount = 0;
 
   @override
   Future<void> saveTicket(Ticket ticket) async {
@@ -53,6 +56,12 @@ class FakeTicketRepository implements TicketRepository {
       );
     }
   }
+
+  @override
+  Future<int> syncPendingOfflineActions() async {
+    syncCallCount++;
+    return 0;
+  }
 }
 
 void main() {
@@ -78,18 +87,20 @@ void main() {
       container.dispose();
     });
 
-    test('initial state contains default ticket when storage is empty', () {
-      final state = container.read(ticketControllerProvider);
-      expect(state.ticket, isNotNull);
-      expect(state.ticket!.bookingCode, equals('260930014221'));
-      expect(state.ticket!.patientName, equals('Rhesa Panjaitan'));
-    });
+    test(
+      'initial state has null ticket and is not loading when storage is empty',
+      () {
+        final state = container.read(ticketControllerProvider);
+        expect(state.ticket, isNull);
+        expect(state.isLoading, isFalse);
+      },
+    );
 
     test(
       'saveNewTicket updates controller state and saves to repository',
       () async {
         final controller = container.read(ticketControllerProvider.notifier);
-        final newTicket = kDefaultInitialTicket.copyWith(
+        final newTicket = kMockActiveTicket.copyWith(
           bookingCode: '2026101500099',
           patientName: 'Ahmad Dhani Setiawan',
         );
@@ -108,7 +119,7 @@ void main() {
       () async {
         final controller = container.read(ticketControllerProvider.notifier);
         final futureDate = AppDateTime.now().add(const Duration(days: 3));
-        final cancellableTicket = kDefaultInitialTicket.copyWith(
+        final cancellableTicket = kMockActiveTicket.copyWith(
           scheduledDate: futureDate,
         );
         await controller.saveNewTicket(cancellableTicket);
@@ -126,6 +137,8 @@ void main() {
 
     test('confirmApmCheckIn updates ticket status to checkedIn', () async {
       final controller = container.read(ticketControllerProvider.notifier);
+      await controller.saveNewTicket(kMockActiveTicket);
+
       await controller.confirmApmCheckIn();
 
       final state = container.read(ticketControllerProvider);
@@ -146,6 +159,8 @@ void main() {
 
     test('refreshQueue decrements remainingQueue safely', () async {
       final controller = container.read(ticketControllerProvider.notifier);
+      await controller.saveNewTicket(kMockActiveTicket);
+
       final initialRemaining = container
           .read(ticketControllerProvider)
           .ticket!
@@ -159,6 +174,16 @@ void main() {
           .remainingQueue;
       expect(updatedRemaining, equals(initialRemaining - 1));
     });
+
+    test(
+      'syncPendingTickets calls repository syncPendingOfflineActions',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        final count = await controller.syncPendingTickets();
+        expect(count, equals(0));
+        expect(fakeRepo.syncCallCount, greaterThanOrEqualTo(1));
+      },
+    );
 
     test('detects offline state from connectivity stream', () async {
       final offlineContainer = ProviderContainer(

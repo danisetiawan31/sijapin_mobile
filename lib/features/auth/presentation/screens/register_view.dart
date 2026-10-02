@@ -95,8 +95,11 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
       if (!mounted) return;
       if (next.status == AuthSubmissionStatus.success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Pendaftaran dummy berhasil. Silakan masuk.'),
+          SnackBar(
+            content: Text(
+              next.message ??
+                  'Pendaftaran berhasil. Silakan masuk dengan akun Anda.',
+            ),
           ),
         );
         context.go('/login');
@@ -191,29 +194,42 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                             const SizedBox(height: 12),
                             AuthTextField(
                               controller: _phoneController,
-                              label: 'Nomor WhatsApp / HP *',
-                              hint: 'Masukkan nomor WhatsApp / HP',
+                              label: 'Nomor Telepon *',
+                              hint: 'Contoh: 081234567890',
                               icon: Icons.phone_outlined,
                               keyboardType: TextInputType.phone,
                               textInputAction: TextInputAction.next,
-                              validator: (value) =>
-                                  value == null || value.trim().isEmpty
-                                  ? 'Masukkan nomor WhatsApp / HP.'
-                                  : null,
+                              validator: (value) {
+                                final trimmed = value?.trim() ?? '';
+                                if (trimmed.isEmpty) {
+                                  return 'Masukkan nomor telepon.';
+                                }
+                                final digitsOnly = trimmed.replaceAll(
+                                  RegExp(r'\D'),
+                                  '',
+                                );
+                                if (digitsOnly.length < 10 ||
+                                    digitsOnly.length > 15) {
+                                  return 'Nomor telepon harus 10–15 digit angka.';
+                                }
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 12),
                             AuthTextField(
                               controller: _emailController,
-                              label: 'Email Pasien',
+                              label: 'Email Pasien *',
                               hint: 'nama@email.com',
                               icon: Icons.mail_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
                               validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return null;
+                                final trimmed = value?.trim() ?? '';
+                                if (trimmed.isEmpty) {
+                                  return 'Masukkan alamat email.';
                                 }
-                                if (!value.contains('@')) {
+                                if (!trimmed.contains('@') ||
+                                    !trimmed.contains('.')) {
                                   return 'Format email belum benar.';
                                 }
                                 return null;
@@ -264,17 +280,13 @@ class _RegisterViewState extends ConsumerState<RegisterView> {
                               label: 'Kata Sandi *',
                               hint: 'Masukkan kata sandi',
                               textInputAction: TextInputAction.next,
-                              helperText: 'Kombinasi minimal 6 huruf dan angka',
+                              helperText: 'Minimal 6 karakter',
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Masukkan kata sandi.';
                                 }
                                 if (value.length < 6) {
                                   return 'Kata sandi minimal 6 karakter.';
-                                }
-                                if (!RegExp(r'(?=.*[A-Za-z])(?=.*\d)')
-                                    .hasMatch(value)) {
-                                  return 'Gunakan kombinasi huruf dan angka.';
                                 }
                                 return null;
                               },

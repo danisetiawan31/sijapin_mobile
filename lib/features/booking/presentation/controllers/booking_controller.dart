@@ -1,75 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sijapin_mobile/core/config/app_config.dart';
-import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/data/repositories/booking_repository_impl.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/appointment.dart';
-
+import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
 
-/// Provider tiket janji temu aktif yang terhubung secara reaktif ke modul tiket (Epic 06)
+/// Provider tiket janji temu aktif yang terhubung secara reaktif ke TicketController (SSOT)
 final activeAppointmentProvider = Provider<Appointment?>((ref) {
   final ticketState = ref.watch(ticketControllerProvider);
   final ticket = ticketState.ticket;
-  if (ticket == null || ticket.isCancelled || ticket.isCompleted) return null;
-  return ticket.toAppointment();
+  if (ticket != null && !ticket.isCancelled && !ticket.isCompleted) {
+    return ticket.toAppointment();
+  }
+  return null;
 });
 
-/// Riwayat kunjungan lampau default (terverifikasi SIMRS)
-List<Appointment> get kDefaultHistoricalAppointments => [
-  Appointment(
-    bookingCode: '2026091200089',
-    queueNumber: 'MAT-008',
-    patientName: 'Siti Rahmah',
-    doctorName: 'dr. Hendra, Sp.M.',
-    specialty: 'Spesialis Mata',
-    clinic: 'Poli Mata',
-    scheduledDate: AppDateTime.wibDateTime(2026, 9, 12, 9, 30),
-    scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
-    estimatedMinutes: 0,
-    nowServingNumber: 'MAT-008',
-    remainingQueue: 0,
-    status: AppointmentStatus.completed,
-    patientRelation: 'Keluarga',
-    medicalRecord: '0456**',
-  ),
-  Appointment(
-    bookingCode: '2026080400122',
-    queueNumber: 'PDI-006',
-    patientName: 'Ahmad Dhani Setiawan',
-    doctorName: 'dr. Era Medina, Sp.PD',
-    specialty: 'Spesialis Penyakit Dalam',
-    clinic: 'Poli Penyakit Dalam',
-    scheduledDate: AppDateTime.wibDateTime(2026, 8, 4, 10, 0),
-    scheduledTime: '10.00 ${AppConfig.timeZoneAbbr}',
-    estimatedMinutes: 0,
-    nowServingNumber: 'PDI-006',
-    remainingQueue: 0,
-    status: AppointmentStatus.completed,
-    patientRelation: 'Diri Sendiri',
-    medicalRecord: '0123**',
-  ),
-  Appointment(
-    bookingCode: '2026071500045',
-    queueNumber: 'THT-004',
-    patientName: 'Ahmad Dhani Setiawan',
-    doctorName: 'dr. Rian Pramudita, Sp.THT',
-    specialty: 'Spesialis THT-KL',
-    clinic: 'Poli THT-KL',
-    scheduledDate: AppDateTime.wibDateTime(2026, 7, 15, 8, 30),
-    scheduledTime: '08.30 ${AppConfig.timeZoneAbbr}',
-    estimatedMinutes: 0,
-    nowServingNumber: 'THT-004',
-    remainingQueue: 0,
-    status: AppointmentStatus.cancelled,
-    patientRelation: 'Diri Sendiri',
-    medicalRecord: '0123**',
-    cancelNote: 'Dibatalkan oleh pasien (H-1)',
-  ),
-];
+/// Provider riwayat janji temu live dari backend SIMRS (`Daftar_Log`)
+final liveBookingHistoryProvider = FutureProvider<List<Appointment>>((
+  ref,
+) async {
+  final repo = ref.watch(bookingRepositoryProvider);
+  return repo.getBookingHistory();
+});
 
-/// Riwayat kunjungan yang sudah selesai atau dibatalkan (terhubung ke modul tiket).
+/// Riwayat kunjungan yang sudah selesai atau dibatalkan (terhubung ke modul tiket & riwayat lokal).
 final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
   final ticketState = ref.watch(ticketControllerProvider);
   final List<Appointment> history = [];
@@ -79,9 +34,6 @@ final appointmentHistoryProvider = Provider<List<Appointment>>((ref) {
       (currentTicket.isCancelled || currentTicket.isCompleted)) {
     history.add(currentTicket.toAppointment());
   }
-
-  // Riwayat kunjungan terverifikasi SIMRS
-  history.addAll(kDefaultHistoricalAppointments);
 
   return history;
 });
@@ -116,12 +68,17 @@ class BookingController extends Notifier<BookingState> {
   BookingState build() =>
       BookingState(appointment: ref.watch(activeAppointmentProvider));
 
-  /// Muat ulang status antrean; sisa antrean berkurang satu tiap penyegaran
-  /// sampai nomor Anda dipanggil. Placeholder sampai endpoint asli tersedia.
+  /// Muat ulang status antrean; sinkronkan ke modul tiket dan backend SIMRS.
   Future<void> refreshQueue() async {
     if (state.isRefreshing) return;
     state = state.copyWith(isRefreshing: true);
-    await Future<void>.delayed(const Duration(milliseconds: 700));
+
+    // 1. Sinkronkan antrean & outbox ke TicketController
+    await ref.read(ticketControllerProvider.notifier).refreshQueue();
+
+    // 2. Refresh live booking history dari backend
+    ref.invalidate(liveBookingHistoryProvider);
+
     final Appointment? appointment = state.appointment;
     if (appointment != null) {
       state = state.copyWith(
@@ -137,9 +94,14 @@ class BookingController extends Notifier<BookingState> {
     state = state.copyWith(isRefreshing: false);
   }
 
-  /// Menetapkan janji temu aktif hasil booking baru
+  /// Menetapkan janji temu aktif hasil booking baru dan menyinkronkannya ke TicketController
   void setAppointment(Appointment appointment) {
     state = state.copyWith(appointment: appointment);
+    unawaited(
+      ref
+          .read(ticketControllerProvider.notifier)
+          .saveNewTicket(Ticket.fromAppointment(appointment)),
+    );
   }
 
   Future<void> cancelAppointment({
@@ -149,23 +111,26 @@ class BookingController extends Notifier<BookingState> {
     if (appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
 
-    // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL
+    // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL (SSOT)
     unawaited(
       ref.read(ticketControllerProvider.notifier).cancelTicket(reason: reason),
     );
 
-    // 2. Hubungi juga booking repository untuk kompatibilitas mundur
-    unawaited(
-      ref
-          .read(bookingRepositoryProvider)
-          .cancelBooking(
-            bookingCode: appointment.bookingCode,
-            reason: reason,
-            memberId: appointment.memberId,
-            scheduledDate: appointment.scheduledDate,
-          ),
-    );
+    // 2. Hubungi booking repository hanya jika TicketController belum memuat tiket (hindari request ganda)
+    if (ref.read(ticketControllerProvider).ticket == null) {
+      unawaited(
+        ref
+            .read(bookingRepositoryProvider)
+            .cancelBooking(
+              bookingCode: appointment.bookingCode,
+              reason: reason,
+              memberId: appointment.memberId,
+              scheduledDate: appointment.scheduledDate,
+            ),
+      );
+    }
 
+    ref.invalidate(liveBookingHistoryProvider);
     await Future<void>.delayed(const Duration(milliseconds: 600));
     state = state.copyWith(clearAppointment: true, isCancelling: false);
   }

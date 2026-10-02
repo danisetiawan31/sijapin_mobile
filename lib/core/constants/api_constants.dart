@@ -51,4 +51,8 @@ class ApiConstants {
 
   // 5. Aspirasi & Saran Pengaduan
   static const String submitFeedback = 'Saran_Pengaduan/input_saran_pengaduan';
+
+  // 6. Check-In Kiosk APM & Status QR (Controller Daftar_Log)
+  static const String checkInUpdateStatus = 'Daftar_Log/update_qrcode_status';
+  static const String checkInCekStatus = 'Daftar_Log/cek_status_qrcode';
 }

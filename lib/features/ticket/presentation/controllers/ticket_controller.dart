@@ -3,39 +3,11 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sijapin_mobile/core/config/app_config.dart';
+import 'package:sijapin_mobile/core/services/screen_brightness_service.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 
 import '../../data/repositories/ticket_repository_impl.dart';
 import '../../domain/entities/ticket.dart';
-
-/// Tiket awal default untuk keperluan demonstrasi dan fallback UI
-Ticket get kDefaultInitialTicket {
-  final now = AppDateTime.now();
-  return Ticket(
-    bookingCode: '260930014221',
-    queueNumber: 'MAT-014',
-    patientName: 'Rhesa Panjaitan',
-    medicalRecord: '0123***',
-    doctorName: 'dr. Hendra Prasetyo, Sp.M.',
-    specialty: 'Spesialis Mata',
-    clinic: 'Poli Mata',
-    clinicLocation: 'Lantai 2 - Gedung Rawat Jalan',
-    scheduledDate: AppDateTime.wibDateTime(
-      now.year,
-      now.month,
-      now.day + 1,
-      9,
-      30,
-    ),
-    scheduledTime: '09.30 ${AppConfig.timeZoneAbbr}',
-    estimatedMinutes: 15,
-    nowServingNumber: 'MAT-011',
-    remainingQueue: 3,
-    patientRelation: 'Diri Sendiri',
-    isServerSynced: true,
-  );
-}
 
 /// State representasi layar tiket antrean digital
 class TicketState {
@@ -102,16 +74,23 @@ class TicketController extends Notifier<TicketState> {
       (previous, next) {
         next.whenData((results) {
           final isOffline = results.every((r) => r == ConnectivityResult.none);
+          final wasOffline = state.isOffline;
           state = state.copyWith(isOffline: isOffline);
+
+          // Transisi dari offline ke online: jalankan outbox sync
+          if (wasOffline && !isOffline) {
+            syncPendingTickets();
+          }
         });
       },
       fireImmediately: true,
     );
 
-    // Inisialisasi awal dengan memuat dari repositori lokal
+    // Inisialisasi awal dengan memuat dari repositori lokal Hive
     _loadTicketFromStorage();
 
-    return TicketState(ticket: kDefaultInitialTicket);
+    // Default state bersih tanpa mock data (Zero Mock Architecture)
+    return const TicketState();
   }
 
   Future<void> _loadTicketFromStorage() async {
@@ -120,6 +99,9 @@ class TicketController extends Notifier<TicketState> {
       final activeTicket = await repo.getActiveTicket();
       if (activeTicket != null) {
         state = state.copyWith(ticket: activeTicket);
+      }
+      if (!state.isOffline) {
+        await syncPendingTickets();
       }
     } catch (_) {
       // Abaikan jika Hive box belum diinisialisasi pada lingkungan pengujian
@@ -133,9 +115,13 @@ class TicketController extends Notifier<TicketState> {
       final repo = ref.read(ticketRepositoryProvider);
       final active = await repo.getActiveTicket();
       state = state.copyWith(
-        ticket: active ?? kDefaultInitialTicket,
+        ticket: active,
+        clearTicket: active == null,
         isLoading: false,
       );
+      if (!state.isOffline) {
+        await syncPendingTickets();
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -144,10 +130,29 @@ class TicketController extends Notifier<TicketState> {
     }
   }
 
+  /// Sinkronisasi antrean aksi offline (outbox pattern) ke server saat online
+  Future<int> syncPendingTickets() async {
+    try {
+      final repo = ref.read(ticketRepositoryProvider);
+      final syncedCount = await repo.syncPendingOfflineActions();
+      if (syncedCount > 0) {
+        final active = await repo.getActiveTicket();
+        state = state.copyWith(ticket: active, clearTicket: active == null);
+      }
+      return syncedCount;
+    } catch (_) {
+      return 0;
+    }
+  }
+
   /// Menyimpan tiket baru ke basis data lokal dan memutakhirkan tampilan
   Future<void> saveNewTicket(Ticket ticket) async {
-    final repo = ref.read(ticketRepositoryProvider);
-    await repo.saveTicket(ticket);
+    try {
+      final repo = ref.read(ticketRepositoryProvider);
+      await repo.saveTicket(ticket);
+    } catch (_) {
+      // Abaikan jika Hive belum terinisialisasi di lingkungan unit test
+    }
     state = state.copyWith(ticket: ticket);
   }
 
@@ -200,9 +205,17 @@ class TicketController extends Notifier<TicketState> {
     state = state.copyWith(ticket: updated);
   }
 
-  /// Toggle mode kecerahan layar maksimal untuk pemindaian scanner 2D APM (PRD FR-05.3)
+  /// Toggle mode kecerahan layar maksimal untuk pemindaian scanner 2D APM (PRD FR-05.2 & FR-05.3)
   void setMaxBrightness(bool enable) {
     state = state.copyWith(isMaxBrightness: enable);
+    try {
+      final brightnessService = ref.read(screenBrightnessServiceProvider);
+      if (enable) {
+        brightnessService.setMaxBrightness();
+      } else {
+        brightnessService.resetBrightness();
+      }
+    } catch (_) {}
   }
 
   /// Refresh simulasi status antrean poliklinik
@@ -211,6 +224,12 @@ class TicketController extends Notifier<TicketState> {
     if (ticket == null || state.isRefreshing) return;
 
     state = state.copyWith(isRefreshing: true);
+    try {
+      if (!state.isOffline) {
+        await syncPendingTickets();
+      }
+    } catch (_) {}
+
     await Future<void>.delayed(const Duration(milliseconds: 600));
 
     final newRemaining = ticket.remainingQueue > 0

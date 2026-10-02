@@ -23,4 +23,8 @@ abstract class TicketRepository {
 
   /// Memperbarui status tiket lokal setelah konfirmasi kehadiran di Kiosk APM (Task 2)
   Future<void> checkInTicket(String bookingCode);
+
+  /// Menyinkronkan aksi tertunda (seperti pembatalan offline) ke backend CI3 saat koneksi pulih.
+  /// Mengembalikan jumlah aksi yang berhasil disinkronkan.
+  Future<int> syncPendingOfflineActions();
 }

@@ -10,17 +10,9 @@ import '../../domain/entities/user_profile.dart';
 class ActiveSessionUserNotifier extends Notifier<UserProfile?> {
   @override
   UserProfile? build() {
-    return UserProfile(
-      fullName: 'Rina Puspita Sari',
-      email: 'rina.puspita@warga.go.id',
-      phone: '081234567890',
-      nik: '3671044508940002',
-      birthDate: null,
-      gender: 'P',
-      bloodType: 'O',
-      address: 'Jl. Cileduk Raya No. 24, Tangerang',
-      memberSince: DateTime(2024, 3, 17),
-    );
+    // Sesi awal bernilai null (tamu/belum login) sampai sesi riil dimuat
+    // dari FlutterSecureStorage atau hasil autentikasi live SIMRS.
+    return null;
   }
 
   void setUser(UserProfile? user) {
@@ -87,8 +79,11 @@ class ProfileController extends Notifier<ProfileState> {
     String? password,
   }) async {
     final secureStorage = ref.read(secureStorageServiceProvider);
-    final customerId =
+    var customerId =
         await secureStorage.read(key: StorageConstants.keyCustomerId) ?? '';
+    if (customerId.isEmpty && state.user?.customerId.isNotEmpty == true) {
+      customerId = state.user!.customerId;
+    }
     final dioClient = ref.read(dioClientProvider);
     final remoteDataSource = ProfileRemoteDataSource(dioClient: dioClient);
 
@@ -111,6 +106,12 @@ class ProfileController extends Notifier<ProfileState> {
     }
 
     // Selalu sinkronisasi ke Secure Storage dan in-memory user
+    if (customerId.isNotEmpty) {
+      await secureStorage.write(
+        key: StorageConstants.keyCustomerId,
+        value: customerId,
+      );
+    }
     await secureStorage.write(
       key: StorageConstants.keyCustomerFullName,
       value: fullName,
@@ -140,6 +141,7 @@ class ProfileController extends Notifier<ProfileState> {
     final updatedUser =
         (currentUser ??
                 UserProfile(
+                  customerId: customerId,
                   fullName: fullName,
                   email: email,
                   phone: phone,
@@ -148,9 +150,10 @@ class ProfileController extends Notifier<ProfileState> {
                   gender: gender ?? 'L',
                   bloodType: 'O',
                   address: '',
-                  memberSince: DateTime.now(),
+                  memberSince: null,
                 ))
             .copyWith(
+              customerId: customerId,
               fullName: fullName,
               phone: phone,
               email: email,

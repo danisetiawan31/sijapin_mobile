@@ -11,6 +11,9 @@ import 'package:sijapin_mobile/features/profile/presentation/controllers/family_
 
 import 'booking_controller.dart';
 
+import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
+import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
+
 /// State wizard pendaftaran rawat jalan
 class BookingWizardState {
   const BookingWizardState({
@@ -175,9 +178,11 @@ class BookingWizardController extends Notifier<BookingWizardState> {
         final docPoli = doctor.poli.toLowerCase();
         targetClinic = clinics.firstWhere((c) {
           final cName = c.name.toLowerCase();
-          return cName.contains(docPoli) ||
-              c.code.toLowerCase() == docPoli ||
-              (c.code == 'PDI' && docSpec.contains('penyakit dalam')) ||
+          return (docPoli.isNotEmpty &&
+                  (cName.contains(docPoli) ||
+                      c.code.toLowerCase() == docPoli)) ||
+              ((c.code == 'PDI' || c.code == 'INT' || c.bpjsCode == 'INT') &&
+                  docSpec.contains('penyakit dalam')) ||
               (c.code == 'MAT' && docSpec.contains('mata')) ||
               (c.code == 'THT' && docSpec.contains('tht')) ||
               (c.code == 'OBG' &&
@@ -225,6 +230,9 @@ class BookingWizardController extends Notifier<BookingWizardState> {
 
       // Integrasikan hasil booking langsung ke Tab Janji Temu rekan!
       ref.read(bookingControllerProvider.notifier).setAppointment(appointment);
+      await ref
+          .read(ticketControllerProvider.notifier)
+          .saveNewTicket(Ticket.fromAppointment(appointment));
 
       return appointment;
     } catch (e) {

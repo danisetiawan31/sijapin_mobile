@@ -13,6 +13,8 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/user_profile.dart';
 import '../controllers/profile_controller.dart';
+import '../widgets/change_password_sheet.dart';
+import '../widgets/edit_profile_sheet.dart';
 import '../widgets/passcode_setup_sheet.dart';
 import '../widgets/profile_identity_card.dart';
 import '../widgets/profile_menu_card.dart';
@@ -73,15 +75,23 @@ class ProfileScreen extends ConsumerWidget {
                         ProfileMenuItem(
                           icon: Icons.person_outline_rounded,
                           label: 'Edit Profil',
-                          subtitle: 'Nama, NIK, alamat, data kesehatan',
-                          onTap: () => _showComingSoon(context, 'Edit Profil'),
+                          subtitle:
+                              'Nama, telepon, email, tanggal lahir, alamat',
+                          onTap: user == null
+                              ? null
+                              : () =>
+                                    EditProfileSheet.show(context, user: user),
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
                           icon: Icons.lock_outline_rounded,
                           label: 'Ganti Kata Sandi',
-                          onTap: () =>
-                              _showComingSoon(context, 'Ganti Kata Sandi'),
+                          onTap: user == null
+                              ? null
+                              : () => ChangePasswordSheet.show(
+                                  context,
+                                  user: user,
+                                ),
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
@@ -369,10 +379,6 @@ class _ProfileFooter extends StatelessWidget {
       ],
     );
   }
-}
-
-void _showComingSoon(BuildContext context, String feature) {
-  _showAppSnack(context, '$feature sedang kami kembangkan.');
 }
 
 void _showAppSnack(BuildContext context, String message) {
