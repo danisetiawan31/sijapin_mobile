@@ -75,10 +75,12 @@ class ProfileScreen extends ConsumerWidget {
                         ProfileMenuItem(
                           icon: Icons.person_outline_rounded,
                           label: 'Edit Profil',
-                          subtitle: 'Nama, telepon, email, tanggal lahir, alamat',
+                          subtitle:
+                              'Nama, telepon, email, tanggal lahir, alamat',
                           onTap: user == null
                               ? null
-                              : () => EditProfileSheet.show(context, user: user),
+                              : () =>
+                                    EditProfileSheet.show(context, user: user),
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(
@@ -87,9 +89,9 @@ class ProfileScreen extends ConsumerWidget {
                           onTap: user == null
                               ? null
                               : () => ChangePasswordSheet.show(
-                                context,
-                                user: user,
-                              ),
+                                  context,
+                                  user: user,
+                                ),
                         ),
                         const ProfileMenuDivider(),
                         ProfileMenuItem(

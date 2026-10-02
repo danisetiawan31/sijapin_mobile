@@ -51,7 +51,8 @@ class DoctorCard extends ConsumerWidget {
     final currentActiveDay = activeDay ?? ref.watch(selectedDoctorDayProvider);
     final specialtyBadge = _getSpecialtyBadge(schedule.specialization);
     final dayStatus = schedule.statusForDay(currentActiveDay ?? 'Semua Hari');
-    final isLibur = dayStatus == DoctorPracticeStatus.libur ||
+    final isLibur =
+        dayStatus == DoctorPracticeStatus.libur ||
         dayStatus == DoctorPracticeStatus.cuti;
 
     return AppCard(

@@ -32,7 +32,8 @@ class BedAvailabilityRemoteDataSource
       final Set<String> seenTypes = {};
 
       for (final card in cards) {
-        final titleEl = card.querySelector('.ket-kamar-title') ??
+        final titleEl =
+            card.querySelector('.ket-kamar-title') ??
             card.querySelector('.card-title') ??
             card.querySelector('h5');
         final rawType = titleEl?.text.trim() ?? '';
@@ -45,7 +46,8 @@ class BedAvailabilityRemoteDataSource
         // Ambil rincian kelas kamar untuk jenis perawatan ini
         final classes = await _fetchWardClassDetail(rawType);
 
-        final isIcu = rawType.toUpperCase().contains('INTENSIF') ||
+        final isIcu =
+            rawType.toUpperCase().contains('INTENSIF') ||
             rawType.toUpperCase().contains('ICU');
 
         wards.add(
@@ -83,9 +85,7 @@ class BedAvailabilityRemoteDataSource
   ) async {
     try {
       final encoded = Uri.encodeComponent(jnsPerawatan);
-      final response = await dioClient.get<String>(
-        '/Ket_Kamar/cari/$encoded',
-      );
+      final response = await dioClient.get<String>('/Ket_Kamar/cari/$encoded');
 
       final html = response.data;
       if (html == null || html.isEmpty) return const [];
@@ -107,10 +107,12 @@ class BedAvailabilityRemoteDataSource
         final cells = table.querySelectorAll('tbody tr td');
         if (cells.length >= 3) {
           final totalStr = RegExp(r'\d+').firstMatch(cells[0].text)?.group(0);
-          final occupiedStr =
-              RegExp(r'\d+').firstMatch(cells[1].text)?.group(0);
-          final availableStr =
-              RegExp(r'\d+').firstMatch(cells[2].text)?.group(0);
+          final occupiedStr = RegExp(r'\d+')
+              .firstMatch(cells[1].text)
+              ?.group(0);
+          final availableStr = RegExp(r'\d+')
+              .firstMatch(cells[2].text)
+              ?.group(0);
 
           final total = int.tryParse(totalStr ?? '0') ?? 0;
           final occupied = int.tryParse(occupiedStr ?? '0') ?? 0;

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
@@ -121,7 +122,9 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                 onChanged: (value) {
                   _debounceTimer?.cancel();
                   _debounceTimer = Timer(const Duration(milliseconds: 300), () {
-                    ref.read(doctorSearchQueryProvider.notifier).setQuery(value);
+                    ref
+                        .read(doctorSearchQueryProvider.notifier)
+                        .setQuery(value);
                   });
                 },
               ),
@@ -146,34 +149,35 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                   data: (schedules) {
                     if (schedules.isEmpty) {
                       return LayoutBuilder(
-                        builder: (context, constraints) => SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: Center(
-                              child: AppEmptyState(
-                                title: 'Tidak Ada Jadwal Dokter',
-                                message:
-                                    'Jadwal praktik untuk filter ini belum tersedia.',
-                                icon: Icons.event_busy_rounded,
-                                actionButton: AppSecondaryButton(
-                                  label: 'Reset Filter',
-                                  icon: Icons.refresh_rounded,
-                                  onPressed: () {
-                                    _searchController.clear();
-                                    ref
-                                        .read(
-                                          doctorScheduleListProvider.notifier,
-                                        )
-                                        .reset();
-                                  },
+                        builder: (context, constraints) =>
+                            SingleChildScrollView(
+                              physics: const AlwaysScrollableScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: Center(
+                                  child: AppEmptyState(
+                                    title: 'Tidak Ada Jadwal Dokter',
+                                    message: 'Jadwal praktik untuk filter ini belum tersedia.',
+                                    icon: Icons.event_busy_rounded,
+                                    actionButton: AppSecondaryButton(
+                                      label: 'Reset Filter',
+                                      icon: Icons.refresh_rounded,
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        ref
+                                            .read(
+                                              doctorScheduleListProvider
+                                                  .notifier,
+                                            )
+                                            .reset();
+                                      },
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
                       );
                     }
                     return ListView.separated(
@@ -189,8 +193,7 @@ class _DoctorScheduleScreenState extends ConsumerState<DoctorScheduleScreen> {
                       const AppLoadingState.list(itemCount: 5, itemHeight: 180),
                   error: (error, stack) => AppErrorState(
                     title: 'Gagal Memuat Jadwal',
-                    message:
-                        'Terjadi kesalahan saat memuat jadwal dokter. Silakan coba lagi.',
+                    message: 'Terjadi kesalahan saat memuat jadwal dokter. Silakan coba lagi.',
                     onRetry: () => ref.invalidate(doctorScheduleListProvider),
                   ),
                 ),

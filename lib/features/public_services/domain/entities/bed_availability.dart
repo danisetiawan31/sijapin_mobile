@@ -33,8 +33,7 @@ class BedAvailabilitySummary {
       wards.fold(0, (sum, w) => sum + w.availableBeds);
 
   /// Total kapasitas tempat tidur dari bangsal yang sedang tampil.
-  int get visibleTotalBeds =>
-      wards.fold(0, (sum, w) => sum + w.totalBeds);
+  int get visibleTotalBeds => wards.fold(0, (sum, w) => sum + w.totalBeds);
 
   /// Total bed terisi dari bangsal yang sedang tampil.
   int get visibleOccupiedBeds =>
@@ -120,8 +119,10 @@ class WardAvailability {
       classBreakdown.fold(0, (sum, c) => sum + c.availableBeds);
 
   /// Total kapasitas terdaftar di ruangan ini.
-  int get totalBeds =>
-      classBreakdown.fold(0, (sum, c) => sum + (c.totalBeds ?? c.availableBeds));
+  int get totalBeds => classBreakdown.fold(
+    0,
+    (sum, c) => sum + (c.totalBeds ?? c.availableBeds),
+  );
 
   /// Total bed terisi pasien di ruangan ini.
   int get occupiedBeds =>
@@ -258,8 +259,8 @@ class WardClassAvailability {
 /// Status 3-tier keterisian ruangan/kelas (SSOT PRD & Backlog US-PUB-01 Scenario 2).
 enum WardStatus {
   available, // > 2 bed kosong (Hijau)
-  limited,   // 1 - 2 bed kosong (Kuning / Amber)
-  full,      // 0 bed kosong (Merah)
+  limited, // 1 - 2 bed kosong (Kuning / Amber)
+  full, // 0 bed kosong (Merah)
 }
 
 /// Definisi kelas perawatan kamar rawat inap RSUP Dr. Sitanala

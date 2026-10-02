@@ -29,7 +29,8 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
       }
     }
 
-    final summary = _cachedSummary ??
+    final summary =
+        _cachedSummary ??
         const BedAvailabilitySummary(
           totalBeds: AppConstants.hospitalTotalBeds,
           availableBeds: AppConstants.defaultAvailableBeds,
@@ -55,7 +56,9 @@ class BedAvailabilityRepositoryImpl implements BedAvailabilityRepository {
           .where(
             (w) => w.classBreakdown.any(
               (c) =>
-                  c.className.toLowerCase().contains(classFilter.toLowerCase()) &&
+                  c.className.toLowerCase().contains(
+                    classFilter.toLowerCase(),
+                  ) &&
                   c.availableBeds > 0,
             ),
           )

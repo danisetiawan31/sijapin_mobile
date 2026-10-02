@@ -83,10 +83,9 @@ class BookingController extends Notifier<BookingState> {
     if (appointment != null) {
       state = state.copyWith(
         appointment: appointment.copyWith(
-          remainingQueue:
-              appointment.remainingQueue > 0
-                  ? appointment.remainingQueue - 1
-                  : 0,
+          remainingQueue: appointment.remainingQueue > 0
+              ? appointment.remainingQueue - 1
+              : 0,
         ),
         isRefreshing: false,
       );

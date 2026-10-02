@@ -137,10 +137,7 @@ class TicketController extends Notifier<TicketState> {
       final syncedCount = await repo.syncPendingOfflineActions();
       if (syncedCount > 0) {
         final active = await repo.getActiveTicket();
-        state = state.copyWith(
-          ticket: active,
-          clearTicket: active == null,
-        );
+        state = state.copyWith(ticket: active, clearTicket: active == null);
       }
       return syncedCount;
     } catch (_) {

@@ -225,9 +225,7 @@ class WardAvailabilityCard extends StatelessWidget {
                 ),
                 InkWell(
                   onTap:
-                      onDetailTap ??
-                      (_isFull ? onProtocolTap : null) ??
-                      () {},
+                      onDetailTap ?? (_isFull ? onProtocolTap : null) ?? () {},
                   borderRadius: BorderRadius.circular(6),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(

@@ -168,7 +168,8 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
 
     final resData = _parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
-      final msg = resData['msg']?.toString() ?? 'Gagal memvalidasi data pasien.';
+      final msg =
+          resData['msg']?.toString() ?? 'Gagal memvalidasi data pasien.';
       throw BookingServerException(msg);
     }
   }
@@ -182,7 +183,8 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
 
     final resData = _parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
-      final msg = resData['msg']?.toString() ?? 'Gagal memvalidasi pilihan kunjungan.';
+      final msg =
+          resData['msg']?.toString() ?? 'Gagal memvalidasi pilihan kunjungan.';
       throw BookingServerException(msg);
     }
   }
@@ -196,13 +198,16 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
 
     final resData = _parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
-      final msg = resData['msg']?.toString() ?? 'Gagal menetapkan metode penjaminan.';
+      final msg =
+          resData['msg']?.toString() ?? 'Gagal menetapkan metode penjaminan.';
       throw BookingServerException(msg);
     }
   }
 
   @override
-  Future<Map<String, dynamic>> insertDaftarRajal(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> insertDaftarRajal(
+    Map<String, dynamic> data,
+  ) async {
     final response = await dioClient.post<dynamic>(
       ApiConstants.bookingInsertRajal,
       data: FormData.fromMap(data),
@@ -210,14 +215,18 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
 
     final resData = _parseJsonMap(response.data);
     if (resData == null) {
-      throw const BookingServerException('Respons server tidak valid saat final transaksi.');
+      throw const BookingServerException(
+        'Respons server tidak valid saat final transaksi.',
+      );
     }
 
-    final success = resData['success'] == true ||
+    final success =
+        resData['success'] == true ||
         resData['status'] == true ||
         resData['ret'] == 'success';
     if (!success) {
-      final msg = resData['message']?.toString() ??
+      final msg =
+          resData['message']?.toString() ??
           resData['msg']?.toString() ??
           'Gagal menyimpan pendaftaran rawat jalan ke SIMRS.';
       throw BookingServerException(msg);
@@ -287,11 +296,13 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
         final href = btn?.attributes['href'] ?? '';
         final bodyText = card.querySelector('.card-body')?.text.trim() ?? '';
 
-        final isCanceled = card.classes.contains('border-danger') ||
+        final isCanceled =
+            card.classes.contains('border-danger') ||
             card.classes.contains('bg-danger');
 
         // Parse format URL: Daftar_Log/daftar_detail/{TGL_RENCANA_KUNJUNGAN_2}/{KODE_VERIFIKASI}/{DAFTAR}
-        final match = RegExp(r'daftar_detail/(\d+)/([^/]+)/(\d+)').firstMatch(href);
+        final match = RegExp(r'daftar_detail/(\d+)/([^/]+)/(\d+)')
+            .firstMatch(href);
         if (match != null) {
           final tglRaw = match.group(1) ?? '';
           final kodeVerifikasi = match.group(2) ?? '';
@@ -333,7 +344,9 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
 }
 
 /// Provider Riverpod untuk IBookingRemoteDataSource
-final bookingRemoteDataSourceProvider = Provider<IBookingRemoteDataSource>((ref) {
+final bookingRemoteDataSourceProvider = Provider<IBookingRemoteDataSource>((
+  ref,
+) {
   final dioClient = ref.watch(dioClientProvider);
   return BookingRemoteDataSource(dioClient: dioClient);
 });

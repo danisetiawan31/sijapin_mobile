@@ -92,7 +92,9 @@ ProviderContainer _createContainer({
   Appointment? activeAppointment,
   bool overrideActive = false,
 }) {
-  final effective = overrideActive ? activeAppointment : (activeAppointment ?? _defaultActiveAppointment);
+  final effective = overrideActive
+      ? activeAppointment
+      : (activeAppointment ?? _defaultActiveAppointment);
   return ProviderContainer(
     overrides: [
       appointmentHistoryProvider.overrideWithValue(_testHistory),
@@ -101,7 +103,6 @@ ProviderContainer _createContainer({
     ],
   );
 }
-
 
 Widget _buildApp(ProviderContainer container) {
   return UncontrolledProviderScope(

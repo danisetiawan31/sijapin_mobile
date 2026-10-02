@@ -37,15 +37,17 @@ class BookingRepositoryImpl implements BookingRepository {
     this.familyMemberRepository,
     DoctorScheduleRemoteDataSource? doctorScheduleRemoteDataSource,
     List<Polyclinic>? initialPolyclinics,
-  })  : bookingRemoteDataSource = bookingRemoteDataSource ??
-            (dioClient != null
-                ? BookingRemoteDataSource(dioClient: dioClient)
-                : null),
-        doctorScheduleRemoteDataSource = doctorScheduleRemoteDataSource ??
-            (dioClient != null
-                ? DoctorScheduleRemoteDataSource(dioClient: dioClient)
-                : null),
-        _cachedPolyclinics = initialPolyclinics;
+  }) : bookingRemoteDataSource =
+           bookingRemoteDataSource ??
+           (dioClient != null
+               ? BookingRemoteDataSource(dioClient: dioClient)
+               : null),
+       doctorScheduleRemoteDataSource =
+           doctorScheduleRemoteDataSource ??
+           (dioClient != null
+               ? DoctorScheduleRemoteDataSource(dioClient: dioClient)
+               : null),
+       _cachedPolyclinics = initialPolyclinics;
 
   final DioClient? dioClient;
   final ISecureStorage? secureStorage;
@@ -75,8 +77,8 @@ class BookingRepositoryImpl implements BookingRepository {
     // Ambil master poliklinik live dari backend SIMRS (/jadwal_dokter)
     if (doctorScheduleRemoteDataSource != null) {
       try {
-        final clinics =
-            await doctorScheduleRemoteDataSource!.fetchPolyclinics();
+        final clinics = await doctorScheduleRemoteDataSource!
+            .fetchPolyclinics();
         if (clinics.isNotEmpty) {
           _cachedPolyclinics = clinics;
           return clinics;
@@ -163,9 +165,9 @@ class BookingRepositoryImpl implements BookingRepository {
     final tglKunjungan =
         '${targetDate.day.toString().padLeft(2, '0')}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.year}';
     final unitId = draft.clinic!.id;
-    final doctorParam =
-        draft.doctor!.doctorId?.toString() ?? draft.doctor!.id;
-    final int doctorId = draft.doctor!.doctorId ??
+    final doctorParam = draft.doctor!.doctorId?.toString() ?? draft.doctor!.id;
+    final int doctorId =
+        draft.doctor!.doctorId ??
         int.tryParse(draft.doctor!.id.replaceAll(RegExp(r'[^0-9]'), '')) ??
         1;
 
@@ -187,18 +189,16 @@ class BookingRepositoryImpl implements BookingRepository {
     // 2. Format Nomor Antrean (Poli code + 3 digit nomor)
     final clinicCode = draft.clinic?.code ?? 'POL';
     final queueIndex = _calculateQueueIndex(scheduledTime);
-    final queueNumber =
-        '$clinicCode-${queueIndex.toString().padLeft(3, '0')}';
+    final queueNumber = '$clinicCode-${queueIndex.toString().padLeft(3, '0')}';
 
     // 3. Format Kode Booking (13 digit numerik murni: YYYYMMDD + 5 digit sequence)
     final datePrefix =
         '${targetDate.year}'
         '${targetDate.month.toString().padLeft(2, '0')}'
         '${targetDate.day.toString().padLeft(2, '0')}';
-    final sequenceSuffix =
-        (queueIndex * 10 + (math.Random().nextInt(9) + 1))
-            .toString()
-            .padLeft(5, '0');
+    final sequenceSuffix = (queueIndex * 10 + (math.Random().nextInt(9) + 1))
+        .toString()
+        .padLeft(5, '0');
     final bookingCode = '$datePrefix$sequenceSuffix';
 
     // 4. Semantik Pembayaran & Penjaminan
@@ -223,8 +223,10 @@ class BookingRepositoryImpl implements BookingRepository {
           'nama_pasien': draft.patient!.fullName,
           'tmp_lahir': draft.patient!.birthPlace,
           'tgl_lahir': draft.patient!.birthDate.day.toString().padLeft(2, '0'),
-          'bln_lahir':
-              draft.patient!.birthDate.month.toString().padLeft(2, '0'),
+          'bln_lahir': draft.patient!.birthDate.month.toString().padLeft(
+            2,
+            '0',
+          ),
           'thn_lahir': draft.patient!.birthDate.year.toString(),
           'agama': '1',
           'jns_kelamin': draft.patient!.gender,
@@ -289,8 +291,8 @@ class BookingRepositoryImpl implements BookingRepository {
           'namaDokter': draft.doctor!.name,
           'no_surat_kontrol':
               isBpjs && (draft.bpjsReferenceNumber?.startsWith('00') ?? false)
-                  ? draft.bpjsReferenceNumber!
-                  : '',
+              ? draft.bpjsReferenceNumber!
+              : '',
         });
 
         // Step 5: Bersihkan variabel sesi wizard di server CI3
@@ -362,8 +364,8 @@ class BookingRepositoryImpl implements BookingRepository {
     // Perbarui data tiket lokal di Hive NoSQL jika tersedia
     if (ticketLocalDataSource != null) {
       try {
-        final existingModel =
-            await ticketLocalDataSource!.getTicketByBookingCode(bookingCode);
+        final existingModel = await ticketLocalDataSource!
+            .getTicketByBookingCode(bookingCode);
         if (existingModel != null) {
           final updated = existingModel.toEntity().copyWith(
             status: TicketStatus.cancelled,
@@ -441,10 +443,9 @@ class BookingRepositoryImpl implements BookingRepository {
               estimatedMinutes: 30,
               nowServingNumber: '-',
               remainingQueue: 0,
-              status:
-                  isCancelled
-                      ? AppointmentStatus.cancelled
-                      : AppointmentStatus.completed,
+              status: isCancelled
+                  ? AppointmentStatus.cancelled
+                  : AppointmentStatus.completed,
               patientRelation: 'Diri Sendiri',
               isServerSynced: true,
             ),
@@ -492,10 +493,7 @@ class BookingRepositoryImpl implements BookingRepository {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     final rnd = math.Random();
     return String.fromCharCodes(
-      Iterable.generate(
-        6,
-        (_) => chars.codeUnitAt(rnd.nextInt(chars.length)),
-      ),
+      Iterable.generate(6, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))),
     );
   }
 

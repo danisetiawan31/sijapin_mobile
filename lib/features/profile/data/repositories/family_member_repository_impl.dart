@@ -139,7 +139,9 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
                   address: remote.address.isNotEmpty
                       ? remote.address
                       : existing.address,
-                  phone: remote.phone.isNotEmpty ? remote.phone : existing.phone,
+                  phone: remote.phone.isNotEmpty
+                      ? remote.phone
+                      : existing.phone,
                   religion: remote.religion.isNotEmpty
                       ? remote.religion
                       : existing.religion,
@@ -147,7 +149,8 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
                       ? remote.occupation
                       : existing.occupation,
                   medicalRecordNumber:
-                      remote.medicalRecordNumber ?? existing.medicalRecordNumber,
+                      remote.medicalRecordNumber ??
+                      existing.medicalRecordNumber,
                   rdNomr: remote.rdNomr ?? existing.rdNomr,
                 ),
               );

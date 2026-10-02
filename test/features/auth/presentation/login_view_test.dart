@@ -56,23 +56,19 @@ void main() {
       },
     );
 
-    testWidgets(
-      'entering invalid email format shows email format error',
-      (tester) async {
-        await tester.pumpWidget(
-          const ProviderScope(child: MaterialApp(home: LoginView())),
-        );
+    testWidgets('entering invalid email format shows email format error', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: LoginView())),
+      );
 
-        final inputFinder = find.widgetWithText(TextField, '');
-        await tester.enterText(inputFinder.first, 'invalid@email');
-        await tester.tap(find.text('Masuk ke Akun'));
-        await tester.pumpAndSettle();
+      final inputFinder = find.widgetWithText(TextField, '');
+      await tester.enterText(inputFinder.first, 'invalid@email');
+      await tester.tap(find.text('Masuk ke Akun'));
+      await tester.pumpAndSettle();
 
-        expect(
-          find.text('Format email belum benar.'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.text('Format email belum benar.'), findsOneWidget);
+    });
   });
 }

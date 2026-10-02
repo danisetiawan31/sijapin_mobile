@@ -118,9 +118,9 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
       insurance: _insurance,
       insuranceNumber:
           _insurance == FamilyInsurance.bpjs &&
-                  _bpjsController.text.trim().isNotEmpty
-              ? _bpjsController.text.trim()
-              : null,
+              _bpjsController.text.trim().isNotEmpty
+          ? _bpjsController.text.trim()
+          : null,
       phone: _phoneController.text.trim(),
       birthDate: _birthDate,
     );
@@ -207,16 +207,18 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: (isPasienLama
-                            ? AppColors.clinicalTeal
-                            : AppColors.brandGoldenCaramel)
-                        .withValues(alpha: 0.10),
+                    color:
+                        (isPasienLama
+                                ? AppColors.clinicalTeal
+                                : AppColors.brandGoldenCaramel)
+                            .withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: (isPasienLama
-                              ? AppColors.clinicalTeal
-                              : AppColors.brandGoldenCaramel)
-                          .withValues(alpha: 0.25),
+                      color:
+                          (isPasienLama
+                                  ? AppColors.clinicalTeal
+                                  : AppColors.brandGoldenCaramel)
+                              .withValues(alpha: 0.25),
                     ),
                   ),
                   child: Row(
@@ -447,14 +449,24 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                           decoration: const InputDecoration(labelText: 'Agama'),
                           items: const [
                             DropdownMenuItem(value: '1', child: Text('Islam')),
-                            DropdownMenuItem(value: '2', child: Text('Kristen')),
-                            DropdownMenuItem(value: '3', child: Text('Katolik')),
+                            DropdownMenuItem(
+                              value: '2',
+                              child: Text('Kristen'),
+                            ),
+                            DropdownMenuItem(
+                              value: '3',
+                              child: Text('Katolik'),
+                            ),
                             DropdownMenuItem(value: '4', child: Text('Hindu')),
                             DropdownMenuItem(value: '5', child: Text('Buddha')),
-                            DropdownMenuItem(value: '6', child: Text('Konghucu')),
+                            DropdownMenuItem(
+                              value: '6',
+                              child: Text('Konghucu'),
+                            ),
                           ],
                           onChanged: (String? value) {
-                            if (value != null) setState(() => _religion = value);
+                            if (value != null)
+                              setState(() => _religion = value);
                           },
                         ),
                       ),
@@ -512,7 +524,8 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                               )
                               .toList(),
                           onChanged: (FamilyRelation? value) {
-                            if (value != null) setState(() => _relation = value);
+                            if (value != null)
+                              setState(() => _relation = value);
                           },
                         ),
                       ),
@@ -535,7 +548,9 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                         child: DropdownButtonFormField<FamilyInsurance>(
                           initialValue: _insurance,
                           isExpanded: true,
-                          decoration: const InputDecoration(labelText: 'Jaminan'),
+                          decoration: const InputDecoration(
+                            labelText: 'Jaminan',
+                          ),
                           items: FamilyInsurance.values
                               .map(
                                 (FamilyInsurance ins) =>
@@ -546,7 +561,8 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                               )
                               .toList(),
                           onChanged: (FamilyInsurance? value) {
-                            if (value != null) setState(() => _insurance = value);
+                            if (value != null)
+                              setState(() => _insurance = value);
                           },
                         ),
                       ),

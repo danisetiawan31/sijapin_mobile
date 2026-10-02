@@ -93,7 +93,8 @@ class _LoginViewState extends ConsumerState<LoginView> {
                             AuthTextField(
                               controller: _identifierController,
                               label: 'Nomor Telepon / Email',
-                              hint: 'Contoh: 081234567890 atau email@domain.com',
+                              hint:
+                                  'Contoh: 081234567890 atau email@domain.com',
                               icon: Icons.person_outline_rounded,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,

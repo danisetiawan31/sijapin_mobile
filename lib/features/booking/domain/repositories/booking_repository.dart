@@ -34,4 +34,3 @@ abstract interface class BookingRepository {
   /// digabungkan dengan tiket yang tersimpan di basis data lokal.
   Future<List<Appointment>> getBookingHistory();
 }
-

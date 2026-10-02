@@ -8,6 +8,7 @@ import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dar
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/screens/family_members_screen.dart';
 import 'package:sijapin_mobile/features/profile/presentation/widgets/family_member_card.dart';
+
 import '../../../../fixtures/mock_family_members.dart';
 
 const testUser = UserProfile(
@@ -105,7 +106,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Pilih jenis pasien untuk menyesuaikan formulir data medis.'),
+          find.text(
+            'Pilih jenis pasien untuk menyesuaikan formulir data medis.',
+          ),
           findsOneWidget,
         );
         expect(find.text('Tautkan Pasien Lama'), findsOneWidget);

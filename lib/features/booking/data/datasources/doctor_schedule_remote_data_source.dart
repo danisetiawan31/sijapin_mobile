@@ -26,12 +26,15 @@ class DoctorScheduleRemoteDataSource
       if (html == null || html.isEmpty) return const [];
 
       final document = html_parser.parse(html);
-      final cards = document.querySelectorAll('.ruangan-card, .keterangan-cards');
+      final cards = document.querySelectorAll(
+        '.ruangan-card, .keterangan-cards',
+      );
       final List<Polyclinic> clinics = [];
       final Set<int> seenIds = {};
 
       for (final card in cards) {
-        final titleEl = card.querySelector('.card-title') ?? card.querySelector('h5');
+        final titleEl =
+            card.querySelector('.card-title') ?? card.querySelector('h5');
         final anchorEl = card.querySelector('a');
         final rawTitle = titleEl?.text.trim() ?? '';
         final href = anchorEl?.attributes['href'] ?? '';
@@ -81,7 +84,9 @@ class DoctorScheduleRemoteDataSource
         if (html == null || html.isEmpty) continue;
 
         final document = html_parser.parse(html);
-        final doctorTitles = document.querySelectorAll('h1.card-title, .card h1');
+        final doctorTitles = document.querySelectorAll(
+          'h1.card-title, .card h1',
+        );
         final tables = document.querySelectorAll('table');
 
         final count = doctorTitles.length < tables.length
@@ -102,16 +107,20 @@ class DoctorScheduleRemoteDataSource
           final List<DoctorScheduleEntry> entries = [];
           final days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
-          for (var dayIdx = 0; dayIdx < days.length && dayIdx < cells.length; dayIdx++) {
+          for (
+            var dayIdx = 0;
+            dayIdx < days.length && dayIdx < cells.length;
+            dayIdx++
+          ) {
             final cellText = cells[dayIdx].text.trim();
-            final isLibur = cellText.toLowerCase().contains('libur') ||
+            final isLibur =
+                cellText.toLowerCase().contains('libur') ||
                 cellText.isEmpty ||
                 cellText == '-';
 
             String startTime = '';
             if (!isLibur) {
-              final timeMatch =
-                  RegExp(r'(\d{2}:\d{2})').firstMatch(cellText);
+              final timeMatch = RegExp(r'(\d{2}:\d{2})').firstMatch(cellText);
               startTime = timeMatch?.group(1) ?? '08:00';
             }
 
@@ -126,7 +135,8 @@ class DoctorScheduleRemoteDataSource
             );
           }
 
-          final isFemale = docName.toLowerCase().contains('dr. maria') ||
+          final isFemale =
+              docName.toLowerCase().contains('dr. maria') ||
               docName.toLowerCase().contains('dr. era') ||
               docName.toLowerCase().contains('dr. eka') ||
               docName.toLowerCase().contains('dr. siti') ||
@@ -158,7 +168,8 @@ class DoctorScheduleRemoteDataSource
   static String _mapCode(String unitName) {
     final lower = unitName.toLowerCase();
     if (lower.contains('dalam')) return 'PDI';
-    if (lower.contains('kandungan') || lower.contains('kebidanan')) return 'OBG';
+    if (lower.contains('kandungan') || lower.contains('kebidanan'))
+      return 'OBG';
     if (lower.contains('anak')) return 'ANA';
     if (lower.contains('bedah')) return 'BED';
     if (lower.contains('gigi')) return 'GIG';
@@ -175,7 +186,8 @@ class DoctorScheduleRemoteDataSource
   static String _mapBpjsCode(String unitName, int id) {
     final lower = unitName.toLowerCase();
     if (lower.contains('dalam')) return 'INT';
-    if (lower.contains('kandungan') || lower.contains('kebidanan')) return 'OBG';
+    if (lower.contains('kandungan') || lower.contains('kebidanan'))
+      return 'OBG';
     if (lower.contains('anak')) return 'ANA';
     if (lower.contains('bedah')) return 'BED';
     if (lower.contains('gigi')) return 'GND';

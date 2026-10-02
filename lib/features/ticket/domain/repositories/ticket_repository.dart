@@ -28,4 +28,3 @@ abstract class TicketRepository {
   /// Mengembalikan jumlah aksi yang berhasil disinkronkan.
   Future<int> syncPendingOfflineActions();
 }
-

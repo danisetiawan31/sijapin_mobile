@@ -175,12 +175,15 @@ void main() {
       expect(updatedRemaining, equals(initialRemaining - 1));
     });
 
-    test('syncPendingTickets calls repository syncPendingOfflineActions', () async {
-      final controller = container.read(ticketControllerProvider.notifier);
-      final count = await controller.syncPendingTickets();
-      expect(count, equals(0));
-      expect(fakeRepo.syncCallCount, greaterThanOrEqualTo(1));
-    });
+    test(
+      'syncPendingTickets calls repository syncPendingOfflineActions',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        final count = await controller.syncPendingTickets();
+        expect(count, equals(0));
+        expect(fakeRepo.syncCallCount, greaterThanOrEqualTo(1));
+      },
+    );
 
     test('detects offline state from connectivity stream', () async {
       final offlineContainer = ProviderContainer(

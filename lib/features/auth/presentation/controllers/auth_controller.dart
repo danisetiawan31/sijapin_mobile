@@ -84,9 +84,8 @@ class AuthController extends Notifier<AuthControllerState> {
         UserProfile? fetchedUser;
         try {
           final dioClient = ref.read(dioClientProvider);
-          fetchedUser = await ProfileRemoteDataSource(
-            dioClient: dioClient,
-          ).fetchProfile();
+          fetchedUser = await ProfileRemoteDataSource(dioClient: dioClient)
+              .fetchProfile();
         } catch (_) {}
 
         final user =

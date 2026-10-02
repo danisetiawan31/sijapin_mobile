@@ -78,8 +78,9 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                 children: [
                   Expanded(
                     child: RefreshIndicator(
-                      onRefresh: () =>
-                          ref.read(familyMembersProvider.notifier).loadMembers(),
+                      onRefresh: () => ref
+                          .read(familyMembersProvider.notifier)
+                          .loadMembers(),
                       child: ListView(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                         children: [
@@ -106,8 +107,8 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                                       width: 180,
                                       onPressed: () {
                                         setState(
-                                          () =>
-                                              _filter = FamilyMemberFilter.semua,
+                                          () => _filter =
+                                              FamilyMemberFilter.semua,
                                         );
                                       },
                                     )

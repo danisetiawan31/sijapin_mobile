@@ -17,9 +17,7 @@ ProviderContainer _createTestContainer() {
     initialSummary: MockBedAvailabilityFixture.getSampleSummary(),
   );
   return ProviderContainer(
-    overrides: [
-      bedAvailabilityRepositoryProvider.overrideWithValue(repo),
-    ],
+    overrides: [bedAvailabilityRepositoryProvider.overrideWithValue(repo)],
   );
 }
 

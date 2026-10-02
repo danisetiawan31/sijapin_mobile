@@ -50,9 +50,7 @@ void main() {
         initialPolyclinics: [sampleClinic],
       );
       container = ProviderContainer(
-        overrides: [
-          bookingRepositoryProvider.overrideWithValue(repository),
-        ],
+        overrides: [bookingRepositoryProvider.overrideWithValue(repository)],
       );
     });
 

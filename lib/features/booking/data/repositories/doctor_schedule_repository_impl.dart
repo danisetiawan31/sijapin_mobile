@@ -52,7 +52,8 @@ class DoctorScheduleRepositoryImpl implements DoctorScheduleRepository {
               specLower.contains('kebidanan') ||
               specLower.contains('kandungan');
         }
-        return specLower.contains(filterLower) || filterLower.contains(specLower);
+        return specLower.contains(filterLower) ||
+            filterLower.contains(specLower);
       }).toList();
     }
 
