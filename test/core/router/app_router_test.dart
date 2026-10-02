@@ -10,6 +10,7 @@ import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/app_bottom_nav_bar.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_controller.dart';
 
 /// Fake penyimpanan aman in-memory agar tidak memicu plugin native di test.
 class _FakeSecureStorage implements ISecureStorage {
@@ -66,6 +67,7 @@ ProviderContainer _createContainer({bool signedIn = true}) {
       currentUserProfileProvider.overrideWithValue(
         signedIn ? _kRouterTestUser : null,
       ),
+      liveBookingHistoryProvider.overrideWith((ref) => Future.value(const [])),
     ],
   );
 }

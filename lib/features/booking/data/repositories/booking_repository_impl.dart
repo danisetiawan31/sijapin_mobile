@@ -397,10 +397,32 @@ class BookingRepositoryImpl implements BookingRepository {
 
           DateTime date = AppDateTime.now();
           if (rawDate.isNotEmpty && rawDate.length >= 8) {
-            final y = int.tryParse(rawDate.substring(0, 4)) ?? 2026;
-            final m = int.tryParse(rawDate.substring(4, 6)) ?? 1;
-            final d = int.tryParse(rawDate.substring(6, 8)) ?? 1;
-            date = DateTime(y, m, d);
+            // rawDate can be DDMMYYYY (e.g. 28052021) per CI3 Daftar_Log URL pattern, or YYYYMMDD
+            final p1 = int.tryParse(rawDate.substring(0, 4)) ?? 0;
+            final p2 = int.tryParse(rawDate.substring(4, 8)) ?? 0;
+            if (p2 >= 1900 && p2 <= 2100) {
+              // Format DDMMYYYY
+              final d = int.tryParse(rawDate.substring(0, 2)) ?? 1;
+              final m = int.tryParse(rawDate.substring(2, 4)) ?? 1;
+              final y = p2;
+              date = DateTime(y, m, d);
+            } else if (p1 >= 1900 && p1 <= 2100) {
+              // Format YYYYMMDD
+              final y = p1;
+              final m = int.tryParse(rawDate.substring(4, 6)) ?? 1;
+              final d = int.tryParse(rawDate.substring(6, 8)) ?? 1;
+              date = DateTime(y, m, d);
+            }
+          }
+
+          // Ekstrak nama poliklinik dari deskripsi (misal: "(RJ Penyakit Dalam)")
+          String clinicName = 'Poliklinik Rawat Jalan';
+          if (desc.contains('(RJ ')) {
+            final match = RegExp(r'\(RJ\s+([^)]+)\)').firstMatch(desc);
+            if (match != null) {
+              final raw = match.group(1)?.trim() ?? '';
+              clinicName = raw.startsWith('Poli') ? raw : 'Poli $raw';
+            }
           }
 
           list.add(
@@ -411,12 +433,9 @@ class BookingRepositoryImpl implements BookingRepository {
               queueNumber: '-',
               patientName: 'Pasien Terdaftar',
               medicalRecord: '-',
-              doctorName:
-                  desc.isNotEmpty
-                      ? desc.split('\n').first.trim()
-                      : 'Dokter Spesialis',
-              specialty: 'Spesialis RSUP Sitanala',
-              clinic: 'Poliklinik Rawat Jalan',
+              doctorName: 'Dokter Poliklinik',
+              specialty: clinicName,
+              clinic: clinicName,
               scheduledDate: date,
               scheduledTime: '08:00 - 12:00 WIB',
               estimatedMinutes: 30,

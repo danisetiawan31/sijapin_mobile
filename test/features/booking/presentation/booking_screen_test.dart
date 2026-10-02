@@ -97,9 +97,11 @@ ProviderContainer _createContainer({
     overrides: [
       appointmentHistoryProvider.overrideWithValue(_testHistory),
       activeAppointmentProvider.overrideWithValue(effective),
+      liveBookingHistoryProvider.overrideWith((ref) => Future.value(const [])),
     ],
   );
 }
+
 
 Widget _buildApp(ProviderContainer container) {
   return UncontrolledProviderScope(

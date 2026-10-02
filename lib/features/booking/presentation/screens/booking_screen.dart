@@ -438,7 +438,16 @@ class _HistoryTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final List<Appointment> history = ref.watch(appointmentHistoryProvider);
+    final localHistory = ref.watch(appointmentHistoryProvider);
+    final liveAsync = ref.watch(liveBookingHistoryProvider);
+    final List<Appointment> history = [...localHistory];
+    liveAsync.whenData((items) {
+      for (final item in items) {
+        if (!history.any((a) => a.bookingCode == item.bookingCode)) {
+          history.add(item);
+        }
+      }
+    });
     final List<Appointment> filtered = history.where(_matchesFilter).toList();
 
     return Column(

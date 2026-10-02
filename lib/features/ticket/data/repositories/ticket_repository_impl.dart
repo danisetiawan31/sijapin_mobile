@@ -120,6 +120,28 @@ class TicketRepositoryImpl implements TicketRepository {
 
   @override
   Future<void> checkInTicket(String bookingCode) async {
+    // 1. Sinkronkan status check-in ke backend SIMRS CI3 jika online
+    if (dioClient != null) {
+      try {
+        final existing = await localDataSource.getTicketByBookingCode(
+          bookingCode,
+        );
+        final targetDate = existing?.scheduledDate ?? AppDateTime.now();
+        final tglIso =
+            '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
+        await dioClient!.post<dynamic>(
+          'Daftar_Log/update_qrcode_status',
+          data: FormData.fromMap({
+            'tanggal': tglIso,
+            'kode_verifikasi': bookingCode,
+          }),
+        );
+      } catch (_) {
+        // Fallback anggun: Tetap izinkan check-in offline di perangkat
+      }
+    }
+
+    // 2. Perbarui status tiket di penyimpanan lokal Hive
     final existingModel = await localDataSource.getTicketByBookingCode(
       bookingCode,
     );
