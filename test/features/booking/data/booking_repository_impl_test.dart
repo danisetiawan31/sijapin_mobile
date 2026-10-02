@@ -141,7 +141,7 @@ void main() {
       repository = BookingRepositoryImpl(
         dioClient: mockDio,
         secureStorage: mockStorage,
-        doctorScheduleRepository: const DoctorScheduleRepositoryImpl(),
+        doctorScheduleRepository: DoctorScheduleRepositoryImpl(),
       );
     });
 
