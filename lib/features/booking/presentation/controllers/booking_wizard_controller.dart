@@ -175,9 +175,11 @@ class BookingWizardController extends Notifier<BookingWizardState> {
         final docPoli = doctor.poli.toLowerCase();
         targetClinic = clinics.firstWhere((c) {
           final cName = c.name.toLowerCase();
-          return cName.contains(docPoli) ||
-              c.code.toLowerCase() == docPoli ||
-              (c.code == 'PDI' && docSpec.contains('penyakit dalam')) ||
+          return (docPoli.isNotEmpty &&
+                  (cName.contains(docPoli) ||
+                      c.code.toLowerCase() == docPoli)) ||
+              ((c.code == 'PDI' || c.code == 'INT' || c.bpjsCode == 'INT') &&
+                  docSpec.contains('penyakit dalam')) ||
               (c.code == 'MAT' && docSpec.contains('mata')) ||
               (c.code == 'THT' && docSpec.contains('tht')) ||
               (c.code == 'OBG' &&

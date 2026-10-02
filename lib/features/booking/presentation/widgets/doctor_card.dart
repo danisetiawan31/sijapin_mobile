@@ -50,7 +50,9 @@ class DoctorCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentActiveDay = activeDay ?? ref.watch(selectedDoctorDayProvider);
     final specialtyBadge = _getSpecialtyBadge(schedule.specialization);
-    final isLibur = schedule.status == DoctorPracticeStatus.libur;
+    final dayStatus = schedule.statusForDay(currentActiveDay ?? 'Semua Hari');
+    final isLibur = dayStatus == DoctorPracticeStatus.libur ||
+        dayStatus == DoctorPracticeStatus.cuti;
 
     return AppCard(
       variant: isSelected
@@ -199,17 +201,14 @@ class DoctorCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Praktik Reguler / Libur badge
-              if (schedule.status == DoctorPracticeStatus.reguler)
+              if (dayStatus == DoctorPracticeStatus.reguler)
                 const AppBadge.success(
                   label: 'Praktik Reguler',
                   icon: Icons.circle,
                   fontSize: 11,
                 )
-              else if (isLibur)
-                const AppBadge.warning(label: 'Libur / Cuti', fontSize: 11)
               else
-                const AppBadge.neutral(label: 'Praktik Reguler', fontSize: 11),
+                const AppBadge.warning(label: 'Libur / Cuti', fontSize: 11),
 
               // CTA button
               AppPrimaryButton(

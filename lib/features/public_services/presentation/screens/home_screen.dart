@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../booking/presentation/controllers/doctor_schedule_controller.dart';
 import '../controllers/bed_availability_controller.dart';
 import '../widgets/home_widgets.dart';
 
@@ -29,6 +30,14 @@ class HomeScreen extends ConsumerWidget {
           data: (summary) => summary.availableBeds,
           loading: () => AppConstants.defaultAvailableBeds,
           error: (_, _) => AppConstants.defaultAvailableBeds,
+        );
+
+    final int activeDoctors = ref
+        .watch(doctorScheduleListProvider)
+        .when(
+          data: (list) => list.length,
+          loading: () => AppConstants.defaultActiveDoctors,
+          error: (_, _) => AppConstants.defaultActiveDoctors,
         );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -137,9 +146,10 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // Status Bento: Kamar & Dokter
+                      // Status Bento: Kamar & Dokter (Reaktif terhadap live data)
                       HomeBentoStatusCards(
                         availableBedsCount: availableBeds,
+                        activeDoctorsCount: activeDoctors,
                         onBedAvailabilityTap: () =>
                             context.push(AppRoutes.bedAvailabilityPath),
                         onDoctorScheduleTap: () =>

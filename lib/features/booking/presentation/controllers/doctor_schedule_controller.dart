@@ -1,16 +1,29 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sijapin_mobile/features/booking/data/repositories/doctor_schedule_repository_impl.dart';
-import 'package:sijapin_mobile/features/booking/domain/entities/doctor_schedule.dart';
-import 'package:sijapin_mobile/features/booking/domain/repositories/doctor_schedule_repository.dart';
+import '../../../../core/network/dio_client.dart';
+import '../../data/datasources/doctor_schedule_remote_data_source.dart';
+import '../../data/repositories/doctor_schedule_repository_impl.dart';
+import '../../domain/entities/doctor_schedule.dart';
+import '../../domain/entities/polyclinic.dart';
+import '../../domain/repositories/doctor_schedule_repository.dart';
 
 part 'doctor_schedule_controller.g.dart';
 
 /// Provider repository jadwal dokter
 @riverpod
 DoctorScheduleRepository doctorScheduleRepository(Ref ref) {
-  return const DoctorScheduleRepositoryImpl();
+  final dioClient = ref.watch(dioClientProvider);
+  return DoctorScheduleRepositoryImpl(
+    remoteDataSource: DoctorScheduleRemoteDataSource(dioClient: dioClient),
+  );
 }
+
+/// Provider daftar poliklinik aktif untuk filter chips dan form pendaftaran
+final activePolyclinicsProvider = FutureProvider<List<Polyclinic>>((ref) async {
+  final dioClient = ref.watch(dioClientProvider);
+  final remote = DoctorScheduleRemoteDataSource(dioClient: dioClient);
+  return remote.fetchPolyclinics();
+});
 
 /// Provider spesialisasi/poli yang sedang dipilih
 @riverpod
