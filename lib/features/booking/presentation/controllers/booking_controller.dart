@@ -112,23 +112,26 @@ class BookingController extends Notifier<BookingState> {
     if (appointment == null || state.isCancelling) return;
     state = state.copyWith(isCancelling: true);
 
-    // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL
+    // 1. Eksekusi pembatalan terpadu melalui TicketController & Hive NoSQL (SSOT)
     unawaited(
       ref.read(ticketControllerProvider.notifier).cancelTicket(reason: reason),
     );
 
-    // 2. Hubungi juga booking repository untuk kompatibilitas mundur
-    unawaited(
-      ref
-          .read(bookingRepositoryProvider)
-          .cancelBooking(
-            bookingCode: appointment.bookingCode,
-            reason: reason,
-            memberId: appointment.memberId,
-            scheduledDate: appointment.scheduledDate,
-          ),
-    );
+    // 2. Hubungi booking repository hanya jika TicketController belum memuat tiket (hindari request ganda)
+    if (ref.read(ticketControllerProvider).ticket == null) {
+      unawaited(
+        ref
+            .read(bookingRepositoryProvider)
+            .cancelBooking(
+              bookingCode: appointment.bookingCode,
+              reason: reason,
+              memberId: appointment.memberId,
+              scheduledDate: appointment.scheduledDate,
+            ),
+      );
+    }
 
+    ref.invalidate(liveBookingHistoryProvider);
     await Future<void>.delayed(const Duration(milliseconds: 600));
     state = state.copyWith(clearAppointment: true, isCancelling: false);
   }

@@ -33,10 +33,18 @@ class QueueTicketCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String mulaiJam = DateFormatter.jamMenit(appointment.scheduledDate);
-    final String selesaiJam = DateFormatter.jamMenit(
-      appointment.scheduledDate.add(_visitWindow),
-    );
+    final String window;
+    if (appointment.scheduledDate.hour == 0 &&
+        appointment.scheduledDate.minute == 0 &&
+        appointment.scheduledTime.isNotEmpty) {
+      window = appointment.scheduledTime;
+    } else {
+      final String mulaiJam = DateFormatter.jamMenit(appointment.scheduledDate);
+      final String selesaiJam = DateFormatter.jamMenit(
+        appointment.scheduledDate.add(_visitWindow),
+      );
+      window = '$mulaiJam - $selesaiJam';
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -116,7 +124,7 @@ class QueueTicketCard extends StatelessWidget {
               children: [
                 _QueueAndEstimateRow(
                   queueNumber: _nomorAntrean,
-                  window: '$mulaiJam - $selesaiJam',
+                  window: window,
                 ),
                 const SizedBox(height: 16),
                 _OpenQrButton(onPressed: onOpenQr),

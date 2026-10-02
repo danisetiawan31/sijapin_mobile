@@ -130,7 +130,7 @@ class TicketRepositoryImpl implements TicketRepository {
         final tglIso =
             '${targetDate.year}-${targetDate.month.toString().padLeft(2, '0')}-${targetDate.day.toString().padLeft(2, '0')}';
         await dioClient!.post<dynamic>(
-          'Daftar_Log/update_qrcode_status',
+          ApiConstants.checkInUpdateStatus,
           data: FormData.fromMap({
             'tanggal': tglIso,
             'kode_verifikasi': bookingCode,
