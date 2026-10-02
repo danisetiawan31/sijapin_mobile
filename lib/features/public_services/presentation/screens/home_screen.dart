@@ -99,14 +99,18 @@ class HomeScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Layanan Poliklinik & Pasien',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.brandDarkEspresso,
+                          const Expanded(
+                            child: Text(
+                              'Layanan Poliklinik & Pasien',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandDarkEspresso,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           InkWell(
                             onTap: () => context.go(AppRoutes.doctorsPath),
                             borderRadius: BorderRadius.circular(6),
