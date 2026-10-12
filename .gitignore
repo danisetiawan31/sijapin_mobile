@@ -102,5 +102,5 @@ AGENTS.md
 .docs-snapshot.json
 
 # AI working documents (plans, checkpoints, handoff, stitch designs)
-.ai-docs/
+.artifacts/
 .agents/
