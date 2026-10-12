@@ -58,8 +58,7 @@ dependencies:
   local_auth: ^2.3.0
   crypto: ^3.0.3
 
-  # Debugger Sesi & Pemantauan Error
-  chucker_flutter: ^1.6.0
+  # Pemantauan Error
   sentry_flutter: ^9.30.1
 
 dev_dependencies:
@@ -80,7 +79,6 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   mocktail: ^1.0.4
-  golden_toolkit: ^0.15.0
 
   # Aset & Splash Otomatis
   flutter_launcher_icons: ^0.14.4

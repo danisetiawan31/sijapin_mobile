@@ -120,10 +120,10 @@ sequenceDiagram
 
 ```text
 ├── Framework        : Flutter 3.47+ / Dart 3.13+ (Strict Mode)
-├── State Management : Flutter Riverpod 2.6+ (Code Generation)
-├── Network Engine   : Dio 5.8+ & CookieJar (ci_session Stateful Adapter)
+├── State Management : Flutter Riverpod 3.x (handwritten Provider/Notifier dominant)
+├── Network Engine   : Dio 5.7+ & CookieJar (ci_session Stateful Adapter)
 ├── Dual Storage     : Hive CE 2.2+ (Fast Key-Value) & FlutterSecureStorage (Keystore)
-├── Monitoring       : Sentry Flutter 8.11+ (Real-time Crash Tracing)
+├── Monitoring       : Sentry Flutter 9.x (Real-time Crash Tracing)
 ├── Code Quality     : Strict Linter (0 warnings) & GitNexus Code Intelligence
 └── Quality Gate     : Pre-Push Git Hook & GitHub Actions CI (100% Automated)
 ```
