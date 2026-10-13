@@ -18,6 +18,7 @@ import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
 import '../../features/support/presentation/screens/complaint_screen.dart';
 import '../../features/support/presentation/screens/mcu_catalog_screen.dart';
 import '../../features/support/presentation/screens/service_standards_screen.dart';
+import '../network/session_expiry_controller.dart';
 import 'app_routes.dart';
 import 'main_shell_scaffold.dart';
 
@@ -39,10 +40,20 @@ final GlobalKey<NavigatorState> _shellNavigatorProfile =
 /// Menggunakan [StatefulShellRoute.indexedStack] untuk 4 tab utama
 /// guna mempertahankan state halaman dan posisi scroll masing-masing tab.
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final expiry = ref.watch(sessionExpiryNotifierProvider);
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.splashPath,
     observers: [SentryNavigatorObserver()],
+    // 401 terpusat: setiap sinyal kedaluwarsa mengarah ke login.
+    refreshListenable: expiry,
+    redirect: (context, state) {
+      if (expiry.value && state.uri.path != AppRoutes.loginPath) {
+        clearSessionExpired(ref);
+        return AppRoutes.loginPath;
+      }
+      return null;
+    },
     routes: [
       // Rute Mandiri di Luar Shell (Tidak Memiliki Bottom Navigation Bar)
       GoRoute(

@@ -5,6 +5,7 @@ import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/ticket/data/repositories/ticket_repository_impl.dart';
 import 'package:sijapin_mobile/features/ticket/domain/entities/ticket.dart';
 import 'package:sijapin_mobile/features/ticket/domain/repositories/ticket_repository.dart';
+import 'package:sijapin_mobile/core/network/server_status_controller.dart';
 import 'package:sijapin_mobile/features/ticket/presentation/controllers/ticket_controller.dart';
 
 import '../../../../fixtures/mock_ticket.dart';

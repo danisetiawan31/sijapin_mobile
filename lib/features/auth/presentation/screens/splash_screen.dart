@@ -10,6 +10,7 @@ import '../../../../core/config/app_config.dart';
 import '../../../../core/passcode/passcode_controller.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../controllers/auth_controller.dart';
 
 /// Layar inisial awal (Splash Screen) aplikasi SIIJAPIN Mobile.
 ///
@@ -78,7 +79,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     _hasPasscode = hasPasscode;
 
     if (!biometricEnabled) {
-      if (mounted) context.go(AppRoutes.homePath);
+      await _goHomeOrLogin();
       return;
     }
 
@@ -95,7 +96,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
     if (ok) {
-      context.go(AppRoutes.homePath);
+      await _goHomeOrLogin();
     } else {
       setState(() {
         _checkingBiometric = false;
@@ -103,6 +104,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         _authFailed = !_hasPasscode;
       });
     }
+  }
+
+  /// Resolusi sesi server setelah branding/kunci perangkat: coba pulihkan
+  /// sesi, lalu SELALU ke beranda (tamu diizinkan; masuk via tombol Masuk).
+  Future<void> _goHomeOrLogin() async {
+    try {
+      await ref.read(authControllerProvider.notifier).restoreSession();
+    } catch (_) {
+      // Gagal pulih = lanjut sebagai tamu.
+    }
+    if (!mounted) return;
+    context.go(AppRoutes.homePath);
   }
 
   /// Memverifikasi Kode Kunci (PIN) sebagai pengganti biometrik yang gagal.
@@ -119,7 +132,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     if (!mounted) return;
     if (ok) {
-      context.go(AppRoutes.homePath);
+      await _goHomeOrLogin();
       return;
     }
     setState(() {

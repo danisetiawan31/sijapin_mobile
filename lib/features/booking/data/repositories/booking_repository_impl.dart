@@ -255,6 +255,9 @@ class BookingRepositoryImpl implements BookingRepository {
             '${draft.patient!.birthDate.day.toString().padLeft(2, '0')}-${draft.patient!.birthDate.month.toString().padLeft(2, '0')}-${draft.patient!.birthDate.year}';
         await bookingRemoteDataSource!.insertDaftarRajal({
           'member_id': draft.patient!.id.toString(),
+          // WAJIB PANDUAN §4: fallback bila sesi tanggal terlepas —
+          // tanpa ini server menolak fail-closed (Guard 2).
+          'tgl_kunjungan': tglKunjungan,
           'poli': unitId.toString(),
           'dokter': doctorParam,
           'no_antrian': queueNumber,
@@ -387,6 +390,16 @@ class BookingRepositoryImpl implements BookingRepository {
   Future<List<Appointment>> getBookingHistory() async {
     final List<Appointment> list = [];
 
+    // Nama pasien sesi dari penyimpanan aman (ditulis saat login dari
+    // profil server). Bukan nama samaran: kosong berarti belum termuat.
+    // Nilai warisan `Pasien Terdaftar` dari versi lama diperlakukan kosong.
+    final String storedName =
+        await secureStorage?.read(key: StorageConstants.keyCustomerFullName) ??
+        '';
+    final String sessionPatientName = storedName.trim() == 'Pasien Terdaftar'
+        ? ''
+        : storedName;
+
     // 1. Ambil riwayat live dari backend CI3 (Daftar_Log)
     if (bookingRemoteDataSource != null) {
       try {
@@ -433,7 +446,9 @@ class BookingRepositoryImpl implements BookingRepository {
                   ? verifCode
                   : 'HIST-${date.millisecondsSinceEpoch}',
               queueNumber: '-',
-              patientName: 'Pasien Terdaftar',
+              patientName: sessionPatientName.trim().isNotEmpty
+                  ? sessionPatientName.trim()
+                  : '-',
               medicalRecord: '-',
               doctorName: 'Dokter Poliklinik',
               specialty: clinicName,

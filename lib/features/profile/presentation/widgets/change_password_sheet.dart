@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
+import 'package:sijapin_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 
@@ -65,10 +68,21 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
     setState(() => _isLoading = false);
 
     if (success) {
+      // Backend mencabut SELURUH token Bearer pemilik saat sandi berubah
+      // (`revoke_all`): sesi ini sudah mati di server. Keluar penuh lalu
+      // arahkan login agar pengguna masuk kembali dengan sandi baru —
+      // bukan error, melainkan alur yang benar.
       Navigator.of(context).pop(true);
+      try {
+        await ref.read(authControllerProvider.notifier).logout();
+      } catch (_) {}
+      if (!mounted) return;
+      context.go(AppRoutes.loginPath);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Kata sandi Anda berhasil diperbarui.'),
+          content: Text(
+            'Kata sandi diperbarui. Silakan masuk kembali dengan kata sandi baru.',
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );

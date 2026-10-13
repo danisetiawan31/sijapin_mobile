@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../data/datasources/mcu_remote_data_source.dart';
 
 /// Model tindakan pemeriksaan MCU sesuai tabel database `t_daftar_mcu_tindakan`
 class McuTindakanItem {
@@ -48,8 +50,92 @@ class McuPackageItem {
 /// - `t_daftar_mcu` (KODE_TARIF, MCU_ID)
 /// - `t_daftar_mcu_tindakan` (TARIF_ID, NAMA_TINDAKAN, RUANG)
 /// - `t_daftar_mcu_billing` (JUMLAH_BAYAR, VIRTUAL_ACCOUNT)
-class McuCatalogScreen extends StatelessWidget {
+///
+/// REST authority (PANDUAN §6): katalog dimuat dari
+/// `GET /Pendaftaran_MCU_Paket` + `Accept: application/json`; paket filed
+/// statis di bawah dipakai sebagai fallback offline.
+class McuCatalogScreen extends ConsumerStatefulWidget {
   const McuCatalogScreen({super.key});
+
+  @override
+  ConsumerState<McuCatalogScreen> createState() => _McuCatalogScreenState();
+}
+
+class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
+  List<McuPackageItem> _packages = McuCatalogScreenData.dummyPackages;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemoteCatalog();
+  }
+
+  Future<void> _loadRemoteCatalog() async {
+    try {
+      final rows = await ref.read(mcuRemoteDataSourceProvider).fetchPaketList();
+      if (!mounted || rows.isEmpty) return;
+      setState(() {
+        _packages = rows.map(_packageFromRow).toList();
+      });
+    } catch (_) {
+      // Galat transport/definitif: tetap tampilkan paket filed-statis.
+    }
+  }
+
+  static McuPackageItem _packageFromRow(Map<String, dynamic> row) {
+    // Kunci persis `mcu_paket_normalize_row` backend: tarif_id, kode_tarif,
+    // nama_paket, nama_tarif, harga. Tanpa karangan.
+    final int tarifId =
+        int.tryParse(row['tarif_id']?.toString() ?? '') ??
+        int.tryParse(row['mcu_id']?.toString() ?? '') ??
+        0;
+    final int price =
+        int.tryParse(
+          row['harga']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
+        ) ??
+        int.tryParse(
+          row['tarif']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
+        ) ??
+        0;
+    final String fullTarif = (row['nama_tarif'] ?? '').toString().trim();
+    final String shortName = (row['nama_paket'] ?? '').toString().trim();
+    return McuPackageItem(
+      kodeTarif: (row['kode_tarif'] ?? row['KODE_TARIF'] ?? '$tarifId')
+          .toString(),
+      mcuId: tarifId,
+      name: shortName.isNotEmpty ? shortName : 'Paket MCU',
+      price: price,
+      formattedPrice: _formatRupiah(price),
+      badgeLabel: 'MCU',
+      description: fullTarif,
+      examinationItems: const [],
+    );
+  }
+
+  static String _formatRupiah(int value) {
+    if (value <= 0) return 'Rp —';
+    final String digits = value.toString();
+    final StringBuffer out = StringBuffer();
+    int count = 0;
+    for (int i = digits.length - 1; i >= 0; i--) {
+      out.write(digits[i]);
+      count++;
+      if (count == 3 && i != 0) {
+        out.write('.');
+        count = 0;
+      }
+    }
+    return 'Rp ${out.toString().split('').reversed.join()}';
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      buildCatalogScaffold(context, _packages);
+}
+
+/// Paket MCU filed-statis (fallback offline katalog remote PANDUAN §6).
+class McuCatalogScreenData {
+  const McuCatalogScreenData._();
 
   static const List<McuPackageItem> dummyPackages = [
     McuPackageItem(
@@ -195,221 +281,221 @@ class McuCatalogScreen extends StatelessWidget {
       ],
     ),
   ];
+}
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.surfaceBg,
-      appBar: AppBar(
-        title: const Text('Katalog Paket MCU'),
-        centerTitle: false,
-      ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Banner Panduan Puasa Pasien (US-SUP-01 Scenario 1)
-            const AppCard.highlighted(
-              padding: EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.access_time_filled_rounded,
-                    color: AppColors.brandGoldenCaramel,
-                    size: 28,
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Panduan Persiapan Puasa',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.brandDarkEspresso,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Wajib berpuasa 10–12 jam sebelum pengambilan sampel darah. Hanya diperbolehkan minum air putih tanpa gula.',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textSecondary,
-                            height: 1.4,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            const Text(
-              'Pilihan Paket Pemeriksaan MCU Sitanala',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.brandDarkEspresso,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Daftar Kartu Paket MCU Sitanala
-            // TODO(rekan): Slicing dan kustomisasi tata letak kartu paket di bawah ini
-            ...dummyPackages.map((package) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: AppCard.elevated(
-                  padding: const EdgeInsets.all(16),
+/// Scaffold katalog MCU (top-level agar state tetap ramping).
+Widget buildCatalogScaffold(
+  BuildContext context,
+  List<McuPackageItem> packages,
+) {
+  return Scaffold(
+    backgroundColor: AppColors.surfaceBg,
+    appBar: AppBar(title: const Text('Katalog Paket MCU'), centerTitle: false),
+    body: SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Banner Panduan Puasa Pasien (US-SUP-01 Scenario 1)
+          const AppCard.highlighted(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.access_time_filled_rounded,
+                  color: AppColors.brandGoldenCaramel,
+                  size: 28,
+                ),
+                SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  package.name,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.brandDarkEspresso,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Kode Tarif: ${package.kodeTarif}',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          AppBadge.neutral(label: package.badgeLabel),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       Text(
-                        package.description,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Divider(height: 1, color: AppColors.borderSubtle),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Rincian Tindakan Pemeriksaan:',
+                        'Panduan Persiapan Puasa',
                         style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.brandDarkEspresso,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      ...package.examinationItems.map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                size: 16,
-                                color: AppColors.successEmerald,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  item.namaTindakan,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.brandCreamLinen,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  item.ruang,
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                    color: AppColors.brandWarmBronze,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Wajib berpuasa 10–12 jam sebelum pengambilan sampel darah. Hanya diperbolehkan minum air putih tanpa gula.',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                          height: 1.4,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Tarif Paket (BRIVA)',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              Text(
-                                package.formattedPrice,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.brandGoldenCaramel,
-                                ),
-                              ),
-                            ],
-                          ),
-                          AppPrimaryButton(
-                            label: 'Pilih Paket',
-                            width: 130,
-                            onPressed: () {
-                              // TODO(rekan): Hubungkan aksi booking paket MCU
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Paket ${package.name} (Kode: ${package.kodeTarif}) dipilih. Lanjutkan jadwal MCU.',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
                       ),
                     ],
                   ),
                 ),
-              );
-            }),
-          ],
-        ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          const Text(
+            'Pilihan Paket Pemeriksaan MCU Sitanala',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.brandDarkEspresso,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Daftar Kartu Paket MCU Sitanala
+          // TODO(rekan): Slicing dan kustomisasi tata letak kartu paket di bawah ini
+          ...packages.map((package) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: AppCard.elevated(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                package.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.brandDarkEspresso,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Kode Tarif: ${package.kodeTarif}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppBadge.neutral(label: package.badgeLabel),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      package.description,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Divider(height: 1, color: AppColors.borderSubtle),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Rincian Tindakan Pemeriksaan:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.brandDarkEspresso,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    ...package.examinationItems.map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              size: 16,
+                              color: AppColors.successEmerald,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                item.namaTindakan,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.brandCreamLinen,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item.ruang,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.brandWarmBronze,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Tarif Paket (BRIVA)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            Text(
+                              package.formattedPrice,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.brandGoldenCaramel,
+                              ),
+                            ),
+                          ],
+                        ),
+                        AppPrimaryButton(
+                          label: 'Pilih Paket',
+                          width: 130,
+                          onPressed: () {
+                            // TODO(rekan): Hubungkan aksi booking paket MCU
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Paket ${package.name} (Kode: ${package.kodeTarif}) dipilih. Lanjutkan jadwal MCU.',
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
       ),
-    );
-  }
+    ),
+  );
 }

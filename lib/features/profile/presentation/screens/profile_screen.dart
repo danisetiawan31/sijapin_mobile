@@ -12,6 +12,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../domain/entities/user_profile.dart';
+import '../../../auth/presentation/controllers/auth_controller.dart';
 import '../controllers/profile_controller.dart';
 import '../widgets/change_password_sheet.dart';
 import '../widgets/edit_profile_sheet.dart';
@@ -225,7 +226,7 @@ class ProfileScreen extends ConsumerWidget {
                     if (user != null) ...[
                       const SizedBox(height: 24),
                       _SignOutButton(
-                        onPressed: () => _confirmSignOut(context, controller),
+                        onPressed: () => _confirmSignOut(context, ref),
                       ),
                     ],
 
@@ -529,10 +530,7 @@ void _showAboutDialog(BuildContext context) {
   );
 }
 
-Future<void> _confirmSignOut(
-  BuildContext context,
-  ProfileController controller,
-) async {
+Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
   final bool? confirmed = await showDialog<bool>(
     context: context,
     builder: (BuildContext dialogContext) {
@@ -575,8 +573,9 @@ Future<void> _confirmSignOut(
   );
 
   if (confirmed != true) return;
-  controller.signOut();
+  await ref.read(authControllerProvider.notifier).logout();
   if (context.mounted) {
     _showAppSnack(context, 'Anda telah keluar dari akun.');
+    context.go(AppRoutes.loginPath);
   }
 }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
+import 'package:sijapin_mobile/features/auth/data/repositories/fake_auth_repository.dart';
+import 'package:sijapin_mobile/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/screens/profile_screen.dart';
 
@@ -103,7 +107,42 @@ void main() {
   testWidgets(
     'keluar dari akun meminta konfirmasi lalu mengembalikan state tamu',
     (tester) async {
-      await _pumpProfile(tester);
+      final ProviderContainer container = ProviderContainer(
+        overrides: [
+          activeSessionUserProvider.overrideWith(
+            () => _TestSessionNotifier(testUser),
+          ),
+          authRepositoryProvider.overrideWithValue(const FakeAuthRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+      final GoRouter router = GoRouter(
+        initialLocation: '/',
+        routes: <GoRoute>[
+          GoRoute(
+            path: '/',
+            builder: (BuildContext context, GoRouterState state) =>
+                const ProfileScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.loginPath,
+            builder: (BuildContext context, GoRouterState state) =>
+                const Scaffold(body: Text('LoginStub')),
+          ),
+        ],
+      );
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            theme: AppTheme.lightTheme,
+            routerConfig: router,
+          ),
+        ),
+      );
 
       await tester.tap(find.text('Keluar dari Akun'));
       await tester.pumpAndSettle();
@@ -112,7 +151,8 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Keluar'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Belum Masuk'), findsOneWidget);
+      expect(container.read(activeSessionUserProvider), isNull);
+      expect(find.text('LoginStub'), findsOneWidget);
     },
   );
 }

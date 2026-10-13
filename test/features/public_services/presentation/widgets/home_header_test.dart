@@ -71,20 +71,12 @@ void main() {
     });
 
     testWidgets(
-      'menampilkan tombol Profil dengan inisial saat isLoggedIn bernilai true',
+      'menampilkan lencana profil non-klik saat isLoggedIn bernilai true',
       (tester) async {
-        var profileTapped = false;
-
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
-              body: HomeHeader(
-                isLoggedIn: true,
-                userName: 'Dhani',
-                onProfileTap: () {
-                  profileTapped = true;
-                },
-              ),
+              body: HomeHeader(isLoggedIn: true, userName: 'Dhani'),
             ),
           ),
         );
@@ -92,11 +84,13 @@ void main() {
         expect(find.text('Masuk'), findsNothing);
         expect(find.text('Dhani'), findsOneWidget);
         expect(find.text('D'), findsOneWidget); // Inisial avatar
+        // Display-only: tanpa aksi dan tanpa indikator navigasi.
+        expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
 
         await tester.tap(find.text('Dhani'));
         await tester.pump();
 
-        expect(profileTapped, isTrue);
+        expect(find.text('Dhani'), findsOneWidget);
       },
     );
   });

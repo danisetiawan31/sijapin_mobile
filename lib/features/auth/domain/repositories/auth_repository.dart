@@ -16,4 +16,8 @@ abstract interface class AuthRepository {
     required String gender,
     required String password,
   });
+
+  /// Mencabut sesi di server dan membersihkan seluruh jejak lokal
+  /// (token, cookie, secure keys, in-memory user milik controller).
+  Future<void> logout();
 }

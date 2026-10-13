@@ -171,5 +171,47 @@ void main() {
       expect(result.success, isTrue);
       expect(result.message, contains('Pendaftaran berhasil'));
     });
+
+    test('logout menghapus seluruh kunci sesi aman', () async {
+      await secureStorage.write(
+        key: StorageConstants.keyBearerToken,
+        value: 'bearer-xyz',
+      );
+      await secureStorage.write(
+        key: StorageConstants.keyCustomerSession,
+        value: 'ci-session-xyz',
+      );
+      await secureStorage.write(
+        key: StorageConstants.keyCustomerPhoneNumber,
+        value: '081234567890',
+      );
+      await secureStorage.write(
+        key: StorageConstants.keyCustomerId,
+        value: '163958',
+      );
+
+      await repository.logout();
+
+      expect(
+        await secureStorage.containsKey(key: StorageConstants.keyBearerToken),
+        isFalse,
+      );
+      expect(
+        await secureStorage.containsKey(
+          key: StorageConstants.keyCustomerSession,
+        ),
+        isFalse,
+      );
+      expect(
+        await secureStorage.containsKey(
+          key: StorageConstants.keyCustomerPhoneNumber,
+        ),
+        isFalse,
+      );
+      expect(
+        await secureStorage.containsKey(key: StorageConstants.keyCustomerId),
+        isFalse,
+      );
+    });
   });
 }

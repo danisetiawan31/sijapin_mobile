@@ -1,8 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/constants/api_constants.dart';
+import 'package:sijapin_mobile/core/network/api_client.dart';
+import 'package:sijapin_mobile/core/network/api_response.dart';
 import 'package:sijapin_mobile/core/network/dio_client.dart';
 import 'package:sijapin_mobile/core/storage/local_storage_service.dart';
+import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
 import 'package:sijapin_mobile/core/storage/storage_constants.dart';
 import 'package:sijapin_mobile/features/profile/data/datasources/profile_remote_data_source.dart';
 import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
@@ -59,6 +62,10 @@ class MockProfileRemoteDataSource implements IProfileRemoteDataSource {
 
   @override
   Future<List<FamilyMember>?> fetchFamilyMembers() async => mockFetchResult;
+
+  @override
+  Future<FamilyMember?> fetchMemberDetails(String id) async =>
+      mockFetchResult?.where((m) => m.id == id).firstOrNull;
 
   @override
   Future<Map<String, dynamic>> saveFamilyMember(
@@ -136,6 +143,9 @@ class MockDioClient implements DioClient {
 }
 
 void main() {
+  updateProfileRestTests();
+  fetchProfileRestTests();
+
   group('ProfileRemoteDataSource Tests', () {
     late MockDioClient mockDioClient;
     late ProfileRemoteDataSource dataSource;
@@ -251,41 +261,54 @@ void main() {
     );
 
     test(
-      'fetchFamilyMembers mem-parsing kartu HTML dari backend CI3',
+      'fetchFamilyMembers mem-parsing envelope data.member backend',
       () async {
-        const sampleHtml = '''
-      <html>
-        <body>
-          <div class="row">
-            <a class="btn" href="https://rsup-drsitanala.net/siijapin-v2/pasien/form_data/101">
-              <div class="card pasien-log-card">
-                <div class="card-body">
-                  <h5 class="card-title">Ahmad Fauzi Rahman</h5>
-                </div>
-              </div>
-            </a>
-            <a class="btn" href="https://rsup-drsitanala.net/siijapin-v2/pasien/form_data/102">
-              <div class="card pasien-log-card">
-                <div class="card-body">
-                  <h5 class="card-title">Nadira Aulia Putri</h5>
-                </div>
-              </div>
-            </a>
-          </div>
-        </body>
-      </html>
-      ''';
-
-        mockDioClient.nextResponseData = sampleHtml;
+        mockDioClient.nextResponseData = <String, dynamic>{
+          'status': 200,
+          'success': true,
+          'message': 'Daftar anggota keluarga berhasil dimuat.',
+          'data': <String, dynamic>{
+            'member': <Map<String, dynamic>>[
+              <String, dynamic>{
+                'MEMBER_ID': '101',
+                'NOMR': '012345',
+                'NAMA_PASIEN': 'Ahmad Fauzi Rahman',
+                'TMP_LAHIR': 'Tangerang',
+                'TGL_LAHIR': '12-05-1986',
+                'AGAMA': '1',
+                'JNS_KELAMIN': 'L',
+                'NAMA_IBU': 'Maryam',
+                'ALAMAT': 'Jl. Dr. Sitanala No. 12',
+                'NIK': '3671041205860005',
+              },
+              <String, dynamic>{
+                'MEMBER_ID': '102',
+                'NOMR': '',
+                'NAMA_PASIEN': 'Nadira Aulia Putri',
+                'TMP_LAHIR': 'Jakarta',
+                'TGL_LAHIR': '15-03-2015',
+                'AGAMA': '1',
+                'JNS_KELAMIN': 'P',
+                'NAMA_IBU': 'Rina Puspita Sari',
+                'ALAMAT': 'Jl. Dr. Sitanala No. 12',
+                'NIK': '3671047103150008',
+              },
+            ],
+          },
+        };
 
         final members = await dataSource.fetchFamilyMembers();
 
+        expect(mockDioClient.lastPath, equals(ApiConstants.familyList));
         expect(members, isNotNull);
         expect(members!.length, equals(2));
         expect(members[0].id, equals('101'));
         expect(members[0].fullName, equals('Ahmad Fauzi Rahman'));
+        expect(members[0].birthDate, equals(DateTime(1986, 5, 12)));
+        expect(members[0].medicalRecordNumber, equals('012345'));
         expect(members[1].id, equals('102'));
         expect(members[1].fullName, equals('Nadira Aulia Putri'));
+        expect(members[1].gender, equals('P'));
       },
     );
   });
@@ -546,6 +569,252 @@ void main() {
       // Saat refresh dari server dilakukan, anggota yang dihapus tidak bangkit kembali
       final members = await repo.getFamilyMembers();
       expect(members.any((m) => m.id == 'server-01'), isFalse);
+    });
+  });
+}
+
+class MockApiClient implements ApiClient {
+  String? lastPath;
+  String? lastGetPath;
+  Object? lastData;
+  Object? nextData;
+  ApiException? definitiveError;
+  DioException? transportError;
+
+  @override
+  Dio get dio => throw UnimplementedError();
+
+  @override
+  ISecureStorage get secureStorage => throw UnimplementedError();
+
+  @override
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    lastGetPath = path;
+    final ApiException? definitive = definitiveError;
+    if (definitive != null) {
+      throw definitive;
+    }
+    final DioException? transport = transportError;
+    if (transport != null) {
+      throw transport;
+    }
+    return Response<T>(
+      requestOptions: RequestOptions(path: path),
+      statusCode: 200,
+      data: nextData as T?,
+    );
+  }
+
+  @override
+  Future<Response<T>> post<T>(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    lastPath = path;
+    lastData = data;
+    final ApiException? definitive = definitiveError;
+    if (definitive != null) {
+      throw definitive;
+    }
+    final DioException? transport = transportError;
+    if (transport != null) {
+      throw transport;
+    }
+    return Response<T>(
+      requestOptions: RequestOptions(path: path),
+      statusCode: 200,
+      data: nextData as T?,
+    );
+  }
+}
+
+void updateProfileRestTests() {
+  group('ProfileRemoteDataSource updateProfile cookie-only', () {
+    late MockDioClient mockDioClient;
+    late MockApiClient mockApiClient;
+    late ProfileRemoteDataSource dataSource;
+
+    setUp(() {
+      mockDioClient = MockDioClient();
+      mockApiClient = MockApiClient();
+      dataSource = ProfileRemoteDataSource(
+        dioClient: mockDioClient,
+        apiClient: mockApiClient,
+      );
+    });
+
+    Future<Map<String, dynamic>> update() {
+      return dataSource.updateProfile(
+        customerId: '163958',
+        fullName: 'Ahmad Dani',
+        phoneNumber: '0812000000',
+        email: 'ahmad@example.com',
+      );
+    }
+
+    test('tulis via DioClient cookie (Bearer tidak didukung server) + envelope dinormalisasi', () async {
+      // Backend menjawab envelope sukses pada Accept JSON.
+      mockDioClient.nextResponseData = <String, dynamic>{
+        'status': 200,
+        'success': true,
+        'message': 'Data profil berhasil diperbarui.',
+        'data': <String, dynamic>{'id_customer': 163958},
+      };
+
+      final Map<String, dynamic> res = await update();
+
+      expect(res['ret'], 'success');
+      expect(res['msg'], 'Data profil berhasil diperbarui.');
+      expect(mockDioClient.lastPath, ApiConstants.updateProfile);
+      expect(mockDioClient.lastData, isA<FormData>());
+      // ApiClient (Bearer) TIDAK boleh dipakai: server selalu 401 di sana
+      // dan akan memicu wipe sesi terpusat.
+      expect(mockApiClient.lastPath, isNull);
+      expect(mockApiClient.lastGetPath, isNull);
+    });
+
+    test('jawaban definitif ret:fail tampil verbatim', () async {
+      mockDioClient.nextResponseData = <String, dynamic>{
+        'ret': 'fail',
+        'msg': 'Akses ditolak: sesi tidak valid.',
+      };
+
+      expect(
+        () => update(),
+        throwsA(
+          isA<ApiException>().having(
+            (e) => e.message,
+            'message',
+            'Akses ditolak: sesi tidak valid.',
+          ),
+        ),
+      );
+      expect(mockApiClient.lastPath, isNull);
+    });
+
+    test('galat transport diteruskan (controller yang memutuskan)', () async {
+      mockDioClient.shouldThrow = true;
+
+      expect(() => update(), throwsA(isA<DioException>()));
+    });
+  });
+}
+
+void fetchProfileRestTests() {
+  group('ProfileRemoteDataSource fetchProfile REST-primary', () {
+    late MockDioClient mockDioClient;
+    late MockApiClient mockApiClient;
+    late ProfileRemoteDataSource dataSource;
+
+    setUp(() {
+      mockDioClient = MockDioClient();
+      mockApiClient = MockApiClient();
+      dataSource = ProfileRemoteDataSource(
+        dioClient: mockDioClient,
+        apiClient: mockApiClient,
+      );
+    });
+
+    Map<String, dynamic> restEnvelope() => <String, dynamic>{
+      'status': 200,
+      'success': true,
+      'message': 'ok',
+      'data': <String, dynamic>{
+        'id_customer': 163958,
+        'nama': 'Ahmad Dani',
+        'nomor_telepon': '0812000000',
+        'email': 'ahmad@example.com',
+      },
+    };
+
+    test('REST-ok memakai GET api/v1/profile dan melewati scrape', () async {
+      mockApiClient.nextData = restEnvelope();
+
+      final user = await dataSource.fetchProfile();
+
+      expect(mockApiClient.lastGetPath, ApiConstants.apiV1Profile);
+      expect(user?.fullName, 'Ahmad Dani');
+      expect(user?.phone, '0812000000');
+      expect(mockDioClient.lastPath, isNull);
+    });
+
+    test('definitive Bearer error lanjut ke CI3 (tidak diveto)', () async {
+      mockApiClient.definitiveError = const ApiException('Token kedaluwarsa.');
+      mockDioClient.nextResponseData = <String, dynamic>{
+        'status': 200,
+        'success': true,
+        'message': 'ok',
+        'data': <String, dynamic>{
+          'profil': <String, dynamic>{
+            'id_customer': 163958,
+            'nama': 'Ahmad Dani',
+            'nomor_telepon': '0812000000',
+            'email': 'ahmad@example.com',
+            'tanggal_lahir': '17-05-1990',
+            'jenis_kelamin': 'L',
+            'alamat': 'Tangerang',
+          },
+        },
+      };
+
+      final user = await dataSource.fetchProfile();
+
+      expect(mockApiClient.lastGetPath, ApiConstants.apiV1Profile);
+      expect(mockDioClient.lastPath, 'profile');
+      expect(user?.fullName, 'Ahmad Dani');
+      expect(user?.phone, '0812000000');
+      expect(user?.email, 'ahmad@example.com');
+      expect(user?.birthDate, DateTime(1990, 5, 17));
+    });
+
+    test('definitive Bearer + CI3 kosong menjadi null', () async {
+      mockApiClient.definitiveError = const ApiException('Token kedaluwarsa.');
+
+      expect(await dataSource.fetchProfile(), isNull);
+      expect(mockDioClient.lastPath, 'profile');
+    });
+
+    test('bentuk datar Postman Get Profil Akun terurai penuh', () async {
+      mockApiClient.nextData = <String, dynamic>{
+        'status': 200,
+        'success': true,
+        'message': 'Data profil akun berhasil diambil',
+        'data': <String, dynamic>{
+          'id_customer': '163958',
+          'nomor_telepon': '081299990001',
+          'nama': 'Pasien Setup Runner',
+          'email': 'runner@sitanala.id',
+          'alamat': 'Jl. Dr. Sitanala No. 99, Tangerang',
+          'id_member': '1',
+        },
+      };
+
+      final user = await dataSource.fetchProfile();
+
+      expect(user?.fullName, 'Pasien Setup Runner');
+      expect(user?.phone, '081299990001');
+      expect(user?.email, 'runner@sitanala.id');
+    });
+
+    test('transport error jatuh ke baca JSON CI3', () async {
+      mockApiClient.transportError = DioException(
+        requestOptions: RequestOptions(path: ApiConstants.apiV1Profile),
+        type: DioExceptionType.connectionError,
+      );
+      mockDioClient.nextResponseData = restEnvelope();
+
+      final user = await dataSource.fetchProfile();
+
+      expect(mockDioClient.lastPath, 'profile');
+      expect(user?.fullName, 'Ahmad Dani');
     });
   });
 }

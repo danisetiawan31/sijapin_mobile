@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/storage/storage_constants.dart';
@@ -85,7 +86,11 @@ class ProfileController extends Notifier<ProfileState> {
       customerId = state.user!.customerId;
     }
     final dioClient = ref.read(dioClientProvider);
-    final remoteDataSource = ProfileRemoteDataSource(dioClient: dioClient);
+    final apiClient = ref.read(apiClientProvider);
+    final remoteDataSource = ProfileRemoteDataSource(
+      dioClient: dioClient,
+      apiClient: apiClient,
+    );
 
     var success = true;
     try {
@@ -148,7 +153,7 @@ class ProfileController extends Notifier<ProfileState> {
                   nik: '',
                   birthDate: birthDate,
                   gender: gender ?? 'L',
-                  bloodType: 'O',
+                  bloodType: '',
                   address: '',
                   memberSince: null,
                 ))
@@ -164,11 +169,5 @@ class ProfileController extends Notifier<ProfileState> {
     ref.read(activeSessionUserProvider.notifier).setUser(updatedUser);
     state = state.copyWith(user: updatedUser);
     return success;
-  }
-
-  /// Menghapus sesi pasien dari state lokal.
-  void signOut() {
-    state = state.copyWith(clearUser: true);
-    ref.read(activeSessionUserProvider.notifier).setUser(null);
   }
 }

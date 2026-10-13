@@ -16,7 +16,6 @@ class HomeHeader extends StatelessWidget {
     this.hasUnreadNotifications = true,
     this.onNotificationTap,
     this.onLoginTap,
-    this.onProfileTap,
     this.onSearchTap,
     this.showBottomDivider = true,
   });
@@ -35,9 +34,6 @@ class HomeHeader extends StatelessWidget {
 
   /// Callback saat tombol "Masuk" ditekan (mode tamu).
   final VoidCallback? onLoginTap;
-
-  /// Callback saat tombol profil ditekan (mode terautentikasi).
-  final VoidCallback? onProfileTap;
 
   /// Callback saat search pill ditekan.
   final VoidCallback? onSearchTap;
@@ -270,70 +266,57 @@ class HomeHeader extends StatelessWidget {
     );
   }
 
+  /// Lencana identitas pasien (display-only, bukan tombol: tab "Akun" di
+  /// navbar sudah memegang navigasi profil; tidak ada foto dari backend).
   Widget _buildProfileButton() {
     final displayName = userName ?? 'Pasien';
     return Semantics(
-      button: true,
-      label: 'Profil $displayName',
-      child: Material(
-        color: AppColors.transparent,
-        child: InkWell(
-          onTap: onProfileTap,
+      label: 'Masuk sebagai $displayName',
+      child: Container(
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppColors.clinicalContainer,
           borderRadius: BorderRadius.circular(999),
-          child: Container(
-            height: 38,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            decoration: BoxDecoration(
-              color: AppColors.clinicalContainer,
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(color: AppColors.clinicalBorder, width: 1),
+          border: Border.all(color: AppColors.clinicalBorder, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(
+                color: AppColors.clinicalTeal,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  displayName.isNotEmpty ? displayName[0].toUpperCase() : 'P',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textWhite,
+                  ),
+                ),
+              ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: AppColors.clinicalTeal,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      displayName.isNotEmpty
-                          ? displayName[0].toUpperCase()
-                          : 'P',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textWhite,
-                      ),
-                    ),
-                  ),
+            const SizedBox(width: 6),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 70),
+              child: Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.clinicalTealDeep,
                 ),
-                const SizedBox(width: 6),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 70),
-                  child: Text(
-                    displayName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.clinicalTealDeep,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 2),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  size: 16,
-                  color: AppColors.clinicalTeal,
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(width: 2),
+          ],
         ),
       ),
     );

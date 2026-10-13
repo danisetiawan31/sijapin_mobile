@@ -14,7 +14,7 @@ void main() {
       expect(options.baseUrl, AppConfig.baseUrl);
       expect(options.connectTimeout, AppConfig.connectTimeout);
       expect(options.receiveTimeout, AppConfig.receiveTimeout);
-      expect(options.headers['Accept'], 'application/json, text/html, */*');
+      expect(options.headers['Accept'], 'application/json');
       expect(
         options.headers['Content-Type'],
         'application/x-www-form-urlencoded',
