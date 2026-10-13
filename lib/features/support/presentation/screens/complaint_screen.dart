@@ -1,9 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_response.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../data/datasources/feedback_remote_data_source.dart';
 
 /// Layar Form Aspirasi & Pengaduan Pasien — Epic 08 (`US-SUP-02`)
 /// Rute: `/support/complaint`
@@ -11,14 +15,16 @@ import '../../../../core/widgets/app_text_field.dart';
 /// Kebijakan Teknis Backend:
 /// - Murni pemrosesan teks ke tabel `t_saran_pengaduan` (TIDAK ADA fitur upload gambar/foto).
 /// - Menyediakan tombol kontak langsung nasional: **Halo Kemenkes 1500-567**.
-class ComplaintScreen extends StatefulWidget {
+/// - REST authority (PANDUAN §7): prefill `GET /Saran_Pengaduan`, submit
+///   `POST /Saran_Pengaduan/input_saran_pengaduan` + `Accept: application/json`.
+class ComplaintScreen extends ConsumerStatefulWidget {
   const ComplaintScreen({super.key});
 
   @override
-  State<ComplaintScreen> createState() => _ComplaintScreenState();
+  ConsumerState<ComplaintScreen> createState() => _ComplaintScreenState();
 }
 
-class _ComplaintScreenState extends State<ComplaintScreen> {
+class _ComplaintScreenState extends ConsumerState<ComplaintScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
@@ -29,6 +35,33 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
   final _descriptionController = TextEditingController();
 
   bool _isSubmitting = false;
+  bool _prefilled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefill();
+  }
+
+  Future<void> _loadPrefill() async {
+    try {
+      final prefill = await ref
+          .read(feedbackRemoteDataSourceProvider)
+          .fetchPrefill();
+      if (!mounted || _prefilled) return;
+      _prefilled = true;
+      final String name = (prefill['nama'] ?? '').toString();
+      final String phone =
+          (prefill['no_contact'] ?? prefill['nomor_telepon'] ?? '').toString();
+      final String email = (prefill['email'] ?? '').toString();
+      if (name.isNotEmpty) _nameController.text = name;
+      if (phone.isNotEmpty) _phoneController.text = phone;
+      if (email.isNotEmpty) _emailController.text = email;
+      setState(() {});
+    } catch (_) {
+      // Prefill opsional: biarkan pengguna mengisi manual saat offline.
+    }
+  }
 
   @override
   void dispose() {
@@ -41,26 +74,62 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
     super.dispose();
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isSubmitting = true);
-
-    // TODO(rekan): Hubungkan ke controller CI3 POST /Saran_Pengaduan/input_saran_pengaduan
-    Future<void>.delayed(const Duration(milliseconds: 600), () {
+    try {
+      final result = await ref
+          .read(feedbackRemoteDataSourceProvider)
+          .submitFeedback(
+            name: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            email: _emailController.text.trim(),
+            address: _addressController.text.trim(),
+            subject: _subjectController.text.trim(),
+            description: _descriptionController.text.trim(),
+          );
       if (!mounted) return;
-      setState(() => _isSubmitting = false);
+      final bool ok = result['ret']?.toString() == 'success';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ok
+                ? (result['msg']?.toString().isNotEmpty ?? false
+                      ? result['msg'].toString()
+                      : 'Aspirasi/Pengaduan Anda telah berhasil dicatat. Terima kasih atas masukan Anda.')
+                : (result['msg']?.toString() ?? 'Gagal mengirim pengaduan.'),
+          ),
+          backgroundColor: ok
+              ? AppColors.successEmerald
+              : AppColors.dangerCrimson,
+        ),
+      );
+      if (ok) {
+        _subjectController.clear();
+        _descriptionController.clear();
+      }
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message),
+          backgroundColor: AppColors.dangerCrimson,
+        ),
+      );
+    } on DioException {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Aspirasi/Pengaduan Anda telah berhasil dicatat. Terima kasih atas masukan Anda.',
+            'Tidak terhubung ke server. Periksa koneksi internet Anda.',
           ),
-          backgroundColor: AppColors.successEmerald,
+          backgroundColor: AppColors.dangerCrimson,
         ),
       );
-      _subjectController.clear();
-      _descriptionController.clear();
-    });
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 
   @override
@@ -128,7 +197,7 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
               ),
               const SizedBox(height: 12),
 
-              // TODO(rekan): Nilai-nilai field ini dapat di-auto-populate dari profil akun pasien login
+              // Identitas terisi otomatis dari `GET /Saran_Pengaduan` saat online.
               AppTextField(
                 label: 'Nama Lengkap',
                 hint: 'Masukkan nama pengirim',
