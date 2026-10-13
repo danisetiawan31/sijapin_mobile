@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/constants/api_constants.dart';
 import 'package:sijapin_mobile/core/network/dio_client.dart';
+import 'package:sijapin_mobile/core/network/json_first.dart';
 import 'package:sijapin_mobile/core/storage/secure_storage_service.dart';
 import 'package:sijapin_mobile/core/storage/storage_constants.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
@@ -92,6 +93,7 @@ class TicketRepositoryImpl implements TicketRepository {
             'kodebooking': bookingCode,
             'alasan': reason,
           }),
+          options: jsonAcceptOptions(),
         );
 
         if (response.statusCode == 200) {
@@ -135,6 +137,7 @@ class TicketRepositoryImpl implements TicketRepository {
             'tanggal': tglIso,
             'kode_verifikasi': bookingCode,
           }),
+          options: jsonAcceptOptions(),
         );
       } catch (_) {
         // Fallback anggun: Tetap izinkan check-in offline di perangkat
@@ -196,6 +199,7 @@ class TicketRepositoryImpl implements TicketRepository {
                   entity.cancelNote ??
                   'Dibatalkan mandiri oleh pasien (offline sync)',
             }),
+            options: jsonAcceptOptions(),
           );
           ok = response.statusCode == 200;
         }
