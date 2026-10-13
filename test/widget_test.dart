@@ -61,7 +61,8 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    // expect(find.text('Home'), findsOneWidget);
+    // Splash selalu mendarat di beranda (tamu diizinkan; sesi pulih bila
+    // token valid).
     expect(find.text('Layanan Poliklinik & Pasien'), findsOneWidget);
     expect(find.text('Masuk'), findsOneWidget);
     expect(find.text('Selamat Datang di SIIJAPIN'), findsOneWidget);

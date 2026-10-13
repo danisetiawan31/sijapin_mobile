@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../../../core/network/json_first.dart';
 
 /// Kontrak interface remote data source autentikasi CodeIgniter 3 RSUP Dr. Sitanala
 abstract interface class IAuthRemoteDataSource {
@@ -78,6 +79,24 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       'kunci': password,
       'kunci_conf': password,
     });
+
+    // JSON-first: `Accept: application/json` memaksa envelope/uniform shape;
+    // jawaban gagal definitif dilempar verbatim, transport gagal → CI3 lama.
+    try {
+      final response = await dioClient.post<dynamic>(
+        ApiConstants.register,
+        data: formData,
+        options: jsonAcceptOptions(),
+      );
+      final Map<String, dynamic>? map = parseJsonMap(response.data);
+      if (map != null) {
+        throwIfDefinitiveFailure(map);
+        return normalizeWriteResult(map);
+      }
+    } catch (e) {
+      if (!isTransportFailure(e)) rethrow;
+      // Galat transport → jatuh ke pemanggilan CI3 lama di bawah.
+    }
 
     final response = await dioClient.post<dynamic>(
       ApiConstants.register,

@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/network/api_client.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/storage/secure_storage_service.dart';
+import '../../../../core/utils/app_date_time.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
+import '../../data/datasources/auth_rest_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../../../core/storage/storage_constants.dart';
 import '../../../profile/data/datasources/profile_remote_data_source.dart';
@@ -15,6 +18,7 @@ import '../../domain/usecases/register_usecase.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final dioClient = ref.watch(dioClientProvider);
+  final apiClient = ref.watch(apiClientProvider);
   final secureStorage = ref.watch(secureStorageServiceProvider);
   final cookieManager = ref.watch(cookieManagerServiceProvider);
   final remoteDataSource = AuthRemoteDataSource(dioClient: dioClient);
@@ -23,6 +27,7 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
     remoteDataSource: remoteDataSource,
     secureStorage: secureStorage,
     cookieManagerService: cookieManager,
+    restDataSource: AuthRestDataSource(apiClient: apiClient),
   );
 });
 
@@ -64,6 +69,26 @@ class AuthController extends Notifier<AuthControllerState> {
   @override
   AuthControllerState build() => const AuthControllerState();
 
+  /// Pengguna darurat jujur bila profil server tak termuat (offline/gagal):
+  /// hanya berisi handle login apa adanya — nama TIDAK dikarang, nomor HP
+  /// TIDAK diisi email dan sebaliknya. UI menampilkan status
+  /// "Data Belum Lengkap" sampai profil asli termuat.
+  static UserProfile honestOfflineUser(String identifier) {
+    final String trimmed = identifier.trim();
+    final bool isEmail = trimmed.contains('@');
+    return UserProfile(
+      fullName: '',
+      phone: isEmail ? '' : trimmed,
+      email: isEmail ? trimmed : '',
+      nik: '',
+      birthDate: null,
+      gender: 'L',
+      bloodType: '',
+      address: '',
+      memberSince: AppDateTime.now(),
+    );
+  }
+
   Future<AuthResult?> login({
     required String identifier,
     required String password,
@@ -81,26 +106,29 @@ class AuthController extends Notifier<AuthControllerState> {
         rememberMe: rememberMe,
       );
       if (result.success) {
-        UserProfile? fetchedUser;
-        try {
-          final dioClient = ref.read(dioClientProvider);
-          fetchedUser = await ProfileRemoteDataSource(dioClient: dioClient)
-              .fetchProfile();
-        } catch (_) {}
+        // Profil dari repository (REST Bearer) diutamakan; bila kosong,
+        // muat ulang lewat datasource (Bearer-primer + fallback CI3 cookie,
+        // sesuai jalur login yang berhasil). Tanpa nama samaran di sini.
+        UserProfile? fetchedUser = result.profile == null
+            ? null
+            : ProfileRemoteDataSource.userFromRestMap(result.profile!);
+        if (fetchedUser == null || fetchedUser.fullName.trim().isEmpty) {
+          try {
+            final dioClient = ref.read(dioClientProvider);
+            final apiClient = ref.read(apiClientProvider);
+            final refetched = await ProfileRemoteDataSource(
+              dioClient: dioClient,
+              apiClient: apiClient,
+            ).fetchProfile();
+            if (refetched != null && refetched.fullName.trim().isNotEmpty) {
+              fetchedUser = refetched;
+            } else {
+              fetchedUser ??= refetched;
+            }
+          } catch (_) {}
+        }
 
-        final user =
-            fetchedUser ??
-            UserProfile(
-              fullName: 'Pasien Terdaftar',
-              phone: identifier.trim(),
-              email: identifier.contains('@') ? identifier.trim() : '',
-              nik: '',
-              birthDate: null,
-              gender: 'L',
-              bloodType: '',
-              address: '',
-              memberSince: DateTime.now(),
-            );
+        final user = fetchedUser ?? honestOfflineUser(identifier);
 
         if (user.customerId.isNotEmpty) {
           final secureStorage = ref.read(secureStorageServiceProvider);
@@ -116,6 +144,18 @@ class AuthController extends Notifier<AuthControllerState> {
             await secureStorage.write(
               key: StorageConstants.keyCustomerEmail,
               value: user.email,
+            );
+          }
+          if (user.gender.isNotEmpty) {
+            await secureStorage.write(
+              key: StorageConstants.keyCustomerGender,
+              value: user.gender,
+            );
+          }
+          if (user.birthDate != null) {
+            await secureStorage.write(
+              key: StorageConstants.keyCustomerBirthDate,
+              value: user.birthDate!.toIso8601String(),
             );
           }
         }
@@ -174,7 +214,7 @@ class AuthController extends Notifier<AuthControllerState> {
                 gender: gender,
                 bloodType: '',
                 address: '',
-                memberSince: DateTime.now(),
+                memberSince: AppDateTime.now(),
               ),
             );
       }
@@ -192,6 +232,73 @@ class AuthController extends Notifier<AuthControllerState> {
         message: message,
       );
       return null;
+    }
+  }
+
+  /// Keluar penuh: mencabut sesi di server (REST revoke + fallback CI3),
+  /// membersihkan cookie + secure keys via repository, lalu mengosongkan
+  /// pengguna sesi di memori. Satu-satunya jalur logout aplikasi.
+  Future<void> logout() async {
+    try {
+      await ref.read(authRepositoryProvider).logout();
+    } catch (_) {
+      // Pembersihan lokal di bawah tetap berjalan.
+    }
+    ref.read(activeSessionUserProvider.notifier).setUser(null);
+    state = const AuthControllerState();
+  }
+
+  /// Pemulihan sesi saat aplikasi dibuka (spesifikasi §2): token tersimpan +
+  /// `expires_at` belum lewat → validasi `GET /api/v1/profile` → isi pengguna
+  /// sesi + true (layar home); selain itu false (layar login). Token
+  /// kedaluwarsa dihapus agar tidak dipakai ulang.
+  Future<bool> restoreSession() async {
+    final secureStorage = ref.read(secureStorageServiceProvider);
+    final String token =
+        await secureStorage.read(key: StorageConstants.keyBearerToken) ?? '';
+    if (token.isEmpty) return false;
+    final String expiresRaw =
+        await secureStorage.read(key: StorageConstants.keyBearerExpiresAt) ??
+        '';
+    if (expiresRaw.isNotEmpty) {
+      final DateTime? expiry = DateTime.tryParse(expiresRaw);
+      if (expiry != null && !expiry.isAfter(AppDateTime.now())) {
+        await secureStorage.delete(key: StorageConstants.keyBearerToken);
+        await secureStorage.delete(key: StorageConstants.keyBearerExpiresAt);
+        return false;
+      }
+    }
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final Map<String, dynamic> profile = await AuthRestDataSource(
+        apiClient: apiClient,
+      ).fetchRestProfile();
+      final UserProfile? user = ProfileRemoteDataSource.userFromRestMap(
+        profile,
+      );
+      if (user == null || user.fullName.trim().isEmpty) return false;
+      if (user.customerId.isNotEmpty) {
+        await secureStorage.write(
+          key: StorageConstants.keyCustomerId,
+          value: user.customerId,
+        );
+      }
+      if (user.fullName.isNotEmpty) {
+        await secureStorage.write(
+          key: StorageConstants.keyCustomerFullName,
+          value: user.fullName,
+        );
+      }
+      if (user.email.isNotEmpty) {
+        await secureStorage.write(
+          key: StorageConstants.keyCustomerEmail,
+          value: user.email,
+        );
+      }
+      ref.read(activeSessionUserProvider.notifier).setUser(user);
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 }

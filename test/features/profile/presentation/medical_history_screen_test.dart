@@ -6,7 +6,6 @@ import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:sijapin_mobile/features/profile/presentation/screens/medical_history_screen.dart';
-import 'package:sijapin_mobile/features/profile/presentation/widgets/medical_record_detail_sheet.dart';
 
 import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 
@@ -63,40 +62,28 @@ Future<void> _pumpHistory(
 }
 
 void main() {
-  testWidgets('menampilkan ringkasan dan linimasa riwayat medis yang login', (
+  testWidgets('menampilkan ringkasan kosong yang jujur saat login', (
     tester,
   ) async {
     await _pumpHistory(tester);
 
     expect(find.text('Riwayat Medis'), findsOneWidget);
-    expect(find.text('4 catatan rekam medis'), findsOneWidget);
-    expect(find.text('Hipertensi Primer Grade 1'), findsOneWidget);
-    expect(find.text('Kunjungan Poli'), findsWidgets);
+    expect(find.text('0 catatan rekam medis'), findsOneWidget);
+    expect(find.text('Belum Ada Riwayat Medis'), findsOneWidget);
+    expect(find.text('Hipertensi Primer Grade 1'), findsNothing);
     expect(
       find.textContaining('Rekam medis resmi dapat diminta di Loket 1'),
       findsOneWidget,
     );
   });
 
-  testWidgets('mengetuk kartu membuka bottom sheet resume lengkap', (
+  testWidgets('empty state menyebut penyebab dan kapan data muncul', (
     tester,
   ) async {
     await _pumpHistory(tester);
 
-    await tester.tap(find.text('Hipertensi Primer Grade 1'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(MedicalRecordDetailSheet), findsOneWidget);
-    expect(find.text('RINGKASAN'), findsOneWidget);
-    expect(find.text('No. Rekam Medis'), findsOneWidget);
-    expect(find.text('TINDAKAN'), findsOneWidget);
-    expect(find.text('RESEP OBAT'), findsOneWidget);
-    expect(find.text('Amlodipine 10 mg (1x/hari, 30 hari)'), findsOneWidget);
-
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Tutup'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(MedicalRecordDetailSheet), findsNothing);
+    expect(find.text('Belum Ada Riwayat Medis'), findsOneWidget);
+    expect(find.textContaining('kunjungan pertama'), findsOneWidget);
   });
 
   testWidgets('menampilkan ajakan masuk ketika belum ada sesi', (tester) async {
@@ -111,13 +98,7 @@ void main() {
     await _pumpHistory(tester, size: const Size(360, 640));
 
     expect(find.text('Riwayat Medis'), findsOneWidget);
-    expect(find.text('Hipertensi Primer Grade 1'), findsOneWidget);
-    expect(tester.takeException(), isNull);
-
-    await tester.tap(find.text('Hipertensi Primer Grade 1'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(MedicalRecordDetailSheet), findsOneWidget);
+    expect(find.text('Belum Ada Riwayat Medis'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

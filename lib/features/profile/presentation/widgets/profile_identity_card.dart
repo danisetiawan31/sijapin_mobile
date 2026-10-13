@@ -35,7 +35,9 @@ class ProfileIdentityCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      user.fullName,
+                      user.fullName.trim().isEmpty
+                          ? 'Belum diisi'
+                          : user.fullName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(

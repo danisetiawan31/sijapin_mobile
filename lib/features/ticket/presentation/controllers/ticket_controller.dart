@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sijapin_mobile/core/network/server_status_controller.dart';
 import 'package:sijapin_mobile/core/services/screen_brightness_service.dart';
 import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 
@@ -50,19 +50,6 @@ class TicketState {
     );
   }
 }
-
-/// Provider stream perubahan status konektivitas jaringan (PRD FR-06.3)
-final connectivityStreamProvider = StreamProvider<List<ConnectivityResult>>((
-  ref,
-) {
-  try {
-    WidgetsBinding.instance;
-    return Connectivity().onConnectivityChanged;
-  } catch (_) {
-    // Pada lingkungan unit test tanpa platform binding, sediakan stream kosong aman
-    return const Stream.empty();
-  }
-});
 
 /// Controller Riverpod untuk mengelola siklus tiket, ketahanan offline, dan interaksi Kiosk APM
 class TicketController extends Notifier<TicketState> {

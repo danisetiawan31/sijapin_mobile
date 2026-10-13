@@ -6,7 +6,7 @@ class AppConfig {
   static const String appVersion = '1.0.0';
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost/siijapin-v2/',
+    defaultValue: 'http://192.168.15.39:8081/siijapin-v2/',
   );
 
   static const Duration connectTimeout = Duration(seconds: 15);

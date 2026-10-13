@@ -93,6 +93,34 @@ class DateFormatter {
     return hariRelatif(date, reference: reference);
   }
 
+  /// Mengurai tanggal lahir backend SIMRS yang tidak selalu ISO: backend
+  /// mengirim `DD-MM-YYYY` (`DATE_FORMAT(TANGGAL_LAHIR, "%d-%m-%Y")` di
+  /// `M_customer`, mis. `17-05-1990`) yang gagal di `DateTime.tryParse`.
+  /// Menerima `DateTime`, ISO-8601, `DD-MM-YYYY`, dan `DD/MM/YYYY`;
+  /// `null` bila kosong atau tak valid. Satu-satunya parser tanggal lahir
+  /// dari server — jangan pakai `DateTime.tryParse` langsung untuk payload.
+  static DateTime? parseTanggalLahir(Object? raw) {
+    if (raw == null) return null;
+    if (raw is DateTime) return raw;
+    if (raw is! String) return null;
+    final String text = raw.trim();
+    if (text.isEmpty) return null;
+    final DateTime? iso = DateTime.tryParse(text);
+    if (iso != null) return iso;
+    final RegExpMatch? m = RegExp(r'^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$')
+        .firstMatch(text);
+    if (m == null) return null;
+    try {
+      final int day = int.parse(m.group(1)!);
+      final int month = int.parse(m.group(2)!);
+      final int year = int.parse(m.group(3)!);
+      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+      return DateTime(year, month, day);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Umur pasien dalam tahun pada [reference], atau `null` bila tanggal lahir belum diisi.
   static int? umur({required DateTime? birthDate, DateTime? reference}) {
     if (birthDate == null) return null;

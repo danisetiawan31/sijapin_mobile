@@ -7,7 +7,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/offline_banner.dart';
 import '../../../booking/presentation/controllers/doctor_schedule_controller.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/bed_availability_controller.dart';
 import '../widgets/home_widgets.dart';
 
@@ -67,6 +69,8 @@ class HomeScreen extends ConsumerWidget {
           error: (_, _) => AppConstants.defaultActiveDoctors,
         );
 
+    final sessionUser = ref.watch(currentUserProfileProvider);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -85,6 +89,8 @@ class HomeScreen extends ConsumerWidget {
             children: [
               // Header Dinamis (Sapaan + Search + Notifikasi + Login)
               HomeHeader(
+                isLoggedIn: sessionUser != null,
+                userName: sessionUser?.fullName,
                 onLoginTap: () => context.push(AppRoutes.loginPath),
                 onNotificationTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -104,6 +110,9 @@ class HomeScreen extends ConsumerWidget {
                   );
                 },
               ),
+
+              // Status server (hanya tampil saat offline)
+              const OfflineBanner(),
 
               // Konten Scrollable Beranda
               Expanded(
