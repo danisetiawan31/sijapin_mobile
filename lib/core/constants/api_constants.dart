@@ -8,10 +8,16 @@ class ApiConstants {
   static const String register = 'Login/simpan_akun_pr';
   static const String updateProfile = 'Profile/simpan_akun_pr';
 
+  // 1b. REST API v2 (JSON + Bearer; SSOT: PANDUAN_ENDPOINT_FLUTTER.md)
+  static const String apiV1Login = 'api/v1/auth/login';
+  static const String apiV1Profile = 'api/v1/profile';
+  static const String apiV1Logout = 'api/v1/auth/logout';
+
   // 2. Manajemen Anggota Keluarga (m_customer_member via Controller Pasien)
   static const String inputPasien = 'Pasien/input_pasien';
-  static const String listPasien = 'pasien';
   static const String formPasien = 'pasien/form_data';
+  // REST authority (PANDUAN §3): daftar anggota keluarga akun sesi.
+  static const String familyList = 'Daftar_Kunj_Raja';
 
   // 2. Proteksi Anti-CSRF & Cookie Sesi CI3
   static const String csrfTokenKey = 'ci_csrf_token';
@@ -50,9 +56,16 @@ class ApiConstants {
   static const String doctorSchedule = 'Jadwal_Dokter';
 
   // 5. Aspirasi & Saran Pengaduan
+  // REST authority (PANDUAN §7): prefill identitas dari profil login.
+  static const String feedbackPrefill = 'Saran_Pengaduan';
   static const String submitFeedback = 'Saran_Pengaduan/input_saran_pengaduan';
 
   // 6. Check-In Kiosk APM & Status QR (Controller Daftar_Log)
   static const String checkInUpdateStatus = 'Daftar_Log/update_qrcode_status';
   static const String checkInCekStatus = 'Daftar_Log/cek_status_qrcode';
+
+  // 7. Medical Check-Up (PANDUAN §6, REST authority via Accept JSON).
+  static const String mcuPaket = 'Pendaftaran_MCU_Paket';
+  static const String mcuOption = 'Pendaftaran_MCU_Option';
+  static const String mcuCekJadwal = 'Pendaftaran/cek_jadwal';
 }
