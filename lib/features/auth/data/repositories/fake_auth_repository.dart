@@ -3,6 +3,8 @@ import '../../domain/repositories/auth_repository.dart';
 
 /// Implementasi sementara untuk slicing UI dan pengujian.
 /// Tidak melakukan request ke server CI3 dan tidak menyimpan kredensial.
+/// DILARANG di-wire ke provider produksi (`authRepositoryProvider` memakai
+/// [AuthRepositoryImpl]) — login palsu selalu sukses dan melewati server.
 class FakeAuthRepository implements AuthRepository {
   const FakeAuthRepository();
 
@@ -31,4 +33,7 @@ class FakeAuthRepository implements AuthRepository {
       message: 'Pendaftaran dummy berhasil.',
     );
   }
+
+  @override
+  Future<void> logout() async {}
 }
