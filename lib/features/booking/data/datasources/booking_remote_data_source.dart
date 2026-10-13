@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:html/parser.dart' as html_parser;
 import 'package:sijapin_mobile/core/constants/api_constants.dart';
 import 'package:sijapin_mobile/core/network/dio_client.dart';
+import 'package:sijapin_mobile/core/network/json_first.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 
 /// Exception khusus untuk kegagalan komunikasi atau validasi booking server CI3
 class BookingServerException implements Exception {
@@ -59,6 +58,12 @@ abstract interface class IBookingRemoteDataSource {
     String? reason,
   });
 
+  /// Polling status panggilan poli (Daftar_Log/cek_status_qrcode)
+  Future<Map<String, dynamic>> cekStatusQrcode({
+    required String tanggal,
+    required String kodeVerifikasi,
+  });
+
   /// Mengambil riwayat antrean rawat jalan dari server (daftar_log)
   Future<List<Map<String, dynamic>>> fetchBookingHistory();
 }
@@ -75,9 +80,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
       final response = await dioClient.post<dynamic>(
         ApiConstants.bookingListDokter,
         data: FormData.fromMap({'unit': unitId.toString()}),
+        options: jsonAcceptOptions(),
       );
 
-      final data = _parseJsonMap(response.data);
+      final data = parseJsonMap(response.data);
       if (data == null || data['ret'] != 'success') {
         return const [];
       }
@@ -115,9 +121,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
           'unit': unitId.toString(),
           'dokter': doctorId.toString(),
         }),
+        options: jsonAcceptOptions(),
       );
 
-      final data = _parseJsonMap(response.data);
+      final data = parseJsonMap(response.data);
       if (data == null || data['ret'] != 'success') {
         return const {};
       }
@@ -144,9 +151,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
           'unit': unitId.toString(),
           'dokter': doctorId.toString(),
         }),
+        options: jsonAcceptOptions(),
       );
 
-      final data = _parseJsonMap(response.data);
+      final data = parseJsonMap(response.data);
       if (data != null && data['ret'] == 'success') {
         final jam = data['jam_layanan']?.toString();
         if (jam != null && jam.isNotEmpty) {
@@ -164,9 +172,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
     final response = await dioClient.post<dynamic>(
       ApiConstants.bookingInputPasien,
       data: FormData.fromMap(data),
+      options: jsonAcceptOptions(),
     );
 
-    final resData = _parseJsonMap(response.data);
+    final resData = parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
       final msg =
           resData['msg']?.toString() ?? 'Gagal memvalidasi data pasien.';
@@ -179,9 +188,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
     final response = await dioClient.post<dynamic>(
       ApiConstants.bookingInputKunjungan,
       data: FormData.fromMap(data),
+      options: jsonAcceptOptions(),
     );
 
-    final resData = _parseJsonMap(response.data);
+    final resData = parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
       final msg =
           resData['msg']?.toString() ?? 'Gagal memvalidasi pilihan kunjungan.';
@@ -194,9 +204,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
     final response = await dioClient.post<dynamic>(
       ApiConstants.bookingInputPembayaran,
       data: FormData.fromMap({'cara_bayar': caraBayar}),
+      options: jsonAcceptOptions(),
     );
 
-    final resData = _parseJsonMap(response.data);
+    final resData = parseJsonMap(response.data);
     if (resData != null && resData['ret'] == 'fail') {
       final msg =
           resData['msg']?.toString() ?? 'Gagal menetapkan metode penjaminan.';
@@ -211,9 +222,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
     final response = await dioClient.post<dynamic>(
       ApiConstants.bookingInsertRajal,
       data: FormData.fromMap(data),
+      options: jsonAcceptOptions(),
     );
 
-    final resData = _parseJsonMap(response.data);
+    final resData = parseJsonMap(response.data);
     if (resData == null) {
       throw const BookingServerException(
         'Respons server tidak valid saat final transaksi.',
@@ -238,7 +250,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
   @override
   Future<void> finishRegistrationSession() async {
     try {
-      await dioClient.get<dynamic>(ApiConstants.bookingFinishDaftar);
+      await dioClient.get<dynamic>(
+        ApiConstants.bookingFinishDaftar,
+        options: jsonAcceptOptions(),
+      );
     } catch (_) {
       // Abaikan kegagalan non-fatal saat membersihkan sesi
     }
@@ -264,9 +279,10 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
       final response = await dioClient.post<dynamic>(
         ApiConstants.bookingBatalAntrian,
         data: FormData.fromMap(payload),
+        options: jsonAcceptOptions(),
       );
 
-      final resData = _parseJsonMap(response.data);
+      final resData = parseJsonMap(response.data);
       if (resData != null) {
         return resData['success'] == true || resData['ret'] == 'success';
       }
@@ -277,69 +293,90 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> fetchBookingHistory() async {
+  Future<Map<String, dynamic>> cekStatusQrcode({
+    required String tanggal,
+    required String kodeVerifikasi,
+  }) async {
     try {
-      final response = await dioClient.get<String>(
-        ApiConstants.bookingHistory,
-        queryParameters: {'_t': DateTime.now().millisecondsSinceEpoch},
+      final response = await dioClient.post<dynamic>(
+        ApiConstants.checkInCekStatus,
+        data: FormData.fromMap({
+          'tanggal': tanggal,
+          'kode_verifikasi': kodeVerifikasi,
+        }),
+        options: jsonAcceptOptions(),
       );
-
-      final html = response.data;
-      if (html == null || html.isEmpty) return const [];
-
-      final document = html_parser.parse(html);
-      final cards = document.querySelectorAll('.riwayat-cards');
-      final List<Map<String, dynamic>> history = [];
-
-      for (final card in cards) {
-        final btn = card.querySelector('a.btn-select');
-        final href = btn?.attributes['href'] ?? '';
-        final bodyText = card.querySelector('.card-body')?.text.trim() ?? '';
-
-        final isCanceled =
-            card.classes.contains('border-danger') ||
-            card.classes.contains('bg-danger');
-
-        // Parse format URL: Daftar_Log/daftar_detail/{TGL_RENCANA_KUNJUNGAN_2}/{KODE_VERIFIKASI}/{DAFTAR}
-        final match = RegExp(r'daftar_detail/(\d+)/([^/]+)/(\d+)')
-            .firstMatch(href);
-        if (match != null) {
-          final tglRaw = match.group(1) ?? '';
-          final kodeVerifikasi = match.group(2) ?? '';
-          final jenisDaftar = match.group(3) ?? '2';
-
-          history.add({
-            'rawDate': tglRaw,
-            'verificationCode': kodeVerifikasi,
-            'daftarType': jenisDaftar,
-            'description': bodyText,
-            'isCancelled': isCanceled,
-          });
-        }
+      final Map<String, dynamic>? map = parseJsonMap(response.data);
+      if (map == null) return const {};
+      if (isEnvelopeMap(map)) {
+        final Object? payload = unwrapEnvelopeData(map);
+        if (payload is Map<String, dynamic>) return payload;
+        return <String, dynamic>{'data': payload};
       }
-
-      return history;
-    } catch (_) {
-      return const [];
+      return map;
+    } on DioException catch (e) {
+      throw BookingServerException(
+        e.message ?? 'Gagal memeriksa status antrean.',
+        statusCode: e.response?.statusCode,
+      );
     }
   }
 
-  Map<String, dynamic>? _parseJsonMap(dynamic rawData) {
-    if (rawData == null) return null;
-    if (rawData is Map<String, dynamic>) return rawData;
-    if (rawData is Map) {
-      return rawData.map((k, v) => MapEntry(k.toString(), v));
+  @override
+  Future<List<Map<String, dynamic>>> fetchBookingHistory() async {
+    // JSON murni (nol HTML): `GET /Daftar_Log` → envelope
+    // `data: {riwayat: [...], terakhir: [...]}` (`riwayat_normalize_rows`:
+    // baris ternormalisasi lowercase). Diterjemahkan ke kontrakRepo
+    // (`rawDate` DDMMYYYY, dst.) agar repository tak berubah.
+    final response = await dioClient.get<dynamic>(
+      ApiConstants.bookingHistory,
+      queryParameters: {'_t': AppDateTime.now().millisecondsSinceEpoch},
+      options: jsonAcceptOptions(),
+    );
+    final Map<String, dynamic>? map = parseJsonMap(response.data);
+    if (map == null) return const [];
+    final Object? payload = isEnvelopeMap(map)
+        ? unwrapEnvelopeData(map)
+        : map['data'] ?? map;
+    return _historyFromJson(payload);
+  }
+
+  List<Map<String, dynamic>> _historyFromJson(Object? payload) {
+    final Map<String, dynamic> root = payload is Map<String, dynamic>
+        ? payload
+        : const <String, dynamic>{};
+    final List<Object?> raw = <Object?>[
+      if (root['riwayat'] is List) ...(root['riwayat'] as List),
+      if (root['terakhir'] is List) ...(root['terakhir'] as List),
+      if (payload is List) ...payload,
+    ];
+    final List<Map<String, dynamic>> history = [];
+    final Set<String> seenCodes = <String>{};
+    for (final Object? item in raw) {
+      if (item is! Map) continue;
+      final Map<String, dynamic> row = item.map(
+        (Object? k, Object? v) => MapEntry(k.toString(), v),
+      );
+      final String code = (row['kode_verifikasi'] ?? '').toString();
+      if (code.isNotEmpty && !seenCodes.add(code)) continue;
+      final String rawDate = (row['tgl_rencana_kunjungan_raw'] ?? '')
+          .toString();
+      final String tgl = (row['tgl_rencana_kunjungan'] ?? '').toString();
+      history.add(<String, dynamic>{
+        'rawDate': rawDate.isNotEmpty
+            ? rawDate
+            : tgl.replaceAll(RegExp(r'[^0-9]'), ''),
+        'verificationCode': code,
+        'daftarType': (row['daftar'] ?? '2').toString(),
+        'description': <String>[
+          (row['tipe_layanan'] ?? '').toString(),
+          tgl,
+        ].where((String s) => s.isNotEmpty).join(' — '),
+        'isCancelled':
+            row['is_batal'] == true || row['st_batal']?.toString() == '1',
+      });
     }
-    if (rawData is String) {
-      try {
-        final decoded = json.decode(rawData);
-        if (decoded is Map<String, dynamic>) return decoded;
-        if (decoded is Map) {
-          return decoded.map((k, v) => MapEntry(k.toString(), v));
-        }
-      } catch (_) {}
-    }
-    return null;
+    return history;
   }
 }
 
