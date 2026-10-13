@@ -27,7 +27,10 @@ class DioClient {
                connectTimeout: AppConfig.connectTimeout,
                receiveTimeout: AppConfig.receiveTimeout,
                headers: const {
-                 'Accept': 'application/json, text/html, */*',
+                 // Aturan emas 2 PANDUAN: setiap request JSON murni.
+                 // Tanpa ini backend menjawab HTML. Scraping HTML
+                 // dilarang (nol parser) — jangan kembalikan text/html.
+                 'Accept': 'application/json',
                  'Content-Type': 'application/x-www-form-urlencoded',
                  'User-Agent': 'SIIJAPIN-Mobile/1.0.0 (Android/iOS)',
                },
