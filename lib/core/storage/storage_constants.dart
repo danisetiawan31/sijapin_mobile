@@ -10,6 +10,8 @@ class StorageConstants {
 
   // Key Secure Storage (UU PDP)
   static const String keyCustomerSession = 'customer_session_token';
+  static const String keyBearerToken = 'auth_bearer_token';
+  static const String keyBearerExpiresAt = 'auth_bearer_expires_at';
   static const String keyCustomerPhoneNumber = 'customer_phone_number';
   static const String keyCustomerId = 'customer_id';
   static const String keyCustomerFullName = 'customer_full_name';
