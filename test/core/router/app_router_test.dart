@@ -272,7 +272,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Riwayat Medis'), findsOneWidget);
-        expect(find.text('4 catatan rekam medis'), findsOneWidget);
+        expect(find.text('0 catatan rekam medis'), findsOneWidget);
+        expect(find.text('Belum Ada Riwayat Medis'), findsOneWidget);
         expect(find.byType(AppBottomNavBar), findsOneWidget);
       },
     );

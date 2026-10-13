@@ -88,6 +88,11 @@ void main() {
           builder: (context, state) =>
               const Scaffold(body: Center(child: Text('HOME-TEST'))),
         ),
+        GoRoute(
+          path: AppRoutes.loginPath,
+          builder: (context, state) =>
+              const Scaffold(body: Center(child: Text('LOGIN-TEST'))),
+        ),
       ],
     );
   }
@@ -163,6 +168,8 @@ void main() {
     await tapDigits(tester, '123456');
     await tester.pumpAndSettle();
 
+    // PIN benar membuka kunci perangkat; splash selalu ke beranda
+    // (pemulihan sesi mengisi pengguna bila token valid).
     expect(find.text('HOME-TEST'), findsOneWidget);
     expect(fakeAuth.authenticateCalls, 1);
   });
