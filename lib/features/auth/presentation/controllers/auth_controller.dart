@@ -92,7 +92,6 @@ class AuthController extends Notifier<AuthControllerState> {
   Future<AuthResult?> login({
     required String identifier,
     required String password,
-    required bool rememberMe,
   }) async {
     state = state.copyWith(
       status: AuthSubmissionStatus.loading,
@@ -103,7 +102,6 @@ class AuthController extends Notifier<AuthControllerState> {
       final result = await ref.read(loginUseCaseProvider)(
         identifier: identifier,
         password: password,
-        rememberMe: rememberMe,
       );
       if (result.success) {
         // Profil dari repository (REST Bearer) diutamakan; bila kosong,
@@ -162,11 +160,24 @@ class AuthController extends Notifier<AuthControllerState> {
 
         ref.read(activeSessionUserProvider.notifier).setUser(user);
       }
+      String? displayMessage = result.message;
+      if (!result.success) {
+        final bool isTransportOrServer =
+            displayMessage.contains('koneksi internet') ||
+            displayMessage.contains('pemeliharaan') ||
+            displayMessage.contains('Format respons server');
+        if (!isTransportOrServer) {
+          final bool isEmail = identifier.trim().contains('@');
+          displayMessage = isEmail
+              ? 'E-mail atau password yang anda gunakan salah'
+              : 'Nomor Handphone atau password yang anda masukkan salah';
+        }
+      }
       state = state.copyWith(
         status: result.success
             ? AuthSubmissionStatus.success
             : AuthSubmissionStatus.error,
-        message: result.message,
+        message: result.success ? result.message : displayMessage,
       );
       return result;
     } catch (_) {

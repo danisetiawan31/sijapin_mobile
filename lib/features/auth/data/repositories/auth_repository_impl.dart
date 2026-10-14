@@ -34,15 +34,10 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthResult> login({
     required String identifier,
     required String password,
-    required bool rememberMe,
   }) async {
     final AuthRestDataSource? rest = restDataSource;
     if (rest == null) {
-      return _loginViaCi3(
-        identifier: identifier,
-        password: password,
-        rememberMe: rememberMe,
-      );
+      return _loginViaCi3(identifier: identifier, password: password);
     }
     try {
       final Map<String, dynamic> payload = await rest.loginRest(
@@ -79,11 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on DioException catch (e) {
       final failure = DioErrorHandler.handle(e);
       if (failure is NetworkFailure || failure is ServerMaintenanceFailure) {
-        return _loginViaCi3(
-          identifier: identifier,
-          password: password,
-          rememberMe: rememberMe,
-        );
+        return _loginViaCi3(identifier: identifier, password: password);
       }
       return AuthResult(success: false, message: failure.message);
     } catch (_) {
@@ -124,7 +115,6 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<AuthResult> _loginViaCi3({
     required String identifier,
     required String password,
-    required bool rememberMe,
   }) async {
     try {
       final response = await remoteDataSource.login(
