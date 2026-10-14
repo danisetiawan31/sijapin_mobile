@@ -52,7 +52,7 @@ Dio _stubDio(
         );
         final DioException? error = stubError;
         if (error != null) {
-          handler.reject(error, true);
+          handler.reject(error.copyWith(requestOptions: options), true);
           return;
         }
         handler.resolve(
@@ -98,31 +98,67 @@ void main() {
       expect(captured.containsKey('Authorization'), isFalse);
     });
 
-    test('notifies session-expired callback on 401', () async {
-      final _FakeSecureStorage storage = _FakeSecureStorage();
-      bool notified = false;
-      final Dio dio = _stubDio(
-        BearerAuthInterceptor(
-          secureStorage: storage,
-          onSessionExpired: () => notified = true,
-        ),
-        stubError: DioException(
-          requestOptions: RequestOptions(path: '/api/v1/profile'),
-          response: Response<dynamic>(
-            requestOptions: RequestOptions(path: '/api/v1/profile'),
-            statusCode: 401,
-            data: <String, dynamic>{'message': 'Unauthenticated.'},
+    test(
+      'notifies session-expired callback on 401 when request had Bearer token',
+      () async {
+        final _FakeSecureStorage storage = _FakeSecureStorage();
+        storage.seed('tok-active');
+        bool notified = false;
+        final Dio dio = _stubDio(
+          BearerAuthInterceptor(
+            secureStorage: storage,
+            onSessionExpired: () => notified = true,
           ),
-          type: DioExceptionType.badResponse,
-        ),
-      );
+          stubError: DioException(
+            requestOptions: RequestOptions(path: '/api/v1/profile'),
+            response: Response<dynamic>(
+              requestOptions: RequestOptions(path: '/api/v1/profile'),
+              statusCode: 401,
+              data: <String, dynamic>{'message': 'Unauthenticated.'},
+            ),
+            type: DioExceptionType.badResponse,
+          ),
+        );
 
-      await expectLater(
-        dio.get<dynamic>('/api/v1/profile'),
-        throwsA(isA<DioException>()),
-      );
-      expect(notified, isTrue);
-    });
+        await expectLater(
+          dio.get<dynamic>('/api/v1/profile'),
+          throwsA(isA<DioException>()),
+        );
+        expect(notified, isTrue);
+      },
+    );
+
+    test(
+      'does not notify session-expired callback on 401 without Bearer token',
+      () async {
+        final _FakeSecureStorage storage = _FakeSecureStorage();
+        // Storage kosong (tanpa token, e.g. login endpoint)
+        bool notified = false;
+        final Dio dio = _stubDio(
+          BearerAuthInterceptor(
+            secureStorage: storage,
+            onSessionExpired: () => notified = true,
+          ),
+          stubError: DioException(
+            requestOptions: RequestOptions(path: '/api/v1/auth/login'),
+            response: Response<dynamic>(
+              requestOptions: RequestOptions(path: '/api/v1/auth/login'),
+              statusCode: 401,
+              data: <String, dynamic>{
+                'message': 'Nomor telepon atau password salah.',
+              },
+            ),
+            type: DioExceptionType.badResponse,
+          ),
+        );
+
+        await expectLater(
+          dio.get<dynamic>('/api/v1/auth/login'),
+          throwsA(isA<DioException>()),
+        );
+        expect(notified, isFalse);
+      },
+    );
 
     test('does not notify on non-401 transport errors', () async {
       final _FakeSecureStorage storage = _FakeSecureStorage();

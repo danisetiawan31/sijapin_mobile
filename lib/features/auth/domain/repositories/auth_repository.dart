@@ -5,7 +5,6 @@ abstract interface class AuthRepository {
   Future<AuthResult> login({
     required String identifier,
     required String password,
-    required bool rememberMe,
   });
 
   Future<AuthResult> register({

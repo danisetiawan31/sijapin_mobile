@@ -575,9 +575,15 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           decoration: const InputDecoration(
-                            labelText: 'Nomor Telepon',
+                            labelText: 'Nomor Telepon *',
                             hintText: '0812xxxxxxxx',
                           ),
+                          validator: (String? value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Nomor telepon wajib diisi';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],

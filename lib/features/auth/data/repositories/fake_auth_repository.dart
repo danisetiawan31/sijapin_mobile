@@ -12,7 +12,6 @@ class FakeAuthRepository implements AuthRepository {
   Future<AuthResult> login({
     required String identifier,
     required String password,
-    required bool rememberMe,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     return const AuthResult(success: true, message: 'Login dummy berhasil.');

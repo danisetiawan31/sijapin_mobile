@@ -9,6 +9,8 @@ import '../../storage/storage_constants.dart';
 /// setiap request; 401 hanya memberi sinyal (tanpa menghapus token —
 /// penghapusan milik alur logout).
 class BearerAuthInterceptor extends Interceptor {
+  static const String hadBearerKey = 'sijapin_had_bearer';
+
   final ISecureStorage secureStorage;
   final void Function()? onSessionExpired;
 
@@ -25,6 +27,7 @@ class BearerAuthInterceptor extends Interceptor {
       );
       if (token != null && token.isNotEmpty) {
         options.headers['Authorization'] = 'Bearer $token';
+        options.extra[hadBearerKey] = true;
       }
     } catch (_) {
       // Tanpa token lanjut sebagai tamu; endpoint publik tetap terjangkau.
@@ -34,7 +37,13 @@ class BearerAuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
+    final bool hadBearer =
+        err.requestOptions.extra[hadBearerKey] == true ||
+        ((err.requestOptions.headers['Authorization'] as String?)?.startsWith(
+              'Bearer ',
+            ) ??
+            false);
+    if (err.response?.statusCode == 401 && hadBearer) {
       onSessionExpired?.call();
     }
     handler.next(err);

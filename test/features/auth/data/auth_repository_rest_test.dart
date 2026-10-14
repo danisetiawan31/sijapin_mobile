@@ -213,7 +213,6 @@ void main() {
       final result = await repository.login(
         identifier: '0812000000',
         password: 'rahasia',
-        rememberMe: true,
       );
 
       expect(result.success, isTrue);
@@ -243,7 +242,6 @@ void main() {
         final result = await repository.login(
           identifier: '0812000000',
           password: 'rahasia',
-          rememberMe: true,
         );
 
         expect(result.success, isTrue);
@@ -262,7 +260,6 @@ void main() {
         final result = await repository.login(
           identifier: '0812000000',
           password: 'salah',
-          rememberMe: false,
         );
 
         expect(result.success, isFalse);
@@ -279,7 +276,6 @@ void main() {
       final result = await repository.login(
         identifier: '0812000000',
         password: 'rahasia',
-        rememberMe: true,
       );
 
       expect(result.success, isTrue);
@@ -299,7 +295,6 @@ void main() {
       final result = await repository.login(
         identifier: '0812000000',
         password: 'rahasia',
-        rememberMe: true,
       );
 
       expect(result.success, isTrue);
@@ -325,7 +320,6 @@ void main() {
       final result = await repository.login(
         identifier: '0812000000',
         password: 'rahasia',
-        rememberMe: false,
       );
 
       expect(result.success, isTrue);

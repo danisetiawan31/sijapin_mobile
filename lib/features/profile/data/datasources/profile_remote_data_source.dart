@@ -281,12 +281,27 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
 
   @override
   Future<List<FamilyMember>?> fetchFamilyMembers() async {
-    // JSON murni (nol HTML, PANDUAN §3): `GET /Daftar_Kunj_Raja` → envelope
-    // `data: {member: [...]}` (baris `M_member::get_member`, kunci UPPERCASE).
-    // Gagal (transport/definitif) → null agar UI menampilkan status kosong.
+    // Tahap 1 — Endpoint resmi Manajemen Anggota Keluarga: `GET /pasien`
+    // (Postman folder 03 & Controller Pasien.php: data: {anggota: [...]}).
     try {
       final response = await dioClient.get<dynamic>(
-        ApiConstants.familyList,
+        ApiConstants.listPasien,
+        options: jsonAcceptOptions(),
+      );
+      final Map<String, dynamic>? map = parseJsonMap(response.data);
+      if (map != null) {
+        final Object? payload = isEnvelopeMap(map)
+            ? unwrapEnvelopeData(map)
+            : map['data'] ?? map;
+        final list = _membersFromJson(payload);
+        if (list != null) return list;
+      }
+    } catch (_) {}
+
+    // Tahap 2 — Fallback ke `GET /Daftar_Kunj_Raja` (data: {member: [...]})
+    try {
+      final response = await dioClient.get<dynamic>(
+        ApiConstants.bookingFamilyList,
         options: jsonAcceptOptions(),
       );
       final Map<String, dynamic>? map = parseJsonMap(response.data);
@@ -304,7 +319,7 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
     final Map<String, dynamic> root = payload is Map<String, dynamic>
         ? payload
         : const <String, dynamic>{};
-    final Object? wrapped = root['member'];
+    final Object? wrapped = root['anggota'] ?? root['member'];
     final List<Object?> raw = <Object?>[
       if (wrapped is List) ...wrapped,
       if (payload is List) ...payload,

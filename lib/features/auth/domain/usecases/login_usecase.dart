@@ -9,12 +9,7 @@ class LoginUseCase {
   Future<AuthResult> call({
     required String identifier,
     required String password,
-    required bool rememberMe,
   }) {
-    return _repository.login(
-      identifier: identifier,
-      password: password,
-      rememberMe: rememberMe,
-    );
+    return _repository.login(identifier: identifier, password: password);
   }
 }
