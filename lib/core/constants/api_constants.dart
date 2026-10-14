@@ -16,8 +16,10 @@ class ApiConstants {
   // 2. Manajemen Anggota Keluarga (m_customer_member via Controller Pasien)
   static const String inputPasien = 'Pasien/input_pasien';
   static const String formPasien = 'pasien/form_data';
-  // REST authority (PANDUAN §3): daftar anggota keluarga akun sesi.
-  static const String familyList = 'Daftar_Kunj_Raja';
+  // REST authority (Postman 03 & Web-App): daftar anggota keluarga akun sesi.
+  static const String listPasien = 'pasien';
+  static const String familyList = 'pasien';
+  static const String bookingFamilyList = 'Daftar_Kunj_Raja';
 
   // 2. Proteksi Anti-CSRF & Cookie Sesi CI3
   static const String csrfTokenKey = 'ci_csrf_token';
