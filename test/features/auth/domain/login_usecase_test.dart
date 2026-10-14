@@ -10,7 +10,6 @@ void main() {
     final result = await useCase(
       identifier: 'test@example.com',
       password: 'dummy-password',
-      rememberMe: false,
     );
 
     expect(result.success, isTrue);

@@ -311,6 +311,38 @@ void main() {
         expect(members[1].gender, equals('P'));
       },
     );
+
+    test('fetchFamilyMembers mem-parsing envelope data.anggota dari /pasien (Postman 03)', () async {
+      mockDioClient.nextResponseData = <String, dynamic>{
+        'status': 200,
+        'success': true,
+        'message': 'Daftar anggota keluarga berhasil dimuat.',
+        'data': <String, dynamic>{
+          'anggota': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'member_id': '201',
+              'nomr': '098765',
+              'nama_pasien': 'Budi Santoso',
+              'tmp_lahir': 'Tangerang',
+              'tgl_lahir': '10',
+              'bln_lahir': '08',
+              'thn_lahir': '1990',
+              'jns_kelamin': 'L',
+              'nik': '3671041008900001',
+            },
+          ],
+        },
+      };
+
+      final members = await dataSource.fetchFamilyMembers();
+
+      expect(mockDioClient.lastPath, equals(ApiConstants.listPasien));
+      expect(members, isNotNull);
+      expect(members!.length, equals(1));
+      expect(members[0].id, equals('201'));
+      expect(members[0].fullName, equals('Budi Santoso'));
+      expect(members[0].medicalRecordNumber, equals('098765'));
+    });
   });
 
   group('FamilyMemberRepositoryImpl with Remote Data Source Tests', () {

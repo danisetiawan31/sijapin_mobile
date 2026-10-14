@@ -114,7 +114,6 @@ void main() {
       final result = await repository.login(
         identifier: '081234567890',
         password: 'password123',
-        rememberMe: true,
       );
 
       expect(result.success, isTrue);
@@ -137,7 +136,6 @@ void main() {
         final result = await repository.login(
           identifier: '081234567890',
           password: 'wrong-password',
-          rememberMe: false,
         );
 
         expect(result.success, isFalse);
@@ -151,7 +149,6 @@ void main() {
       final result = await repository.login(
         identifier: '081234567890',
         password: 'password123',
-        rememberMe: false,
       );
 
       expect(result.success, isFalse);
