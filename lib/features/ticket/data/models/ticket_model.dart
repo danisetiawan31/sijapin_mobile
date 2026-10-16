@@ -1,4 +1,5 @@
 import '../../domain/entities/ticket.dart';
+import '../../../../core/utils/app_date_time.dart';
 
 /// Data Transfer Object (DTO) untuk serialisasi dan persistensi tiket di Hive NoSQL
 class TicketModel {
@@ -149,7 +150,7 @@ class TicketModel {
           map['clinicLocation'] as String? ?? 'Lantai 2 - Gedung Rawat Jalan',
       scheduledDate:
           DateTime.tryParse(map['scheduledDate'] as String? ?? '') ??
-          DateTime.now(),
+          AppDateTime.now(),
       scheduledTime: map['scheduledTime'] as String? ?? '',
       estimatedMinutes: (map['estimatedMinutes'] as num?)?.toInt() ?? 0,
       nowServingNumber: map['nowServingNumber'] as String? ?? '',

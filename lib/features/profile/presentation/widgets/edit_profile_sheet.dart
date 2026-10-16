@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
@@ -60,7 +61,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   }
 
   Future<void> _pickBirthDate() async {
-    final DateTime now = DateTime.now();
+    final DateTime now = AppDateTime.now();
     // Best practice UX medis: Jika tanggal belum terisi, arahkan picker langsung
     // ke mode pemilihan TAHUN (DatePickerMode.year) dengan fokus pada usia dewasa muda (20 tahun lalu).
     final DateTime initial =
