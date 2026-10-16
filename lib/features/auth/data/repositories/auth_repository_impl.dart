@@ -150,6 +150,12 @@ class AuthRepositoryImpl implements AuthRepository {
           success: false,
           message: 'Nomor telepon atau kata sandi Anda salah.',
         );
+      } else if (loginCode == 3 || loginCode == '3') {
+        // Kunci sementara setelah 5x gagal dalam 5 menit (PANDUAN §1).
+        final String msg =
+            response['msg']?.toString() ??
+            'Terlalu banyak percobaan login gagal. Coba lagi setelah 5 menit.';
+        return AuthResult(success: false, message: msg);
       } else {
         final String msg =
             response['msg']?.toString() ??
