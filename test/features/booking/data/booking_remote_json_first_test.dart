@@ -9,6 +9,7 @@ class _MockDioClient implements DioClient {
   final List<Options?> seenOptions = [];
   dynamic nextResponseData;
   bool shouldThrowTransport = false;
+  int? throwStatusCode;
 
   @override
   Future<Response<T>> post<T>(
@@ -43,6 +44,15 @@ class _MockDioClient implements DioClient {
     ProgressCallback? onReceiveProgress,
   }) async {
     seenOptions.add(options);
+    if (throwStatusCode != null) {
+      throw DioException(
+        requestOptions: RequestOptions(path: path),
+        response: Response<T>(
+          requestOptions: RequestOptions(path: path),
+          statusCode: throwStatusCode,
+        ),
+      );
+    }
     if (shouldThrowTransport) {
       throw DioException(
         requestOptions: RequestOptions(path: path),
@@ -170,6 +180,72 @@ void main() {
       };
       expect(() => ds.fetchBookingHistory(), throwsA(isA<ApiException>()));
     });
+
+    test(
+      'detail tiket: envelope data.tiket rajal dipetakan apa adanya',
+      () async {
+        mock.nextResponseData = <String, dynamic>{
+          'status': 200,
+          'success': true,
+          'message': 'Tiket antrean rawat jalan berhasil dimuat.',
+          'data': <String, dynamic>{
+            'tiket': <String, dynamic>{
+              'tipe': 'Rawat Jalan',
+              'kode_booking': '2026101500042',
+              'kode_verifikasi': 'A1B2C3',
+              'no_antrian': '7',
+              'nama_klinik': 'Poli Mata',
+              'nama_dokter': 'dr. Hendra, Sp.M.',
+              'jam_layanan': '08:00 - 12:00',
+              'st_batal': '0',
+              'is_batal': false,
+              'st_qrcode': '0',
+            },
+          },
+        };
+        final calls = <String>[];
+        final ds2 = BookingRemoteDataSource(
+          dioClient: _PathRecordingDioClient(mock, calls),
+        );
+        final tiket = await ds2.fetchTicketDetail(
+          tanggal8digit: '15102026',
+          kodeVerifikasi: 'A1B2C3',
+        );
+        expect(
+          calls.single,
+          equals('${ApiConstants.bookingHistoryDetail}/15102026/A1B2C3/2'),
+        );
+        expect(tiket?['nama_klinik'], equals('Poli Mata'));
+        expect(tiket?['kode_verifikasi'], equals('A1B2C3'));
+        expect(
+          mock.seenOptions.last?.headers?['Accept'],
+          equals('application/json'),
+        );
+      },
+    );
+
+    test('detail tiket: 404 kembali null (tiket lokal dipakai)', () async {
+      mock.throwStatusCode = 404;
+      final tiket = await ds.fetchTicketDetail(
+        tanggal8digit: '15102026',
+        kodeVerifikasi: 'TAKADA',
+      );
+      expect(tiket, isNull);
+    });
+
+    test(
+      'detail tiket: transport non-404 dilempar BookingServerException',
+      () async {
+        mock.shouldThrowTransport = true;
+        expect(
+          () => ds.fetchTicketDetail(
+            tanggal8digit: '15102026',
+            kodeVerifikasi: 'A1B2C3',
+          ),
+          throwsA(isA<BookingServerException>()),
+        );
+      },
+    );
   });
 }
 

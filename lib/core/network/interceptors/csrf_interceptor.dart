@@ -4,6 +4,8 @@ import '../../constants/api_constants.dart';
 
 /// Interceptor untuk mengekstrak token anti-CSRF CodeIgniter 3 secara otomatis dari respons server
 /// dan menyuntikkannya ke setiap payload mutasi bertipe POST/PUT/DELETE.
+/// Jalur `Accept: application/json` lolos CSRF tanpa token (bypass MY_Security);
+/// injeksi ini hanya menjaga kompatibilitas form web biasa.
 class CsrfInterceptor extends Interceptor {
   String? _currentToken;
   final String csrfKey;

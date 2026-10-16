@@ -43,8 +43,11 @@ void main() {
     test(
       'canCancel returns true when before deadline and status is upcoming',
       () {
-        // Waktu periksa di masa depan
-        expect(sampleTicket.canCancel, isTrue);
+        // Waktu periksa di masa depan (relatif, bukan tanggal mati).
+        final futureTicket = sampleTicket.copyWith(
+          scheduledDate: AppDateTime.now().add(const Duration(days: 3)),
+        );
+        expect(futureTicket.canCancel, isTrue);
 
         // Jika sudah dibatalkan, canCancel harus false
         final cancelled = sampleTicket.copyWith(status: TicketStatus.cancelled);

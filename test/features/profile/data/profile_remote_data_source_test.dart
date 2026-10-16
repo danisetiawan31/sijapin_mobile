@@ -299,7 +299,7 @@ void main() {
 
         final members = await dataSource.fetchFamilyMembers();
 
-        expect(mockDioClient.lastPath, equals(ApiConstants.familyList));
+        expect(mockDioClient.lastPath, equals(ApiConstants.listPasien));
         expect(members, isNotNull);
         expect(members!.length, equals(2));
         expect(members[0].id, equals('101'));

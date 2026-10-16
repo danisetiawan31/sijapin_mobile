@@ -8,6 +8,9 @@ class ApiConstants {
   static const String register = 'Login/simpan_akun_pr';
   static const String updateProfile = 'Profile/simpan_akun_pr';
 
+  // Baca profil sesi CI3 (Postman "Get Profil Akun", JSON di `data.profil`).
+  static const String legacyProfile = 'profile';
+
   // 1b. REST API v2 (JSON + Bearer; SSOT: PANDUAN_ENDPOINT_FLUTTER.md)
   static const String apiV1Login = 'api/v1/auth/login';
   static const String apiV1Profile = 'api/v1/profile';
@@ -18,7 +21,6 @@ class ApiConstants {
   static const String formPasien = 'pasien/form_data';
   // REST authority (Postman 03 & Web-App): daftar anggota keluarga akun sesi.
   static const String listPasien = 'pasien';
-  static const String familyList = 'pasien';
   static const String bookingFamilyList = 'Daftar_Kunj_Raja';
 
   // 2. Proteksi Anti-CSRF & Cookie Sesi CI3
@@ -50,6 +52,8 @@ class ApiConstants {
   static const String bookingBatalAntrian = 'Daftar_Log/daftar_batal';
   // Riwayat Antrean Pasien
   static const String bookingHistory = 'daftar_log';
+  // Detail tiket + QR (`Daftar_Log::daftar_detail`, envelope `data.tiket`).
+  static const String bookingHistoryDetail = 'Daftar_Log/daftar_detail';
 
   // 4. Layanan Publik (Tanpa Login)
   // Ketersediaan Kamar Rawat Inap (View HTML Scraping)
