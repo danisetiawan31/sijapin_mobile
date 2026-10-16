@@ -24,6 +24,21 @@ abstract class TicketRepository {
   /// Memperbarui status tiket lokal setelah konfirmasi kehadiran di Kiosk APM (Task 2)
   Future<void> checkInTicket(String bookingCode);
 
+  /// Detail tiket server (`daftar_detail`, envelope `data.tiket`).
+  /// Null bila tak ada (404/kosong); melempar hanya saat transport gagal.
+  Future<Map<String, dynamic>?> getTicketDetail({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  });
+
+  /// Status penerbitan QR server (`cek_status_qrcode`, flat `st_qrcode`).
+  /// True hanya bila `st_qrcode == 1`; tak pernah melempar (aman best-effort).
+  Future<bool> pollQrStatus({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+  });
+
   /// Menyinkronkan aksi tertunda (seperti pembatalan offline) ke backend CI3 saat koneksi pulih.
   /// Mengembalikan jumlah aksi yang berhasil disinkronkan.
   Future<int> syncPendingOfflineActions();

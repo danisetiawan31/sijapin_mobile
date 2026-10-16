@@ -95,6 +95,30 @@ class _ApmQrSheetState extends ConsumerState<ApmQrSheet> {
               ),
               const SizedBox(height: 16),
 
+              // Status penerbitan server: hanya tampil bila kiosk sudah bisa melihat QR ini
+              if (ticketState.qrIssuedByServer)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.verified_rounded,
+                        size: 14,
+                        color: AppColors.clinicalTeal,
+                      ),
+                      SizedBox(width: 6),
+                      Text(
+                        'QR sudah terbit di server, siap dipindai kiosk.',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.clinicalTealDeep,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Tombol Tutup
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
