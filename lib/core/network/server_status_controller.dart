@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'api_client.dart';
+import '../utils/app_date_time.dart';
 
 /// Keterjangkauan server SIIJAPIN dari perangkat.
 enum ServerStatus {
@@ -85,7 +86,7 @@ class ServerStatusController extends Notifier<ServerStatus> {
   }
 
   Future<void> _probe({bool force = false}) async {
-    final DateTime now = DateTime.now();
+    final DateTime now = AppDateTime.now();
     final DateTime? lastProbeAt = _lastProbeAt;
     if (!force &&
         lastProbeAt != null &&
@@ -95,7 +96,7 @@ class ServerStatusController extends Notifier<ServerStatus> {
     final int generation = _generation;
     final bool reachable = await _checkReachable();
     if (!ref.mounted || generation != _generation) return;
-    _lastProbeAt = DateTime.now();
+    _lastProbeAt = AppDateTime.now();
     state = reachable ? ServerStatus.online : ServerStatus.offline;
   }
 
