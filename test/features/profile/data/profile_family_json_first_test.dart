@@ -73,7 +73,7 @@ void main() {
         ],
       };
       final members = await ds.fetchFamilyMembers();
-      expect(mock.paths.first, equals(ApiConstants.familyList));
+      expect(mock.paths.first, equals(ApiConstants.listPasien));
       expect(members, hasLength(1));
       expect(members!.first.fullName, equals('Anak Pasien'));
       expect(members.first.medicalRecordNumber, equals('718893'));
