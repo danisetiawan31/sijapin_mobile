@@ -146,7 +146,7 @@ class ProfileRemoteDataSource implements IProfileRemoteDataSource {
     }
     // Tahap 2 — CI3 cookie: `GET /Profile` JSON murni (nol HTML).
     final response = await dioClient.get<dynamic>(
-      'profile',
+      ApiConstants.legacyProfile,
       options: jsonAcceptOptions(),
     );
     final Map<String, dynamic>? map = parseJsonMap(response.data);
