@@ -53,7 +53,8 @@ class McuPackageItem {
 ///
 /// REST authority (PANDUAN §6): katalog dimuat dari
 /// `GET /Pendaftaran_MCU_Paket` + `Accept: application/json`; paket filed
-/// statis di bawah dipakai sebagai fallback offline.
+/// statis di bawah jadi basis merge agar rincian tindakan tetap tampil
+/// saat remote tidak mengirimkannya, sekaligus fallback offline.
 class McuCatalogScreen extends ConsumerStatefulWidget {
   const McuCatalogScreen({super.key});
 
@@ -75,11 +76,76 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
       final rows = await ref.read(mcuRemoteDataSourceProvider).fetchPaketList();
       if (!mounted || rows.isEmpty) return;
       setState(() {
-        _packages = rows.map(_packageFromRow).toList();
+        _packages = _mergeWithFallback(rows);
       });
     } catch (_) {
       // Galat transport/definitif: tetap tampilkan paket filed-statis.
     }
+  }
+
+  static List<McuPackageItem> _mergeWithFallback(
+    List<Map<String, dynamic>> rows,
+  ) {
+    final List<McuPackageItem> remote = rows.map(_packageFromRow).toList();
+    final List<bool> consumed = List<bool>.filled(remote.length, false);
+    final List<McuPackageItem> merged = <McuPackageItem>[];
+    for (final McuPackageItem base in McuCatalogScreenData.dummyPackages) {
+      final int index = _matchIndex(remote, base, consumed);
+      if (index == -1) {
+        merged.add(base);
+        continue;
+      }
+      consumed[index] = true;
+      merged.add(_mergePackage(remote: remote[index], fallback: base));
+    }
+    for (int i = 0; i < remote.length; i++) {
+      if (!consumed[i]) merged.add(remote[i]);
+    }
+    return merged;
+  }
+
+  static int _matchIndex(
+    List<McuPackageItem> remote,
+    McuPackageItem base,
+    List<bool> consumed,
+  ) {
+    for (int i = 0; i < remote.length; i++) {
+      if (!consumed[i] && remote[i].kodeTarif == base.kodeTarif) return i;
+    }
+    final String baseName = base.name.toLowerCase();
+    for (int i = 0; i < remote.length; i++) {
+      if (!consumed[i] && remote[i].name.toLowerCase() == baseName) return i;
+    }
+    return -1;
+  }
+
+  static McuPackageItem _mergePackage({
+    required McuPackageItem remote,
+    required McuPackageItem fallback,
+  }) {
+    final bool hasRemoteName =
+        remote.name.isNotEmpty && remote.name != 'Paket MCU';
+    final bool hasRemotePrice = remote.price > 0;
+    final bool hasRemoteDescription = remote.description.trim().isNotEmpty;
+    final int price = hasRemotePrice ? remote.price : fallback.price;
+    return McuPackageItem(
+      kodeTarif: remote.kodeTarif.isNotEmpty
+          ? remote.kodeTarif
+          : fallback.kodeTarif,
+      mcuId: remote.mcuId != 0 ? remote.mcuId : fallback.mcuId,
+      name: hasRemoteName ? remote.name : fallback.name,
+      price: price,
+      formattedPrice: hasRemotePrice
+          ? remote.formattedPrice
+          : fallback.formattedPrice,
+      badgeLabel: fallback.badgeLabel,
+      description: hasRemoteDescription
+          ? remote.description
+          : fallback.description,
+      examinationItems: fallback.examinationItems.isNotEmpty
+          ? fallback.examinationItems
+          : remote.examinationItems,
+    );
   }
 
   static McuPackageItem _packageFromRow(Map<String, dynamic> row) {
@@ -88,6 +154,7 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
     final int tarifId =
         int.tryParse(row['tarif_id']?.toString() ?? '') ??
         int.tryParse(row['mcu_id']?.toString() ?? '') ??
+        int.tryParse(row['id']?.toString() ?? '') ??
         0;
     final int price =
         int.tryParse(
@@ -97,17 +164,23 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
           row['tarif']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
         ) ??
         0;
-    final String fullTarif = (row['nama_tarif'] ?? '').toString().trim();
+    final String description = (row['deskripsi'] ?? row['nama_tarif'] ?? '')
+        .toString()
+        .trim();
     final String shortName = (row['nama_paket'] ?? '').toString().trim();
+    final String rawKode = (row['kode_tarif'] ?? row['KODE_TARIF'] ?? '')
+        .toString()
+        .trim();
     return McuPackageItem(
-      kodeTarif: (row['kode_tarif'] ?? row['KODE_TARIF'] ?? '$tarifId')
-          .toString(),
+      kodeTarif: rawKode.isNotEmpty
+          ? rawKode
+          : (tarifId != 0 ? '$tarifId' : ''),
       mcuId: tarifId,
       name: shortName.isNotEmpty ? shortName : 'Paket MCU',
       price: price,
       formattedPrice: _formatRupiah(price),
       badgeLabel: 'MCU',
-      description: fullTarif,
+      description: description,
       examinationItems: const [],
     );
   }
@@ -371,14 +444,16 @@ Widget buildCatalogScaffold(
                                   color: AppColors.brandDarkEspresso,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Kode Tarif: ${package.kodeTarif}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textMuted,
+                              if (package.kodeTarif.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Kode Tarif: ${package.kodeTarif}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
@@ -393,62 +468,64 @@ Widget buildCatalogScaffold(
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1, color: AppColors.borderSubtle),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Rincian Tindakan Pemeriksaan:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.brandDarkEspresso,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ...package.examinationItems.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              size: 16,
-                              color: AppColors.successEmerald,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                item.namaTindakan,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.brandCreamLinen,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                item.ruang,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.brandWarmBronze,
-                                ),
-                              ),
-                            ),
-                          ],
+                    if (package.examinationItems.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      const Divider(height: 1, color: AppColors.borderSubtle),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Rincian Tindakan Pemeriksaan:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.brandDarkEspresso,
                         ),
                       ),
-                    ),
+                      const SizedBox(height: 6),
+                      ...package.examinationItems.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 16,
+                                color: AppColors.successEmerald,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item.namaTindakan,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.brandCreamLinen,
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  item.ruang,
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.brandWarmBronze,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
