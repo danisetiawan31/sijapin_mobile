@@ -98,6 +98,7 @@ Map<String, dynamic> normalizeWriteResult(Map<String, dynamic> map) {
         map['msg']?.toString() ?? map['message']?.toString() ?? '';
     final Map<String, dynamic> out = <String, dynamic>{'ret': ret, 'msg': msg};
     if (map.containsKey('data')) out['data'] = map['data'];
+    if (map.containsKey('member_id')) out['member_id'] = map['member_id'];
     return out;
   }
   if (map['success'] is bool) {

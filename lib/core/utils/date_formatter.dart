@@ -85,7 +85,7 @@ class DateFormatter {
   /// Label relatif ringkas untuk pembaruan data: `Baru saja`, `N mnt lalu`,
   /// `N jam lalu`, atau label hari dari [hariRelatif] untuk selisih ≥ 1 hari.
   static String waktuRelatif(DateTime date, {DateTime? reference}) {
-    final DateTime now = reference ?? DateTime.now();
+    final DateTime now = reference ?? AppDateTime.now();
     final Duration diff = now.difference(date);
     if (diff.inMinutes < 1) return 'Baru saja';
     if (diff.inMinutes < 60) return '${diff.inMinutes} mnt lalu';

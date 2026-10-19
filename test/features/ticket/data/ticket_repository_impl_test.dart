@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sijapin_mobile/features/booking/data/datasources/booking_remote_data_source.dart';
 import 'package:sijapin_mobile/features/ticket/data/datasources/ticket_local_data_source.dart';
 import 'package:sijapin_mobile/features/ticket/data/models/ticket_model.dart';
 import 'package:sijapin_mobile/features/ticket/data/repositories/ticket_repository_impl.dart';
@@ -33,6 +34,89 @@ class FakeTicketLocalDataSource implements ITicketLocalDataSource {
   Future<void> clearAllTickets() async {
     _storage.clear();
   }
+}
+
+class StubBookingRemoteDataSource implements IBookingRemoteDataSource {
+  String? lastDetailArgs;
+  Map<String, dynamic>? detailResult;
+  bool throwOnDetail = false;
+  Map<String, dynamic> qrResult = const {'success': true, 'st_qrcode': '0'};
+  bool throwOnQr = false;
+  String? lastQrTanggal;
+
+  @override
+  Future<Map<String, dynamic>?> fetchTicketDetail({
+    required String tanggal8digit,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  }) async {
+    lastDetailArgs = '$tanggal8digit/$kodeVerifikasi/$daftarType';
+    if (throwOnDetail) {
+      throw const BookingServerException('Transport putus.');
+    }
+    return detailResult;
+  }
+
+  @override
+  Future<Map<String, dynamic>> cekStatusQrcode({
+    required String tanggal,
+    required String kodeVerifikasi,
+  }) async {
+    lastQrTanggal = tanggal;
+    if (throwOnQr) {
+      throw const BookingServerException('Transport putus.');
+    }
+    return qrResult;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchDoctorsByUnit(int unitId) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Map<String, dynamic>> fetchDoctorSchedule({
+    required int unitId,
+    required int doctorId,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<String> fetchJamPelayanan({
+    required String tglKunjungan,
+    required int unitId,
+    required int doctorId,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<void> submitPatientStep(Map<String, dynamic> data) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> submitVisitStep(Map<String, dynamic> data) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> submitPaymentStep(String caraBayar) =>
+      throw UnimplementedError();
+
+  @override
+  Future<Map<String, dynamic>> insertDaftarRajal(Map<String, dynamic> data) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> finishRegistrationSession() => throw UnimplementedError();
+
+  @override
+  Future<bool> cancelBooking({
+    required String customerId,
+    required String memberId,
+    required String tanggal,
+    String? bookingCode,
+    String? reason,
+  }) => throw UnimplementedError();
+
+  @override
+  Future<List<Map<String, dynamic>>> fetchBookingHistory() =>
+      throw UnimplementedError();
 }
 
 void main() {
@@ -121,6 +205,77 @@ void main() {
         final all = await repository.getAllTickets();
         expect(all.first.isCheckedIn, isTrue);
         expect(all.first.checkInTime, isNotNull);
+      },
+    );
+
+    test('getTicketDetail memakai segmen DDMMYYYY + kode + daftar', () async {
+      final stub = StubBookingRemoteDataSource()
+        ..detailResult = {'nama_klinik': 'Poli Mata'};
+      final remoteRepo = TicketRepositoryImpl(
+        localDataSource: fakeDataSource,
+        bookingRemoteDataSource: stub,
+      );
+      final detail = await remoteRepo.getTicketDetail(
+        scheduledDate: DateTime(2026, 10, 15),
+        kodeVerifikasi: 'A1B2C3',
+      );
+      expect(stub.lastDetailArgs, equals('15102026/A1B2C3/2'));
+      expect(detail?['nama_klinik'], equals('Poli Mata'));
+    });
+
+    test('getTicketDetail null tanpa remote (murni lokal)', () async {
+      final detail = await repository.getTicketDetail(
+        scheduledDate: DateTime(2026, 10, 15),
+        kodeVerifikasi: 'A1B2C3',
+      );
+      expect(detail, isNull);
+    });
+
+    test('pollQrStatus true hanya saat st_qrcode 1', () async {
+      final stub = StubBookingRemoteDataSource()
+        ..qrResult = const {'success': true, 'st_qrcode': '1'};
+      final remoteRepo = TicketRepositoryImpl(
+        localDataSource: fakeDataSource,
+        bookingRemoteDataSource: stub,
+      );
+      final issued = await remoteRepo.pollQrStatus(
+        scheduledDate: DateTime(2026, 10, 15),
+        kodeVerifikasi: 'A1B2C3',
+      );
+      expect(issued, isTrue);
+      expect(stub.lastQrTanggal, equals('2026-10-15'));
+    });
+
+    test(
+      'pollQrStatus false saat belum terbit, galat, atau tanpa remote',
+      () async {
+        final stub = StubBookingRemoteDataSource();
+        final remoteRepo = TicketRepositoryImpl(
+          localDataSource: fakeDataSource,
+          bookingRemoteDataSource: stub,
+        );
+        expect(
+          await remoteRepo.pollQrStatus(
+            scheduledDate: DateTime(2026, 10, 15),
+            kodeVerifikasi: 'A1B2C3',
+          ),
+          isFalse,
+        );
+        stub.throwOnQr = true;
+        expect(
+          await remoteRepo.pollQrStatus(
+            scheduledDate: DateTime(2026, 10, 15),
+            kodeVerifikasi: 'A1B2C3',
+          ),
+          isFalse,
+        );
+        expect(
+          await repository.pollQrStatus(
+            scheduledDate: DateTime(2026, 10, 15),
+            kodeVerifikasi: 'A1B2C3',
+          ),
+          isFalse,
+        );
       },
     );
   });

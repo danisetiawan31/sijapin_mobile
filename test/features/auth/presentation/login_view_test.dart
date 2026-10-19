@@ -16,8 +16,35 @@ void main() {
       expect(find.text('Nomor Telepon / Email'), findsOneWidget);
       expect(find.text('Kata Sandi'), findsOneWidget);
       expect(find.text('Masuk ke Akun'), findsOneWidget);
+      expect(find.text('Lupa kata sandi?'), findsOneWidget);
+      expect(find.text('Ingat Saya'), findsNothing);
       expect(find.text('Daftar di sini'), findsOneWidget);
     });
+
+    testWidgets(
+      'tapping Lupa kata sandi shows security disabled notice dialog',
+      (tester) async {
+        await tester.pumpWidget(
+          const ProviderScope(child: MaterialApp(home: LoginView())),
+        );
+
+        await tester.tap(find.text('Lupa kata sandi?'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Lupa Kata Sandi'), findsOneWidget);
+        expect(
+          find.textContaining(
+            'Fitur reset password dinonaktifkan sementara untuk peningkatan keamanan',
+          ),
+          findsOneWidget,
+        );
+        expect(find.text('Mengerti'), findsOneWidget);
+
+        await tester.tap(find.text('Mengerti'));
+        await tester.pumpAndSettle();
+        expect(find.text('Lupa Kata Sandi'), findsNothing);
+      },
+    );
 
     testWidgets(
       'submitting empty form displays phone/email and password validation errors',

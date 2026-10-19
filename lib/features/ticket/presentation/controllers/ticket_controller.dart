@@ -18,6 +18,7 @@ class TicketState {
     this.isRefreshing = false,
     this.isOffline = false,
     this.isMaxBrightness = false,
+    this.qrIssuedByServer = false,
     this.errorMessage,
   });
 
@@ -27,6 +28,9 @@ class TicketState {
   final bool isRefreshing;
   final bool isOffline;
   final bool isMaxBrightness;
+
+  /// Server telah menerbitkan QR (`cek_status_qrcode`, `st_qrcode == 1`).
+  final bool qrIssuedByServer;
   final String? errorMessage;
 
   TicketState copyWith({
@@ -36,6 +40,7 @@ class TicketState {
     bool? isRefreshing,
     bool? isOffline,
     bool? isMaxBrightness,
+    bool? qrIssuedByServer,
     String? errorMessage,
     bool clearTicket = false,
   }) {
@@ -46,6 +51,7 @@ class TicketState {
       isRefreshing: isRefreshing ?? this.isRefreshing,
       isOffline: isOffline ?? this.isOffline,
       isMaxBrightness: isMaxBrightness ?? this.isMaxBrightness,
+      qrIssuedByServer: qrIssuedByServer ?? this.qrIssuedByServer,
       errorMessage: errorMessage,
     );
   }
@@ -192,6 +198,39 @@ class TicketController extends Notifier<TicketState> {
     state = state.copyWith(ticket: updated);
   }
 
+  /// Menarik detail tiket server lalu menggabungkan kebenaran server
+  /// (poli, dokter, jam, status batal; PII tak disalin). Hening saat gagal.
+  Future<bool> refreshTicketDetail() async {
+    final current = state.ticket;
+    if (current == null || state.isOffline) return false;
+    try {
+      final repo = ref.read(ticketRepositoryProvider);
+      final Map<String, dynamic>? detail = await repo.getTicketDetail(
+        scheduledDate: current.scheduledDate,
+        kodeVerifikasi: current.bookingCode,
+      );
+      if (detail == null) return false;
+      final String clinic = (detail['nama_klinik'] ?? '').toString();
+      final String doctor = (detail['nama_dokter'] ?? '').toString();
+      final String jam = (detail['jam_layanan'] ?? '').toString();
+      final bool serverCancelled =
+          detail['is_batal'] == true || detail['st_batal']?.toString() == '1';
+      final updated = current.copyWith(
+        clinic: clinic.isNotEmpty ? clinic : current.clinic,
+        doctorName: doctor.isNotEmpty ? doctor : current.doctorName,
+        scheduledTime: jam.isNotEmpty ? jam : current.scheduledTime,
+        status: serverCancelled ? TicketStatus.cancelled : current.status,
+      );
+      try {
+        await repo.saveTicket(updated);
+      } catch (_) {}
+      state = state.copyWith(ticket: updated);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Toggle mode kecerahan layar maksimal untuk pemindaian scanner 2D APM (PRD FR-05.2 & FR-05.3)
   void setMaxBrightness(bool enable) {
     state = state.copyWith(isMaxBrightness: enable);
@@ -214,6 +253,13 @@ class TicketController extends Notifier<TicketState> {
     try {
       if (!state.isOffline) {
         await syncPendingTickets();
+        final repo = ref.read(ticketRepositoryProvider);
+        final bool issued = await repo.pollQrStatus(
+          scheduledDate: ticket.scheduledDate,
+          kodeVerifikasi: ticket.bookingCode,
+        );
+        if (issued) state = state.copyWith(qrIssuedByServer: true);
+        await refreshTicketDetail();
       }
     } catch (_) {}
 

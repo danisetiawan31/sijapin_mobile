@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sijapin_mobile/core/constants/app_constants.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_badge.dart';
 import 'package:sijapin_mobile/core/widgets/app_card.dart';
@@ -190,7 +191,7 @@ class WardAvailabilityCard extends StatelessWidget {
             container: true,
             label: ward.isRealtime
                 ? 'Update: Real-time'
-                : 'Update: ${_updateLabel(DateTime.now())}',
+                : 'Update: ${_updateLabel(AppDateTime.now())}',
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -210,7 +211,7 @@ class WardAvailabilityCard extends StatelessWidget {
                     Text(
                       ward.isRealtime
                           ? 'Update: Real-time'
-                          : 'Update: ${_updateLabel(DateTime.now())}',
+                          : 'Update: ${_updateLabel(AppDateTime.now())}',
                       style: TextStyle(
                         fontSize: 11,
                         color: ward.isRealtime

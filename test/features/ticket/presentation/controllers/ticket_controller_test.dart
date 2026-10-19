@@ -15,6 +15,8 @@ class FakeTicketRepository implements TicketRepository {
   final List<Ticket> allTickets = [];
   bool cancelSuccess = true;
   int syncCallCount = 0;
+  Map<String, dynamic>? ticketDetail;
+  bool qrIssued = false;
 
   @override
   Future<void> saveTicket(Ticket ticket) async {
@@ -62,6 +64,23 @@ class FakeTicketRepository implements TicketRepository {
   Future<int> syncPendingOfflineActions() async {
     syncCallCount++;
     return 0;
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getTicketDetail({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  }) async {
+    return ticketDetail;
+  }
+
+  @override
+  Future<bool> pollQrStatus({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+  }) async {
+    return qrIssued;
   }
 }
 
@@ -185,6 +204,71 @@ void main() {
         expect(fakeRepo.syncCallCount, greaterThanOrEqualTo(1));
       },
     );
+
+    test(
+      'refreshTicketDetail menggabung kebenaran server ke tiket lokal',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        await controller.saveNewTicket(kMockActiveTicket);
+        fakeRepo.ticketDetail = <String, dynamic>{
+          'nama_klinik': 'Poli Mata Server',
+          'nama_dokter': 'dr. Server, Sp.M.',
+          'jam_layanan': '08:00 - 12:00',
+          'st_batal': '0',
+          'is_batal': false,
+        };
+
+        final ok = await controller.refreshTicketDetail();
+
+        expect(ok, isTrue);
+        final state = container.read(ticketControllerProvider);
+        expect(state.ticket!.clinic, equals('Poli Mata Server'));
+        expect(state.ticket!.doctorName, equals('dr. Server, Sp.M.'));
+        expect(state.ticket!.scheduledTime, equals('08:00 - 12:00'));
+        expect(state.ticket!.isCancelled, isFalse);
+      },
+    );
+
+    test('refreshTicketDetail menandai batal saat server is_batal', () async {
+      final controller = container.read(ticketControllerProvider.notifier);
+      await controller.saveNewTicket(kMockActiveTicket);
+      fakeRepo.ticketDetail = <String, dynamic>{'is_batal': true};
+
+      final ok = await controller.refreshTicketDetail();
+
+      expect(ok, isTrue);
+      expect(
+        container.read(ticketControllerProvider).ticket!.isCancelled,
+        isTrue,
+      );
+    });
+
+    test(
+      'refreshTicketDetail hening saat detail null (lokal dipakai)',
+      () async {
+        final controller = container.read(ticketControllerProvider.notifier);
+        await controller.saveNewTicket(kMockActiveTicket);
+        fakeRepo.ticketDetail = null;
+
+        final ok = await controller.refreshTicketDetail();
+
+        expect(ok, isFalse);
+        expect(
+          container.read(ticketControllerProvider).ticket!.clinic,
+          equals(kMockActiveTicket.clinic),
+        );
+      },
+    );
+
+    test('refreshQueue menandai QR terbit saat poll st_qrcode 1', () async {
+      final controller = container.read(ticketControllerProvider.notifier);
+      await controller.saveNewTicket(kMockActiveTicket);
+      fakeRepo.qrIssued = true;
+
+      await controller.refreshQueue();
+
+      expect(container.read(ticketControllerProvider).qrIssuedByServer, isTrue);
+    });
 
     test('detects offline state from connectivity stream', () async {
       final offlineContainer = ProviderContainer(

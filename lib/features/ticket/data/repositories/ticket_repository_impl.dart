@@ -158,6 +158,45 @@ class TicketRepositoryImpl implements TicketRepository {
   }
 
   @override
+  Future<Map<String, dynamic>?> getTicketDetail({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  }) async {
+    final remote = bookingRemoteDataSource;
+    if (remote == null) return null;
+    // Backend memecah 8 digit DDMMYYYY via `substr` menjadi DD-MM-YYYY.
+    final tgl =
+        '${scheduledDate.day.toString().padLeft(2, '0')}${scheduledDate.month.toString().padLeft(2, '0')}${scheduledDate.year}';
+    return remote.fetchTicketDetail(
+      tanggal8digit: tgl,
+      kodeVerifikasi: kodeVerifikasi,
+      daftarType: daftarType,
+    );
+  }
+
+  @override
+  Future<bool> pollQrStatus({
+    required DateTime scheduledDate,
+    required String kodeVerifikasi,
+  }) async {
+    final remote = bookingRemoteDataSource;
+    if (remote == null) return false;
+    try {
+      // `kamar_normalize_date` menerima ISO YYYY-MM-DD maupun DD-MM-YYYY.
+      final tglIso =
+          '${scheduledDate.year}-${scheduledDate.month.toString().padLeft(2, '0')}-${scheduledDate.day.toString().padLeft(2, '0')}';
+      final Map<String, dynamic> res = await remote.cekStatusQrcode(
+        tanggal: tglIso,
+        kodeVerifikasi: kodeVerifikasi,
+      );
+      return res['st_qrcode']?.toString() == '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
   Future<int> syncPendingOfflineActions() async {
     if (dioClient == null && bookingRemoteDataSource == null) return 0;
     int syncedCount = 0;

@@ -18,8 +18,6 @@ class _LoginViewState extends ConsumerState<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _rememberMe = false;
-
   @override
   void dispose() {
     _identifierController.dispose();
@@ -36,8 +34,50 @@ class _LoginViewState extends ConsumerState<LoginView> {
         .login(
           identifier: _identifierController.text.trim(),
           password: _passwordController.text,
-          rememberMe: _rememberMe,
         );
+  }
+
+  void _showForgotPasswordNotice() {
+    showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surfaceCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Lupa Kata Sandi',
+            style: TextStyle(
+              color: AppColors.brandDarkEspresso,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          content: const Text(
+            'Fitur reset password dinonaktifkan sementara untuk peningkatan keamanan. '
+            'Silakan hubungi petugas loket/administrasi RSUP Dr. Sitanala.',
+            style: TextStyle(
+              color: AppColors.brandDarkEspresso,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Mengerti',
+                style: TextStyle(
+                  color: AppColors.brandGoldenCaramel,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -144,46 +184,44 @@ class _LoginViewState extends ConsumerState<LoginView> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Material(
-                                      color: AppColors.transparent,
-                                      child: CheckboxListTile(
-                                        value: _rememberMe,
-                                        onChanged: (value) => setState(
-                                          () => _rememberMe = value ?? false,
-                                        ),
-                                        dense: true,
-                                        contentPadding: EdgeInsets.zero,
-                                        controlAffinity:
-                                            ListTileControlAffinity.leading,
-                                        title: const Text('Ingat Saya'),
-                                      ),
-                                    ),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {},
-                                    child: const Text('Lupa Kata Sandi?'),
-                                  ),
-                                ],
-                              ),
                               if (authState.status ==
                                       AuthSubmissionStatus.error &&
                                   authState.message != null) ...[
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 12),
                                 AuthStatusMessage(
                                   message: authState.message!,
                                   error: true,
                                 ),
-                                const SizedBox(height: 12),
                               ],
+                              const SizedBox(height: 16),
                               AuthPrimaryButton(
                                 label: 'Masuk ke Akun',
                                 icon: Icons.arrow_forward_rounded,
                                 loading: isLoading,
                                 onPressed: _submit,
+                              ),
+                              const SizedBox(height: 10),
+                              Center(
+                                child: TextButton(
+                                  onPressed: _showForgotPasswordNotice,
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text(
+                                    'Lupa kata sandi?',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
                           ),

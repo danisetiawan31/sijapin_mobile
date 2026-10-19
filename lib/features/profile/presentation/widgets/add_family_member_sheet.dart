@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
@@ -67,7 +68,7 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
   }
 
   Future<void> _pickBirthDate() async {
-    final DateTime now = DateTime.now();
+    final DateTime now = AppDateTime.now();
     // Best practice UX medis: Jika tanggal belum terisi, arahkan picker langsung
     // ke mode pemilihan TAHUN (DatePickerMode.year) dengan fokus pada usia dewasa muda (20 tahun lalu).
     final DateTime initial =
@@ -101,7 +102,7 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
     }
 
     final FamilyMember newMember = FamilyMember(
-      id: 'keluarga-${DateTime.now().millisecondsSinceEpoch}',
+      id: 'keluarga-${AppDateTime.now().millisecondsSinceEpoch}',
       fullName: _nameController.text.trim(),
       relation: _relation,
       gender: _gender,
@@ -575,9 +576,15 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           decoration: const InputDecoration(
-                            labelText: 'Nomor Telepon',
+                            labelText: 'Nomor Telepon *',
                             hintText: '0812xxxxxxxx',
                           ),
+                          validator: (String? value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Nomor telepon wajib diisi';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],

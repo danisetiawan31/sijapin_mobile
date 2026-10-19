@@ -114,7 +114,6 @@ void main() {
       final result = await repository.login(
         identifier: '081234567890',
         password: 'password123',
-        rememberMe: true,
       );
 
       expect(result.success, isTrue);
@@ -137,7 +136,6 @@ void main() {
         final result = await repository.login(
           identifier: '081234567890',
           password: 'wrong-password',
-          rememberMe: false,
         );
 
         expect(result.success, isFalse);
@@ -145,13 +143,29 @@ void main() {
       },
     );
 
+    test('login terkunci sementara (login 3) memakai pesan server', () async {
+      remoteDataSource.loginResponse = {
+        'ret': 'fail',
+        'login': 3,
+        'msg':
+            'Terlalu banyak percobaan login gagal. Coba lagi setelah 5 menit.',
+      };
+
+      final result = await repository.login(
+        identifier: '081234567890',
+        password: 'password123',
+      );
+
+      expect(result.success, isFalse);
+      expect(result.message, contains('Terlalu banyak percobaan'));
+    });
+
     test('login saat jaringan error ditangani secara graceful', () async {
       remoteDataSource.shouldThrow = true;
 
       final result = await repository.login(
         identifier: '081234567890',
         password: 'password123',
-        rememberMe: false,
       );
 
       expect(result.success, isFalse);

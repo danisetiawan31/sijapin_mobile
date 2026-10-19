@@ -199,39 +199,49 @@ class FamilyMemberRepositoryImpl implements FamilyMemberRepository {
       try {
         final res = await remoteDataSource!.saveFamilyMember(member);
         if (res['ret'] == 'success') {
-          // Reconcile ID: ambil daftar pasien terbaru dari CI3 untuk menangkap auto-increment ID asli
-          final remoteList = await remoteDataSource!.fetchFamilyMembers();
-          if (remoteList != null && remoteList.isNotEmpty) {
-            final match = remoteList.firstWhere(
-              (r) =>
-                  r.fullName.trim().toLowerCase() ==
-                  member.fullName.trim().toLowerCase(),
-              orElse: () => member,
-            );
-            if (match.id != member.id && match.id.isNotEmpty) {
-              final newId = match.id;
-              final oldId = member.id;
-              await _unhideMemberId(newId);
-              final updatedMember = member.copyWith(id: newId);
-              final idx = _members.indexWhere((m) => m.id == oldId);
-              if (idx != -1) {
-                _members[idx] = updatedMember;
+          final String returnedId = res['member_id']?.toString() ?? '';
+          String? resolvedId = returnedId.isNotEmpty ? returnedId : null;
+
+          if (resolvedId == null) {
+            // Reconcile ID: ambil daftar pasien terbaru dari CI3 untuk menangkap auto-increment ID asli
+            final remoteList = await remoteDataSource!.fetchFamilyMembers();
+            if (remoteList != null && remoteList.isNotEmpty) {
+              final match = remoteList.firstWhere(
+                (r) =>
+                    r.fullName.trim().toLowerCase() ==
+                    member.fullName.trim().toLowerCase(),
+                orElse: () => member,
+              );
+              if (match.id != member.id && match.id.isNotEmpty) {
+                resolvedId = match.id;
               }
-              if (localStorage != null) {
-                try {
-                  await localStorage!.delete(
-                    boxName: StorageConstants.familyMembersBox,
-                    key: oldId,
-                  );
-                  await localStorage!.put<dynamic>(
-                    boxName: StorageConstants.familyMembersBox,
-                    key: newId,
-                    value: updatedMember.toMap(),
-                  );
-                } catch (_) {}
-              }
-              return updatedMember;
             }
+          }
+
+          if (resolvedId != null &&
+              resolvedId != member.id &&
+              resolvedId.isNotEmpty) {
+            final oldId = member.id;
+            await _unhideMemberId(resolvedId);
+            final updatedMember = member.copyWith(id: resolvedId);
+            final idx = _members.indexWhere((m) => m.id == oldId);
+            if (idx != -1) {
+              _members[idx] = updatedMember;
+            }
+            if (localStorage != null) {
+              try {
+                await localStorage!.delete(
+                  boxName: StorageConstants.familyMembersBox,
+                  key: oldId,
+                );
+                await localStorage!.put<dynamic>(
+                  boxName: StorageConstants.familyMembersBox,
+                  key: resolvedId,
+                  value: updatedMember.toMap(),
+                );
+              } catch (_) {}
+            }
+            return updatedMember;
           }
         }
       } catch (_) {

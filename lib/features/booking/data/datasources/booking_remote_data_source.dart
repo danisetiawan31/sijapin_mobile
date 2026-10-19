@@ -66,6 +66,14 @@ abstract interface class IBookingRemoteDataSource {
 
   /// Mengambil riwayat antrean rawat jalan dari server (daftar_log)
   Future<List<Map<String, dynamic>>> fetchBookingHistory();
+
+  /// Detail tiket + QR (`Daftar_Log/daftar_detail/{tgl}/{kode}/{daftar}`).
+  /// `tanggal8digit` = DDMMYYYY sesuai `substr` backend; null bila tak ada.
+  Future<Map<String, dynamic>?> fetchTicketDetail({
+    required String tanggal8digit,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  });
 }
 
 /// Implementasi Remote Data Source untuk wizard pendaftaran rawat jalan
@@ -339,6 +347,38 @@ class BookingRemoteDataSource implements IBookingRemoteDataSource {
         ? unwrapEnvelopeData(map)
         : map['data'] ?? map;
     return _historyFromJson(payload);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> fetchTicketDetail({
+    required String tanggal8digit,
+    required String kodeVerifikasi,
+    String daftarType = '2',
+  }) async {
+    // Envelope `data.tiket` (`tiket_rj_normalize` rajal / MCU normalize).
+    // 404 = tak ada data, kembalikan null agar pemanggil memakai tiket lokal.
+    try {
+      final response = await dioClient.get<dynamic>(
+        '${ApiConstants.bookingHistoryDetail}/$tanggal8digit/$kodeVerifikasi/$daftarType',
+        options: jsonAcceptOptions(),
+      );
+      final Map<String, dynamic>? map = parseJsonMap(response.data);
+      if (map == null) return null;
+      final Object? payload = isEnvelopeMap(map)
+          ? unwrapEnvelopeData(map)
+          : map['data'] ?? map;
+      final Object? tiket = payload is Map<String, dynamic>
+          ? payload['tiket']
+          : null;
+      if (tiket is Map<String, dynamic>) return tiket;
+      return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      throw BookingServerException(
+        e.message ?? 'Gagal memuat detail tiket.',
+        statusCode: e.response?.statusCode,
+      );
+    }
   }
 
   List<Map<String, dynamic>> _historyFromJson(Object? payload) {
