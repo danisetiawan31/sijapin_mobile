@@ -37,6 +37,10 @@ abstract final class AppRoutes {
   static const String mcuCatalogPath = '/mcu';
   static const String mcuCatalogName = 'mcu_catalog';
 
+  // Wizard Pendaftaran MCU — Langkah 1: Pilih Pasien Berobat
+  static const String mcuPatientStepPath = '/mcu/pasien';
+  static const String mcuPatientStepName = 'mcu_patient_step';
+
   // Ketersediaan Kamar Rawat Inap (di luar shell, tanpa bottom nav)
   static const String bedAvailabilityPath = '/bed-availability';
   static const String bedAvailabilityName = 'bed_availability';

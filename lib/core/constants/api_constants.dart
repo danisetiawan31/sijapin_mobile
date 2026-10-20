@@ -74,4 +74,7 @@ class ApiConstants {
   static const String mcuPaket = 'Pendaftaran_MCU_Paket';
   static const String mcuOption = 'Pendaftaran_MCU_Option';
   static const String mcuCekJadwal = 'Pendaftaran/cek_jadwal';
+  // Daftar anggota pasien yang dapat didaftarkan MCU (envelope
+  // `data: [{id_member, nomr, nama, nik}]`).
+  static const String mcuPendaftaran = 'pendaftaran';
 }
