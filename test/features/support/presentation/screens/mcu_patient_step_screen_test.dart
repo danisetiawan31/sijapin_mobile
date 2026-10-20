@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/network/api_response.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
 import 'package:sijapin_mobile/features/support/domain/entities/mcu_patient.dart';
 import 'package:sijapin_mobile/features/support/presentation/controllers/mcu_patient_controller.dart';
 import 'package:sijapin_mobile/features/support/presentation/screens/mcu_catalog_screen.dart';
@@ -22,12 +24,45 @@ const _siti = McuPatient(
   nik: '3671044508940002',
 );
 
-Widget _wrap(McuPatientStepScreen screen, List<McuPatient> patients) {
+class _StubFamilyMembersNotifier extends FamilyMembersNotifier {
+  _StubFamilyMembersNotifier(this._members);
+
+  final List<FamilyMember> _members;
+
+  @override
+  List<FamilyMember> build() => _members;
+}
+
+Widget _wrap(
+  McuPatientStepScreen screen,
+  List<McuPatient> patients, {
+  List<FamilyMember> familyMembers = const <FamilyMember>[],
+}) {
   return ProviderScope(
     overrides: [
       mcuPatientsProvider.overrideWith((ref) => Future.value(patients)),
+      familyMembersProvider.overrideWith(
+        () => _StubFamilyMembersNotifier(familyMembers),
+      ),
     ],
     child: MaterialApp(theme: AppTheme.lightTheme, home: screen),
+  );
+}
+
+FamilyMember _member({
+  required String id,
+  required String fullName,
+  required String nik,
+  String? nomr,
+}) {
+  return FamilyMember(
+    id: id,
+    fullName: fullName,
+    relation: FamilyRelation.child,
+    gender: 'L',
+    nik: nik,
+    insurance: FamilyInsurance.umum,
+    medicalRecordNumber: nomr,
   );
 }
 
@@ -164,5 +199,58 @@ void main() {
       );
       expect(find.text('Coba Lagi'), findsOneWidget);
     });
+
+    testWidgets('menampilkan anggota keluarga yang belum ada di /pendaftaran', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        _wrap(
+          const McuPatientStepScreen(),
+          const [_bambang, _siti],
+          familyMembers: [
+            _member(id: '3', fullName: 'Dewi Lestari', nik: '3671044508940003'),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Dewi Lestari'), findsNWidgets(2));
+      expect(find.text('367104******0003'), findsOneWidget);
+      expect(find.text('Belum ada No. RM'), findsNWidgets(2));
+    });
+
+    testWidgets(
+      'anggota keluarga dengan id sama tidak menghasilkan duplikasi',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 2000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        await tester.pumpWidget(
+          _wrap(
+            const McuPatientStepScreen(),
+            const [_bambang, _siti],
+            familyMembers: [
+              _member(
+                id: '1',
+                fullName: 'Bambang Sutrisno',
+                nik: '3671010101900001',
+                nomr: '00123456',
+              ),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Bambang Sutrisno'), findsNWidgets(2));
+        expect(find.text('001234**'), findsOneWidget);
+      },
+    );
   });
 }

@@ -55,14 +55,7 @@ class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
       if (converted.idMember.isEmpty) continue;
       map.putIfAbsent(converted.idMember, () => converted);
     }
-    final List<McuPatient> result = map.values.toList();
-    result.sort((McuPatient a, McuPatient b) {
-      if (a.isNewPatient != b.isNewPatient) {
-        return a.isNewPatient ? -1 : 1;
-      }
-      return a.nama.toLowerCase().compareTo(b.nama.toLowerCase());
-    });
-    return result;
+    return map.values.toList();
   }
 
   McuPatient? _resolveSelected(List<McuPatient> patients) {
