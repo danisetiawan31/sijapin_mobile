@@ -5,6 +5,8 @@ import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/api_response.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/network/json_first.dart';
+import '../../domain/entities/mcu_catalog.dart';
+import '../../domain/entities/mcu_patient.dart';
 
 /// Data source REST authority untuk Medical Check-Up (PANDUAN §6).
 /// JSON-first via [DioClient] + `Accept: application/json` (endpoint MCU
@@ -17,33 +19,56 @@ class McuRemoteDataSource {
   McuRemoteDataSource({required this.dioClient});
 
   /// `GET /Pendaftaran_MCU_Paket` → envelope
-  /// `data: {selected_mcu_id, paket: [...], detail: [...]}` (baris
-  /// `mcu_paket_normalize_row`: `{tarif_id, kode_tarif, nama_paket,
-  /// nama_tarif, harga}`).
-  Future<List<Map<String, dynamic>>> fetchPaketList() async {
+  /// `data: {selected_mcu_id, paket: [...], detail: [...]}`. Baris `paket`
+  /// (`t_daftar_mcu`) dipadukan dengan `detail` (`t_daftar_mcu_tindakan` +
+  /// `t_daftar_mcu_billing`) per `tarif_id_m` sehingga tiap paket membawa
+  /// harga dan rincian tindakan aslinya.
+  Future<List<McuCatalogPackage>> fetchPaketList() async {
     final response = await dioClient.get<dynamic>(
       ApiConstants.mcuPaket,
       options: jsonAcceptOptions(),
     );
     final Map<String, dynamic>? map = parseJsonMap(response.data);
-    if (map == null) return const [];
+    if (map == null) return const <McuCatalogPackage>[];
+    final Object? payload = isEnvelopeMap(map)
+        ? unwrapEnvelopeData(map)
+        : map['data'] ?? map;
+    return McuCatalogPackage.listFromEnvelopeData(payload);
+  }
+
+  /// `GET /pendaftaran` → envelope `data: {member: [{id_member, nomr, nama,
+  /// nik}]}`. Daftar anggota pasien akun sesi yang dapat didaftarkan MCU.
+  /// Jawaban definitif gagal (`success:false`) dilempar verbatim lewat
+  /// [ApiException]; respons non-JSON → daftar kosong.
+  Future<List<McuPatient>> fetchPatientList() async {
+    final response = await dioClient.get<dynamic>(
+      ApiConstants.mcuPendaftaran,
+      options: jsonAcceptOptions(),
+    );
+    final Map<String, dynamic>? map = parseJsonMap(response.data);
+    if (map == null) return const <McuPatient>[];
+    throwIfDefinitiveFailure(map);
     final Object? payload = isEnvelopeMap(map)
         ? unwrapEnvelopeData(map)
         : map['data'] ?? map;
     final Object? rows = payload is Map<String, dynamic>
-        ? (payload['paket'] ?? payload)
+        ? (payload['member'] ?? payload)
         : payload;
     if (rows is List) {
       return rows
           .whereType<Map<dynamic, dynamic>>()
           .map(
-            (Map<dynamic, dynamic> m) =>
-                m.map((dynamic k, dynamic v) => MapEntry(k.toString(), v)),
+            (Map<dynamic, dynamic> m) => McuPatient.fromRow(
+              m.map((dynamic k, dynamic v) => MapEntry(k.toString(), v)),
+            ),
           )
+          .where((McuPatient patient) => patient.idMember.isNotEmpty)
           .toList();
     }
-    if (rows is Map<String, dynamic>) return <Map<String, dynamic>>[rows];
-    return const [];
+    if (rows is Map<String, dynamic> && rows.containsKey('id_member')) {
+      return <McuPatient>[McuPatient.fromRow(rows)];
+    }
+    return const <McuPatient>[];
   }
 
   /// `GET /Pendaftaran_MCU_Option` → opsi kategori `{tipe_pendaftaran[], ...}`.

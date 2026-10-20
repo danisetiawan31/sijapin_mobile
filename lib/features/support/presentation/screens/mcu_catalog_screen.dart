@@ -1,11 +1,15 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../data/datasources/mcu_remote_data_source.dart';
+import '../../domain/entities/mcu_catalog.dart';
 
 /// Model tindakan pemeriksaan MCU sesuai tabel database `t_daftar_mcu_tindakan`
 class McuTindakanItem {
@@ -46,14 +50,10 @@ class McuPackageItem {
 /// Layar Katalog Paket Medical Check-Up (MCU) — Epic 08 (`US-SUP-01`)
 /// Rute: `/mcu`
 ///
-/// Data dan tindakan di bawah ini 100% mencerminkan skema database SIMRS:
-/// - `t_daftar_mcu` (KODE_TARIF, MCU_ID)
-/// - `t_daftar_mcu_tindakan` (TARIF_ID, NAMA_TINDAKAN, RUANG)
-/// - `t_daftar_mcu_billing` (JUMLAH_BAYAR, VIRTUAL_ACCOUNT)
-///
-/// REST authority (PANDUAN §6): katalog dimuat dari
-/// `GET /Pendaftaran_MCU_Paket` + `Accept: application/json`; paket filed
-/// statis di bawah dipakai sebagai fallback offline.
+/// REST authority (PANDUAN §6): katalog dirender apa adanya dari
+/// `GET /Pendaftaran_MCU_Paket` + `Accept: application/json` (sesi cookie
+/// CI3). Paket filed-statis hanya dipakai sebagai fallback offline ketika
+/// permintaan gagal, dan selalu ditandai eksplisit agar tidak menyesatkan.
 class McuCatalogScreen extends ConsumerStatefulWidget {
   const McuCatalogScreen({super.key});
 
@@ -61,8 +61,13 @@ class McuCatalogScreen extends ConsumerStatefulWidget {
   ConsumerState<McuCatalogScreen> createState() => _McuCatalogScreenState();
 }
 
+/// Status pemuatan katalog: menunggu, data REST asli, fallback offline,
+/// atau perlu masuk (401/403 karena sesi CI3 tidak ada/kedaluwarsa).
+enum _CatalogState { loading, remote, offline, authRequired }
+
 class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
-  List<McuPackageItem> _packages = McuCatalogScreenData.dummyPackages;
+  List<McuPackageItem> _packages = const <McuPackageItem>[];
+  _CatalogState _state = _CatalogState.loading;
 
   @override
   void initState() {
@@ -71,44 +76,66 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
   }
 
   Future<void> _loadRemoteCatalog() async {
+    setState(() => _state = _CatalogState.loading);
     try {
-      final rows = await ref.read(mcuRemoteDataSourceProvider).fetchPaketList();
-      if (!mounted || rows.isEmpty) return;
+      final List<McuCatalogPackage> remote = await ref
+          .read(mcuRemoteDataSourceProvider)
+          .fetchPaketList();
+      if (!mounted) return;
+      if (remote.isEmpty) {
+        _showOffline();
+        return;
+      }
       setState(() {
-        _packages = rows.map(_packageFromRow).toList();
+        _packages = remote.map(_packageFromCatalog).toList();
+        _state = _CatalogState.remote;
       });
+    } on DioException catch (error) {
+      if (!mounted) return;
+      final int? status = error.response?.statusCode;
+      if (status == 401 || status == 403) {
+        setState(() {
+          _packages = const <McuPackageItem>[];
+          _state = _CatalogState.authRequired;
+        });
+        return;
+      }
+      _showOffline();
     } catch (_) {
-      // Galat transport/definitif: tetap tampilkan paket filed-statis.
+      if (!mounted) return;
+      _showOffline();
     }
   }
 
-  static McuPackageItem _packageFromRow(Map<String, dynamic> row) {
-    // Kunci persis `mcu_paket_normalize_row` backend: tarif_id, kode_tarif,
-    // nama_paket, nama_tarif, harga. Tanpa karangan.
-    final int tarifId =
-        int.tryParse(row['tarif_id']?.toString() ?? '') ??
-        int.tryParse(row['mcu_id']?.toString() ?? '') ??
-        0;
-    final int price =
-        int.tryParse(
-          row['harga']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
-        ) ??
-        int.tryParse(
-          row['tarif']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '',
-        ) ??
-        0;
-    final String fullTarif = (row['nama_tarif'] ?? '').toString().trim();
-    final String shortName = (row['nama_paket'] ?? '').toString().trim();
+  void _showOffline() {
+    setState(() {
+      _packages = McuCatalogScreenData.dummyPackages;
+      _state = _CatalogState.offline;
+    });
+  }
+
+  static McuPackageItem _packageFromCatalog(McuCatalogPackage pkg) {
+    final String tarifName = pkg.tarifName.trim();
+    final bool hasDescription =
+        tarifName.isNotEmpty &&
+        tarifName.toLowerCase() != pkg.name.toLowerCase();
     return McuPackageItem(
-      kodeTarif: (row['kode_tarif'] ?? row['KODE_TARIF'] ?? '$tarifId')
-          .toString(),
-      mcuId: tarifId,
-      name: shortName.isNotEmpty ? shortName : 'Paket MCU',
-      price: price,
-      formattedPrice: _formatRupiah(price),
+      kodeTarif: pkg.kodeTarif.isNotEmpty ? pkg.kodeTarif : '${pkg.tarifId}',
+      mcuId: pkg.tarifId,
+      name: pkg.name.isNotEmpty ? pkg.name : 'Paket MCU',
+      price: pkg.price,
+      formattedPrice: _formatRupiah(pkg.price),
       badgeLabel: 'MCU',
-      description: fullTarif,
-      examinationItems: const [],
+      description: hasDescription ? tarifName : '',
+      examinationItems: pkg.examinations
+          .map(
+            (McuCatalogExamination item) => McuTindakanItem(
+              tarifId: item.tarifId,
+              namaTindakan: item.nama,
+              ruang: '',
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -129,8 +156,120 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      buildCatalogScaffold(context, _packages);
+  Widget build(BuildContext context) {
+    switch (_state) {
+      case _CatalogState.loading:
+        return const _CatalogMessageScaffold(
+          child: CircularProgressIndicator(),
+        );
+      case _CatalogState.authRequired:
+        return _CatalogMessageScaffold(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.lock_outline_rounded,
+                size: 48,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Masuk untuk melihat Katalog Paket MCU',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.brandDarkEspresso,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Daftar paket MCU hanya tersedia untuk akun pasien yang telah masuk.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 20),
+              AppPrimaryButton(
+                label: 'Masuk',
+                width: 180,
+                onPressed: () => context.push(AppRoutes.loginPath),
+              ),
+            ],
+          ),
+        );
+      case _CatalogState.remote:
+        return buildCatalogScaffold(context, _packages);
+      case _CatalogState.offline:
+        return buildCatalogScaffold(
+          context,
+          _packages,
+          notice: _offlineNotice(),
+        );
+    }
+  }
+
+  Widget _offlineNotice() {
+    return AppCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 20,
+                color: AppColors.warningAmber,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Menampilkan contoh paket (offline)',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.brandDarkEspresso,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Katalog asli gagal dimuat. Periksa koneksi lalu coba lagi.',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          AppSecondaryButton(
+            label: 'Coba lagi',
+            width: 150,
+            onPressed: _loadRemoteCatalog,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Scaffold ringkas untuk status non-konten (memuat / perlu masuk).
+class _CatalogMessageScaffold extends StatelessWidget {
+  const _CatalogMessageScaffold({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surfaceBg,
+      appBar: AppBar(
+        title: const Text('Katalog Paket MCU'),
+        centerTitle: false,
+      ),
+      body: SafeArea(
+        child: Padding(padding: const EdgeInsets.all(24), child: child),
+      ),
+    );
+  }
 }
 
 /// Paket MCU filed-statis (fallback offline katalog remote PANDUAN §6).
@@ -286,8 +425,9 @@ class McuCatalogScreenData {
 /// Scaffold katalog MCU (top-level agar state tetap ramping).
 Widget buildCatalogScaffold(
   BuildContext context,
-  List<McuPackageItem> packages,
-) {
+  List<McuPackageItem> packages, {
+  Widget? notice,
+}) {
   return Scaffold(
     backgroundColor: AppColors.surfaceBg,
     appBar: AppBar(title: const Text('Katalog Paket MCU'), centerTitle: false),
@@ -336,6 +476,8 @@ Widget buildCatalogScaffold(
           ),
           const SizedBox(height: 20),
 
+          if (notice != null) ...[notice, const SizedBox(height: 16)],
+
           const Text(
             'Pilihan Paket Pemeriksaan MCU Sitanala',
             style: TextStyle(
@@ -371,84 +513,92 @@ Widget buildCatalogScaffold(
                                   color: AppColors.brandDarkEspresso,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Kode Tarif: ${package.kodeTarif}',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.textMuted,
+                              if (package.kodeTarif.isNotEmpty) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Kode Tarif: ${package.kodeTarif}',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
                         AppBadge.neutral(label: package.badgeLabel),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      package.description,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Divider(height: 1, color: AppColors.borderSubtle),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Rincian Tindakan Pemeriksaan:',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.brandDarkEspresso,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    ...package.examinationItems.map(
-                      (item) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              size: 16,
-                              color: AppColors.successEmerald,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                item.namaTindakan,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.brandCreamLinen,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                item.ruang,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.brandWarmBronze,
-                                ),
-                              ),
-                            ),
-                          ],
+                    if (package.description.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        package.description,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                    ),
+                    ],
+                    if (package.examinationItems.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      const Divider(height: 1, color: AppColors.borderSubtle),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Rincian Tindakan Pemeriksaan:',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.brandDarkEspresso,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      ...package.examinationItems.map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_rounded,
+                                size: 16,
+                                color: AppColors.successEmerald,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item.namaTindakan,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              if (item.ruang.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.brandCreamLinen,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    item.ruang,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: AppColors.brandWarmBronze,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -477,13 +627,9 @@ Widget buildCatalogScaffold(
                           label: 'Pilih Paket',
                           width: 130,
                           onPressed: () {
-                            // TODO(rekan): Hubungkan aksi booking paket MCU
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Paket ${package.name} (Kode: ${package.kodeTarif}) dipilih. Lanjutkan jadwal MCU.',
-                                ),
-                              ),
+                            context.pushNamed(
+                              AppRoutes.mcuPatientStepName,
+                              extra: package,
                             );
                           },
                         ),

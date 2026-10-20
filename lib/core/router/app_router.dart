@@ -17,6 +17,7 @@ import '../../features/public_services/presentation/screens/home_screen.dart';
 import '../../features/support/presentation/screens/bpjs_flow_screen.dart';
 import '../../features/support/presentation/screens/complaint_screen.dart';
 import '../../features/support/presentation/screens/mcu_catalog_screen.dart';
+import '../../features/support/presentation/screens/mcu_patient_step_screen.dart';
 import '../../features/support/presentation/screens/service_standards_screen.dart';
 import '../network/session_expiry_controller.dart';
 import 'app_routes.dart';
@@ -79,6 +80,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.mcuCatalogName,
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const McuCatalogScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.mcuPatientStepPath,
+        name: AppRoutes.mcuPatientStepName,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => McuPatientStepScreen(
+          selectedPackage: state.extra is McuPackageItem
+              ? state.extra as McuPackageItem
+              : null,
+        ),
       ),
       GoRoute(
         path: AppRoutes.bedAvailabilityPath,
