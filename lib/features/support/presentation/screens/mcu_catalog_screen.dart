@@ -68,11 +68,37 @@ enum _CatalogState { loading, remote, offline, authRequired }
 class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
   List<McuPackageItem> _packages = const <McuPackageItem>[];
   _CatalogState _state = _CatalogState.loading;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _loadRemoteCatalog();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<McuPackageItem> get _filteredPackages {
+    if (_searchQuery.isEmpty) {
+      return _packages;
+    }
+    final String query = _searchQuery.toLowerCase();
+    return _packages.where((McuPackageItem package) {
+      if (package.name.toLowerCase().contains(query)) return true;
+      if (package.kodeTarif.toLowerCase().contains(query)) return true;
+      if (package.description.toLowerCase().contains(query)) return true;
+      for (final McuTindakanItem item in package.examinationItems) {
+        if (item.namaTindakan.toLowerCase().contains(query)) {
+          return true;
+        }
+      }
+      return false;
+    }).toList();
   }
 
   Future<void> _loadRemoteCatalog() async {
@@ -140,7 +166,7 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
   }
 
   static String _formatRupiah(int value) {
-    if (value <= 0) return 'Rp —';
+    if (value <= 0) return 'Rp 0';
     final String digits = value.toString();
     final StringBuffer out = StringBuffer();
     int count = 0;
@@ -198,12 +224,27 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
           ),
         );
       case _CatalogState.remote:
-        return buildCatalogScaffold(context, _packages);
+        return buildCatalogScaffold(
+          context,
+          _filteredPackages,
+          totalPackages: _packages.length,
+          onSearchChanged: (String value) {
+            setState(() => _searchQuery = value);
+          },
+          searchController: _searchController,
+          searchQuery: _searchQuery,
+        );
       case _CatalogState.offline:
         return buildCatalogScaffold(
           context,
-          _packages,
+          _filteredPackages,
+          totalPackages: _packages.length,
           notice: _offlineNotice(),
+          onSearchChanged: (String value) {
+            setState(() => _searchQuery = value);
+          },
+          searchController: _searchController,
+          searchQuery: _searchQuery,
         );
     }
   }
@@ -427,6 +468,10 @@ Widget buildCatalogScaffold(
   BuildContext context,
   List<McuPackageItem> packages, {
   Widget? notice,
+  TextEditingController? searchController,
+  String searchQuery = '',
+  ValueChanged<String>? onSearchChanged,
+  int totalPackages = 0,
 }) {
   return Scaffold(
     backgroundColor: AppColors.surfaceBg,
@@ -488,158 +533,242 @@ Widget buildCatalogScaffold(
           ),
           const SizedBox(height: 12),
 
-          // Daftar Kartu Paket MCU Sitanala
-          // TODO(rekan): Slicing dan kustomisasi tata letak kartu paket di bawah ini
-          ...packages.map((package) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: AppCard.elevated(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                package.name,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.brandDarkEspresso,
-                                ),
-                              ),
-                              if (package.kodeTarif.isNotEmpty) ...[
-                                const SizedBox(height: 2),
+          // Search Bar (dipindah ke dalam bagian katalog)
+          TextField(
+            controller: searchController,
+            onChanged: onSearchChanged,
+            decoration: InputDecoration(
+              hintText: 'Cari paket MCU...',
+              prefixIcon: const Icon(Icons.search_rounded),
+              suffixIcon: searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      onPressed: () {
+                        searchController?.clear();
+                        onSearchChanged?.call('');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.borderSubtle),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.borderSubtle),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.brandGoldenCaramel,
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          if (searchQuery.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Text(
+                'Ditemukan ${packages.length} dari $totalPackages paket',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 4),
+
+          if (packages.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.search_off_rounded,
+                    size: 48,
+                    color: AppColors.textMuted,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'Tidak ada paket yang sesuai',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.brandDarkEspresso,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Coba kata kunci lain atau hapus pencarian',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ...packages.map((package) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: AppCard.elevated(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
                                 Text(
-                                  'Kode Tarif: ${package.kodeTarif}',
+                                  package.name,
                                   style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppColors.textMuted,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.brandDarkEspresso,
                                   ),
                                 ),
+                                if (package.kodeTarif.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Kode Tarif: ${package.kodeTarif}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
+                          ),
+                          AppBadge.neutral(label: package.badgeLabel),
+                        ],
+                      ),
+                      if (package.description.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          package.description,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textSecondary,
                           ),
                         ),
-                        AppBadge.neutral(label: package.badgeLabel),
                       ],
-                    ),
-                    if (package.description.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        package.description,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                      if (package.examinationItems.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        const Divider(height: 1, color: AppColors.borderSubtle),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Rincian Tindakan Pemeriksaan:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.brandDarkEspresso,
+                          ),
                         ),
-                      ),
-                    ],
-                    if (package.examinationItems.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      const Divider(height: 1, color: AppColors.borderSubtle),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'Rincian Tindakan Pemeriksaan:',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.brandDarkEspresso,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      ...package.examinationItems.map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                size: 16,
-                                color: AppColors.successEmerald,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  item.namaTindakan,
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: AppColors.textPrimary,
-                                  ),
+                        const SizedBox(height: 6),
+                        ...package.examinationItems.map(
+                          (item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 4),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 16,
+                                  color: AppColors.successEmerald,
                                 ),
-                              ),
-                              if (item.ruang.isNotEmpty) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 2,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.brandCreamLinen,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
+                                const SizedBox(width: 8),
+                                Expanded(
                                   child: Text(
-                                    item.ruang,
+                                    item.namaTindakan,
                                     style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppColors.brandWarmBronze,
+                                      fontSize: 13,
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
+                                if (item.ruang.isNotEmpty) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.brandCreamLinen,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      item.ruang,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: AppColors.brandWarmBronze,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
+                      ],
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tarif Paket (BRIVA)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              Text(
+                                package.formattedPrice,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.brandGoldenCaramel,
+                                ),
+                              ),
+                            ],
+                          ),
+                          AppPrimaryButton(
+                            label: 'Pilih Paket',
+                            width: 130,
+                            onPressed: () {
+                              context.pushNamed(
+                                AppRoutes.mcuPatientStepName,
+                                extra: package,
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Tarif Paket (BRIVA)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                            Text(
-                              package.formattedPrice,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.brandGoldenCaramel,
-                              ),
-                            ),
-                          ],
-                        ),
-                        AppPrimaryButton(
-                          label: 'Pilih Paket',
-                          width: 130,
-                          onPressed: () {
-                            context.pushNamed(
-                              AppRoutes.mcuPatientStepName,
-                              extra: package,
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
         ],
       ),
     ),
