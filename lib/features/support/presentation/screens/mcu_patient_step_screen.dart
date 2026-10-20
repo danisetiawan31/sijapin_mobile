@@ -32,6 +32,39 @@ class McuPatientStepScreen extends ConsumerStatefulWidget {
 class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
   String? _selectedMemberId;
 
+  McuPatient _fromFamilyMember(FamilyMember member) {
+    return McuPatient(
+      idMember: member.id,
+      nama: member.fullName.isNotEmpty ? member.fullName : 'Pasien Tanpa Nama',
+      nomr: member.medicalRecordNumber ?? '',
+      nik: member.nik,
+    );
+  }
+
+  List<McuPatient> _mergePatients(
+    List<McuPatient> fromMcu,
+    List<FamilyMember> fromFamily,
+  ) {
+    final Map<String, McuPatient> map = <String, McuPatient>{};
+    for (final McuPatient patient in fromMcu) {
+      if (patient.idMember.isEmpty) continue;
+      map[patient.idMember] = patient;
+    }
+    for (final FamilyMember member in fromFamily) {
+      final McuPatient converted = _fromFamilyMember(member);
+      if (converted.idMember.isEmpty) continue;
+      map.putIfAbsent(converted.idMember, () => converted);
+    }
+    final List<McuPatient> result = map.values.toList();
+    result.sort((McuPatient a, McuPatient b) {
+      if (a.isNewPatient != b.isNewPatient) {
+        return a.isNewPatient ? -1 : 1;
+      }
+      return a.nama.toLowerCase().compareTo(b.nama.toLowerCase());
+    });
+    return result;
+  }
+
   McuPatient? _resolveSelected(List<McuPatient> patients) {
     final String? id = _selectedMemberId;
     if (id == null) return null;
@@ -47,6 +80,7 @@ class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
       onSave: (FamilyMember newMember) {
         ref.read(familyMembersProvider.notifier).addMember(newMember);
         ref.invalidate(mcuPatientsProvider);
+        ref.invalidate(familyMembersProvider);
         if (!mounted) return;
         _showSnackBar(
           'Anggota keluarga "${newMember.fullName}" berhasil ditambahkan.',
@@ -86,8 +120,15 @@ class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
     final AsyncValue<List<McuPatient>> patientsAsync = ref.watch(
       mcuPatientsProvider,
     );
-    final List<McuPatient> patients =
+    final List<FamilyMember> familyMembers = ref.watch(familyMembersProvider);
+
+    final List<McuPatient> mcuPatients =
         patientsAsync.value ?? const <McuPatient>[];
+    final List<McuPatient> patients = _mergePatients(
+      mcuPatients,
+      familyMembers,
+    );
+
     final McuPatient? selected = _resolveSelected(patients);
 
     if (selected == null && patients.isNotEmpty && _selectedMemberId == null) {
@@ -195,7 +236,10 @@ class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
         AppErrorState(
           title: 'Gagal Memuat Data Pasien',
           message: error.toString(),
-          onRetry: () => ref.invalidate(mcuPatientsProvider),
+          onRetry: () {
+            ref.invalidate(mcuPatientsProvider);
+            ref.invalidate(familyMembersProvider);
+          },
         ),
       ];
     }
