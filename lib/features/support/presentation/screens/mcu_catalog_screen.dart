@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../data/datasources/mcu_remote_data_source.dart';
 import '../../domain/entities/mcu_catalog.dart';
 
@@ -74,7 +75,10 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRemoteCatalog();
+    // Tamu langsung melihat gerbang masuk, bukan menunggu respons 401/403.
+    if (ref.read(profileControllerProvider).isSignedIn) {
+      _loadRemoteCatalog();
+    }
   }
 
   @override
@@ -119,7 +123,10 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
     } on DioException catch (error) {
       if (!mounted) return;
       final int? status = error.response?.statusCode;
-      if (status == 401 || status == 403) {
+      // 401/403 hanya berarti "belum masuk" bila sesi aplikasi memang tamu.
+      // Pengguna yang sudah masuk tidak boleh diminta login lagi.
+      if ((status == 401 || status == 403) &&
+          !ref.read(profileControllerProvider).isSignedIn) {
         setState(() {
           _packages = const <McuPackageItem>[];
           _state = _CatalogState.authRequired;
@@ -183,46 +190,18 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Gerbang masuk berbasis sesi aplikasi (bukan respons 401/403 endpoint):
+    // pengguna yang sudah login tidak pernah diminta login lagi.
+    if (!ref.watch(profileControllerProvider).isSignedIn) {
+      return _buildSignInRequired();
+    }
     switch (_state) {
       case _CatalogState.loading:
         return const _CatalogMessageScaffold(
           child: CircularProgressIndicator(),
         );
       case _CatalogState.authRequired:
-        return _CatalogMessageScaffold(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.lock_outline_rounded,
-                size: 48,
-                color: AppColors.textSecondary,
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Masuk untuk melihat Katalog Paket MCU',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandDarkEspresso,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Daftar paket MCU hanya tersedia untuk akun pasien yang telah masuk.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 20),
-              AppPrimaryButton(
-                label: 'Masuk',
-                width: 180,
-                onPressed: () => context.push(AppRoutes.loginPath),
-              ),
-            ],
-          ),
-        );
+        return _buildSignInRequired();
       case _CatalogState.remote:
         return buildCatalogScaffold(
           context,
@@ -247,6 +226,43 @@ class _McuCatalogScreenState extends ConsumerState<McuCatalogScreen> {
           searchQuery: _searchQuery,
         );
     }
+  }
+
+  Widget _buildSignInRequired() {
+    return _CatalogMessageScaffold(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.lock_outline_rounded,
+            size: 48,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Masuk untuk melihat Katalog Paket MCU',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppColors.brandDarkEspresso,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Daftar paket MCU hanya tersedia untuk akun pasien yang telah masuk.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 20),
+          AppPrimaryButton(
+            label: 'Masuk',
+            width: 180,
+            onPressed: () => context.push(AppRoutes.loginPath),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _offlineNotice() {
