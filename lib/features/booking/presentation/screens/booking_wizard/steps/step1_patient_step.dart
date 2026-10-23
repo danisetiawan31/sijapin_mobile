@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
+import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/core/widgets/app_text_field.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/booking_draft.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/patient_member.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_wizard_controller.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:sijapin_mobile/features/profile/presentation/widgets/add_family_member_sheet.dart';
 
 import '../widgets/patient_selector_card.dart';
 
@@ -25,6 +30,12 @@ class _Step1PatientStepState extends ConsumerState<Step1PatientStep> {
     super.initState();
     final draft = ref.read(bookingWizardControllerProvider).draft;
     _bpjsController = TextEditingController(text: draft.bpjsReferenceNumber);
+    // Segarkan anggota keluarga saat wizard dibuka: daftar pasien tidak
+    // boleh tertinggal dari menu Anggota Keluarga.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(familyMembersProvider.notifier).refreshOnEnter();
+    });
   }
 
   @override
@@ -100,8 +111,30 @@ class _Step1PatientStepState extends ConsumerState<Step1PatientStep> {
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: AppColors.borderSubtle),
                   ),
-                  child: const Center(
-                    child: Text('Belum ada data anggota keluarga terdaftar.'),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Belum ada data anggota keluarga terdaftar.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      AppSecondaryButton(
+                        label: 'Tambahkan Diri Sendiri',
+                        icon: Icons.person_outline_rounded,
+                        onPressed: () => AddFamilyMemberSheet.show(
+                          context,
+                          initialMember:
+                              AddFamilyMemberSheet.prefillSelfFromProfile(
+                                ref.read(profileControllerProvider).user,
+                              ),
+                          onSave: (FamilyMember newMember) {
+                            ref
+                                .read(familyMembersProvider.notifier)
+                                .addMember(newMember);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -190,6 +223,32 @@ class _Step1PatientStepState extends ConsumerState<Step1PatientStep> {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
               ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Padding(
+            padding: const EdgeInsets.only(left: 38),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.badge_outlined,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Jalur pegawai KEMENKES: bawa kartu kepegawaian Anda '
+                    'saat verifikasi identitas pada kunjungan pertama.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 14),

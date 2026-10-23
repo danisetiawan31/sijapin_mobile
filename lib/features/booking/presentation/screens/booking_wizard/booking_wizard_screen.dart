@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sijapin_mobile/core/router/app_routes.dart';
 import 'package:sijapin_mobile/core/theme/app_colors.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
+import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
 import 'package:sijapin_mobile/features/booking/presentation/controllers/booking_wizard_controller.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 
 import 'steps/step1_patient_step.dart';
 import 'steps/step2_clinic_date_step.dart';
@@ -18,6 +21,10 @@ class BookingWizardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Fitur ini milik akun: tamu tidak boleh memulai wizard pendaftaran.
+    if (!ref.watch(profileControllerProvider).isSignedIn) {
+      return _buildSignInRequired(context);
+    }
     final wizardState = ref.watch(bookingWizardControllerProvider);
     final controller = ref.read(bookingWizardControllerProvider.notifier);
     final draft = wizardState.draft;
@@ -167,6 +174,55 @@ class BookingWizardScreen extends ConsumerWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignInRequired(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.surfaceBg,
+      appBar: AppBar(
+        backgroundColor: AppColors.surfaceCard,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.close_rounded,
+            size: 20,
+            color: AppColors.brandDarkEspresso,
+          ),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go(AppRoutes.homePath);
+            }
+          },
+        ),
+        title: const Text(
+          'Pendaftaran Rawat Jalan',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.brandDarkEspresso,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: AppEmptyState(
+          title: 'Belum Masuk',
+          message:
+              'Masuk terlebih dahulu untuk mendaftarkan diri atau anggota '
+              'keluarga berobat di RSUP Dr. Sitanala.',
+          icon: Icons.lock_outline_rounded,
+          actionButton: AppPrimaryButton(
+            label: 'Masuk Sekarang',
+            icon: Icons.login_rounded,
+            width: 200,
+            onPressed: () => context.push(AppRoutes.loginPath),
           ),
         ),
       ),
