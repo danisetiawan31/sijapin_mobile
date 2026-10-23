@@ -5,7 +5,9 @@ import 'package:sijapin_mobile/core/network/api_response.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/core/widgets/state_widgets.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/family_member_controller.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:sijapin_mobile/features/support/domain/entities/mcu_patient.dart';
 import 'package:sijapin_mobile/features/support/presentation/controllers/mcu_patient_controller.dart';
 import 'package:sijapin_mobile/features/support/presentation/screens/mcu_catalog_screen.dart';
@@ -24,26 +26,52 @@ const _siti = McuPatient(
   nik: '3671044508940002',
 );
 
+const _signedInUser = UserProfile(
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+);
+
+class _TestSessionNotifier extends ActiveSessionUserNotifier {
+  _TestSessionNotifier(this._user);
+
+  final UserProfile? _user;
+
+  @override
+  UserProfile? build() => _user;
+}
+
 class _StubFamilyMembersNotifier extends FamilyMembersNotifier {
   _StubFamilyMembersNotifier(this._members);
 
   final List<FamilyMember> _members;
+  int loadCalls = 0;
 
   @override
   List<FamilyMember> build() => _members;
+
+  @override
+  Future<void> loadMembers() async {
+    loadCalls++;
+    state = _members;
+  }
 }
 
 Widget _wrap(
   McuPatientStepScreen screen,
   List<McuPatient> patients, {
   List<FamilyMember> familyMembers = const <FamilyMember>[],
+  _StubFamilyMembersNotifier? familyNotifier,
 }) {
+  final _StubFamilyMembersNotifier notifier =
+      familyNotifier ?? _StubFamilyMembersNotifier(familyMembers);
   return ProviderScope(
     overrides: [
-      mcuPatientsProvider.overrideWith((ref) => Future.value(patients)),
-      familyMembersProvider.overrideWith(
-        () => _StubFamilyMembersNotifier(familyMembers),
+      activeSessionUserProvider.overrideWith(
+        () => _TestSessionNotifier(_signedInUser),
       ),
+      mcuPatientsProvider.overrideWith((ref) => Future.value(patients)),
+      familyMembersProvider.overrideWith(() => notifier),
     ],
     child: MaterialApp(theme: AppTheme.lightTheme, home: screen),
   );
@@ -102,6 +130,27 @@ void main() {
         expect(find.text('Lanjut: Pilih Paket & Jadwal'), findsOneWidget);
       },
     );
+
+    testWidgets('menyegarkan anggota keluarga saat layar dibuka', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 2000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final notifier = _StubFamilyMembersNotifier(const <FamilyMember>[]);
+
+      await tester.pumpWidget(
+        _wrap(const McuPatientStepScreen(), const [
+          _bambang,
+        ], familyNotifier: notifier),
+      );
+      await tester.pumpAndSettle();
+
+      expect(notifier.loadCalls, 1);
+      expect(find.text('Bambang Sutrisno'), findsWidgets);
+    });
 
     testWidgets('memilih pasien lain memperbarui ringkasan bawah dan CTA', (
       tester,

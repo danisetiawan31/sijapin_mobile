@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 import 'package:sijapin_mobile/features/profile/domain/repositories/family_member_repository.dart';
+
+import 'profile_controller.dart';
 
 /// Notifier pengelola daftar anggota keluarga pasien terdaftar.
 class FamilyMembersNotifier extends Notifier<List<FamilyMember>> {
@@ -22,6 +26,14 @@ class FamilyMembersNotifier extends Notifier<List<FamilyMember>> {
     } catch (_) {}
   }
 
+  /// Menyegarkan daftar saat layar yang menampilkannya dibuka (Anggota
+  /// Keluarga, wizard Rawat Jalan, langkah pasien MCU). Semua layar memakai
+  /// state yang sama, sehingga daftar tidak tertinggal pada cache lama.
+  void refreshOnEnter() {
+    if (!ref.read(profileControllerProvider).isSignedIn) return;
+    unawaited(loadMembers());
+  }
+
   /// Menambahkan anggota keluarga baru ke dalam daftar dan repositori.
   Future<void> addMember(FamilyMember member) async {
     state = [...state, member];
@@ -33,7 +45,9 @@ class FamilyMembersNotifier extends Notifier<List<FamilyMember>> {
     }
   }
 
-  /// Menghapus anggota keluarga berdasarkan ID dari state dan repositori.
+  /// Keluarkan (ekspel) satu anggota dari daftar perangkat: state lokal +
+  /// penanda tersembunyi. Server SIMRS tidak memiliki endpoint hapus anggota,
+  /// sehingga penanda ini yang mencegah anggota kembali saat sinkronisasi DB.
   void removeMember(String id) {
     state = state.where((FamilyMember m) => m.id != id).toList();
     _repository.deleteFamilyMember(id);

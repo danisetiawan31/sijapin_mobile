@@ -41,7 +41,7 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text(
-            'Hapus dari Perangkat?',
+            'Keluarkan dari Daftar?',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -49,7 +49,11 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
             ),
           ),
           content: Text(
-            'Data "${member.fullName}" akan dihapus dari perangkat ini.\n\nSesuai regulasi rekam medis RSUP Dr. Sitanala, riwayat pelayanan di server rumah sakit tetap diarsipkan secara aman.',
+            'Anggota "${member.fullName}" akan dikeluarkan dari daftar '
+            'Anggota Keluarga akun Anda di perangkat ini dan tidak kembali '
+            'saat sinkronisasi berikutnya.\n\nData pasien di SIMRS RSUP '
+            'Dr. Sitanala tidak dihapus; riwayat berobat tetap tersimpan. '
+            'Menambahkannya kembali cukup lewat formulir tambah anggota.',
             style: const TextStyle(
               fontSize: 14,
               height: 1.5,
@@ -74,7 +78,7 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
                 shape: const StadiumBorder(),
               ),
               child: const Text(
-                'Hapus dari HP',
+                'Keluarkan',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -90,7 +94,9 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
         ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
-            content: Text('Data "${member.fullName}" berhasil dihapus.'),
+            content: Text(
+              '"${member.fullName}" dikeluarkan dari daftar anggota keluarga.',
+            ),
             behavior: SnackBarBehavior.floating,
             backgroundColor: AppColors.brandDarkEspresso,
             shape: RoundedRectangleBorder(
@@ -267,8 +273,8 @@ class FamilyMemberDetailSheet extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               AppSecondaryButton(
-                label: 'Hapus Anggota',
-                icon: Icons.delete_outline_rounded,
+                label: 'Keluarkan Anggota',
+                icon: Icons.person_remove_rounded,
                 onPressed: () => _confirmDelete(context, ref),
               ),
             ],

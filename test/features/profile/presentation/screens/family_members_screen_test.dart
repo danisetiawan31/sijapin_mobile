@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sijapin_mobile/core/theme/app_theme.dart';
 import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
+import 'package:sijapin_mobile/features/profile/domain/repositories/family_member_repository.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
@@ -97,6 +98,59 @@ void main() {
       expect(find.byType(FamilyMemberCard), findsNothing);
     });
 
+    testWidgets('memuat ulang data DB saat layar dibuka, cache basi dibuang', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      // Cache memori masih berisi sisa akun sebelumnya; sinkronisasi DB
+      // saat layar dibuka harus menggantinya dengan data akun aktif.
+      final staleRepository = StaleThenFreshRepository();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentUserProfileProvider.overrideWithValue(testUser),
+            familyMemberRepositoryProvider.overrideWith(
+              (ref) => staleRepository,
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: const FamilyMembersScreen(),
+          ),
+        ),
+      );
+
+      // Tampilan pertama masih data cache basi (belum ada sinkronisasi).
+      expect(find.text('Pengguna Akun Lama'), findsOneWidget);
+
+      // Setelah sinkronisasi masuk: data milik akun aktif menggantikan cache.
+      await tester.pumpAndSettle();
+      expect(find.text('Pengguna Akun Lama'), findsNothing);
+      expect(find.text('Ahmad Fauzi Rahman'), findsOneWidget);
+      expect(find.byType(FamilyMemberCard), findsNWidgets(5));
+    });
+
+    testWidgets(
+      'daftar kosong menyajikan tombol Tambahkan Diri Sendiri dengan form terisi profil',
+      (tester) async {
+        await _pumpFamilyMembersScreen(tester, initialMembers: const []);
+
+        expect(find.text('Belum Ada Anggota'), findsOneWidget);
+        expect(find.text('Tambahkan Diri Sendiri'), findsOneWidget);
+
+        // Sheet terbuka dengan data profil sesi terisi dari awal (prefill).
+        await tester.tap(find.text('Tambahkan Diri Sendiri'));
+        await tester.pumpAndSettle();
+        expect(
+          find.widgetWithText(TextFormField, 'Rina Puspita Sari'),
+          findsOneWidget,
+        );
+      },
+    );
+
     testWidgets(
       'tombol tambah anggota membuka sheet dan dapat menyimpan data',
       (tester) async {
@@ -142,4 +196,64 @@ void main() {
       },
     );
   });
+
+  group('AddFamilyMemberSheet.prefillSelfFromProfile', () {
+    test(
+      'mengisi relasi Diri Sendiri dan hanya field yang tersedia di profil',
+      () {
+        final FamilyMember? draft = AddFamilyMemberSheet.prefillSelfFromProfile(
+          testUser,
+        );
+        expect(draft, isNotNull);
+        expect(draft!.relation, FamilyRelation.self);
+        expect(draft.relation.label, 'Diri Sendiri');
+        expect(draft.relation.icon, Icons.person_outline_rounded);
+        expect(draft.fullName, 'Rina Puspita Sari');
+        expect(draft.phone, '081234567890');
+        expect(draft.gender, 'P');
+        // Field yang tidak ada di profil akun tidak dikarang.
+        expect(draft.motherName, '');
+        expect(draft.medicalRecordNumber, isNull);
+      },
+    );
+
+    test('profil tanpa nama menghasilkan null tanpa data karangan', () {
+      const UserProfile emptyUser = UserProfile(
+        fullName: '',
+        email: 'x@example.com',
+        phone: '0812000000',
+      );
+      expect(AddFamilyMemberSheet.prefillSelfFromProfile(emptyUser), isNull);
+    });
+  });
+}
+
+/// Repositori palsu untuk kasus sisa akun: cache memori masih memuat data
+/// akun lama, sedangkan sinkronisasi DB (saat layar dibuka) mengembalikan
+/// data akun aktif, sehingga cache basi harus tergeser.
+class StaleThenFreshRepository implements FamilyMemberRepository {
+  static const FamilyMember _staleMember = FamilyMember(
+    id: 'lamalama-99',
+    fullName: 'Pengguna Akun Lama',
+    relation: FamilyRelation.sibling,
+    gender: 'L',
+    nik: '3671040000000001',
+    insurance: FamilyInsurance.umum,
+  );
+
+  @override
+  List<FamilyMember> getCachedFamilyMembers() =>
+      List<FamilyMember>.unmodifiable(<FamilyMember>[_staleMember]);
+
+  @override
+  Future<List<FamilyMember>> getFamilyMembers() async => kMockFamilyMembers;
+
+  @override
+  Future<FamilyMember> addFamilyMember(FamilyMember member) async => member;
+
+  @override
+  Future<FamilyMember> updateFamilyMember(FamilyMember member) async => member;
+
+  @override
+  Future<bool> deleteFamilyMember(String id) async => true;
 }

@@ -7,6 +7,67 @@ import 'package:sijapin_mobile/features/booking/presentation/controllers/booking
 import 'package:sijapin_mobile/features/booking/presentation/screens/booking_wizard/booking_wizard_screen.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/booking_wizard/steps/step1_patient_step.dart';
 import 'package:sijapin_mobile/features/booking/presentation/screens/booking_wizard/widgets/wizard_progress_bar.dart';
+import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
+import 'package:sijapin_mobile/features/profile/domain/repositories/family_member_repository.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
+
+import '../../../fixtures/mock_family_members.dart';
+
+const _signedInUser = UserProfile(
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+);
+
+class _TestSessionNotifier extends ActiveSessionUserNotifier {
+  _TestSessionNotifier(this._user);
+
+  final UserProfile? _user;
+
+  @override
+  UserProfile? build() => _user;
+}
+
+const _staleMember = FamilyMember(
+  id: 'lama-1',
+  fullName: 'Anggota Lama',
+  relation: FamilyRelation.sibling,
+  gender: 'L',
+  nik: '3671040000000001',
+  insurance: FamilyInsurance.umum,
+);
+
+class _FakeFamilyRepository implements FamilyMemberRepository {
+  _FakeFamilyRepository({
+    this.cached = const <FamilyMember>[],
+    this.fresh = const <FamilyMember>[],
+  });
+
+  final List<FamilyMember> cached;
+  final List<FamilyMember> fresh;
+  int loadCalls = 0;
+
+  @override
+  List<FamilyMember> getCachedFamilyMembers() =>
+      List<FamilyMember>.unmodifiable(cached);
+
+  @override
+  Future<List<FamilyMember>> getFamilyMembers() async {
+    loadCalls++;
+    return fresh;
+  }
+
+  @override
+  Future<FamilyMember> addFamilyMember(FamilyMember member) async => member;
+
+  @override
+  Future<FamilyMember> updateFamilyMember(FamilyMember member) async => member;
+
+  @override
+  Future<bool> deleteFamilyMember(String id) async => true;
+}
 
 Widget _buildApp(ProviderContainer container) {
   return UncontrolledProviderScope(
@@ -58,6 +119,12 @@ void main() {
 
         final container = ProviderContainer(
           overrides: [
+            activeSessionUserProvider.overrideWith(
+              () => _TestSessionNotifier(_signedInUser),
+            ),
+            familyMemberRepositoryProvider.overrideWithValue(
+              _FakeFamilyRepository(),
+            ),
             patientMembersProvider.overrideWith(
               (ref) => Future.value(samplePatients),
             ),
@@ -107,6 +174,12 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
+          activeSessionUserProvider.overrideWith(
+            () => _TestSessionNotifier(_signedInUser),
+          ),
+          familyMemberRepositoryProvider.overrideWithValue(
+            _FakeFamilyRepository(),
+          ),
           patientMembersProvider.overrideWith(
             (ref) => Future.value(samplePatients),
           ),
@@ -133,6 +206,57 @@ void main() {
         find.text('Nomor Rujukan FKTP / Surat Kontrol (SPRI) *'),
         findsNothing,
       );
+    });
+
+    testWidgets('menyegarkan anggota keluarga saat wizard dibuka', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      final repo = _FakeFamilyRepository(
+        cached: const <FamilyMember>[_staleMember],
+        fresh: kMockFamilyMembers,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          activeSessionUserProvider.overrideWith(
+            () => _TestSessionNotifier(_signedInUser),
+          ),
+          familyMemberRepositoryProvider.overrideWithValue(repo),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(_buildApp(container));
+      await tester.pumpAndSettle();
+
+      // Cache lama diganti hasil sinkronisasi saat wizard dibuka.
+      expect(find.text('Anggota Lama'), findsNothing);
+      expect(find.text('Ahmad Fauzi Rahman'), findsWidgets);
+      expect(repo.loadCalls, greaterThanOrEqualTo(2));
+    });
+
+    testWidgets('menampilkan gerbang masuk untuk tamu tanpa Step 1', (
+      tester,
+    ) async {
+      final container = ProviderContainer(
+        overrides: [
+          activeSessionUserProvider.overrideWith(
+            () => _TestSessionNotifier(null),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(_buildApp(container));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Belum Masuk'), findsOneWidget);
+      expect(find.text('Masuk Sekarang'), findsOneWidget);
+      expect(find.byType(Step1PatientStep), findsNothing);
+      expect(find.byType(WizardProgressBar), findsNothing);
     });
   });
 }
