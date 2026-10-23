@@ -18,6 +18,7 @@ abstract interface class FamilyMemberRepository {
   /// Memperbarui data anggota keluarga yang sudah ada.
   Future<FamilyMember> updateFamilyMember(FamilyMember member);
 
-  /// Menghapus anggota keluarga berdasarkan ID.
+  /// Menghapus anggota keluarga berdasarkan ID (ekspel lokal):
+  /// data pasien di SIMRS tetap tersimpan, hanya disembunyikan di perangkat.
   Future<bool> deleteFamilyMember(String id);
 }

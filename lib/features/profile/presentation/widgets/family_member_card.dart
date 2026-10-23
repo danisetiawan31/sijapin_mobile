@@ -18,6 +18,8 @@ extension FamilyRelationIcon on FamilyRelation {
         return Icons.elderly_outlined;
       case FamilyRelation.sibling:
         return Icons.diversity_1_outlined;
+      case FamilyRelation.self:
+        return Icons.person_outline_rounded;
     }
   }
 }

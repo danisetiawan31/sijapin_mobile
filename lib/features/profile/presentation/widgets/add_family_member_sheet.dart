@@ -4,18 +4,28 @@ import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/core/utils/date_formatter.dart';
 import 'package:sijapin_mobile/core/widgets/app_button.dart';
 import 'package:sijapin_mobile/features/profile/domain/entities/family_member.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
 
-/// Modal bottom sheet formulir pendaftaran anggota keluarga baru
+/// Modal bottom sheet formulir pendaftarkan anggota keluarga baru
 /// yang mendukung percabangan SSOT PRD FR-02.2 (Pasien Lama) dan FR-02.3 (Pasien Baru).
 class AddFamilyMemberSheet extends StatefulWidget {
-  const AddFamilyMemberSheet({super.key, required this.onSave});
+  const AddFamilyMemberSheet({
+    super.key,
+    required this.onSave,
+    this.initialMember,
+  });
 
   final ValueChanged<FamilyMember> onSave;
+
+  /// Data awal (pra-isi) untuk alur "Tambakan Diri Sendiri": field yang
+  /// tersedia di profil sesi langsung terisi, sisanya manual.
+  final FamilyMember? initialMember;
 
   /// Menampilkan lembar formulir tambah anggota keluarga.
   static Future<void> show(
     BuildContext context, {
     required ValueChanged<FamilyMember> onSave,
+    FamilyMember? initialMember,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -23,8 +33,32 @@ class AddFamilyMemberSheet extends StatefulWidget {
       backgroundColor: Colors.transparent,
       barrierColor: AppColors.brandDarkEspresso.withValues(alpha: 0.45),
       builder: (BuildContext sheetContext) {
-        return AddFamilyMemberSheet(onSave: onSave);
+        return AddFamilyMemberSheet(
+          onSave: onSave,
+          initialMember: initialMember,
+        );
       },
+    );
+  }
+
+  /// Anggota "diri sendiri" yang sudah diisi dari profil sesi (prefill),
+  /// sebagai draft formulir. Nilai yang tidak dimiliki akun (mis. nama ibu,
+  /// No. RM) tidak dikarang: dibiarkan kosong agar tervalidasi manual.
+  static FamilyMember? prefillSelfFromProfile(UserProfile? user) {
+    if (user == null) return null;
+    final String fullName = user.fullName.trim();
+    if (fullName.isEmpty) return null;
+    return FamilyMember(
+      id: 'keluarga-self-draft',
+      fullName: fullName,
+      relation: FamilyRelation.self,
+      gender: user.gender.toUpperCase() == 'P' ? 'P' : 'L',
+      nik: user.nik.trim(),
+      insurance: FamilyInsurance.bpjs,
+      birthDate: user.birthDate,
+      address: user.address.trim(),
+      phone: user.phone.trim(),
+      bloodType: user.bloodType.trim(),
     );
   }
 
@@ -52,6 +86,30 @@ class _AddFamilyMemberSheetState extends State<AddFamilyMemberSheet> {
   String _religion = '1';
   FamilyInsurance _insurance = FamilyInsurance.bpjs;
   DateTime? _birthDate;
+
+  @override
+  void initState() {
+    super.initState();
+    final FamilyMember? prefill = widget.initialMember;
+    if (prefill == null) return;
+    _nameController.text = prefill.fullName;
+    _nikController.text = prefill.nik;
+    _phoneController.text = prefill.phone;
+    _bpjsController.text = prefill.insuranceNumber ?? '';
+    _rmController.text = prefill.medicalRecordNumber ?? '';
+    _birthPlaceController.text = prefill.birthPlace;
+    _addressController.text = prefill.address;
+    _occupationController.text = prefill.occupation;
+    if (prefill.religion.isNotEmpty) _religion = prefill.religion;
+    if (prefill.gender.toUpperCase() == 'P') _gender = 'P';
+    _relation = prefill.relation;
+    _insurance = prefill.insurance;
+    _birthDate = prefill.birthDate;
+    final String? prefillRdNomr = prefill.rdNomr;
+    if (prefillRdNomr != null && prefillRdNomr.isNotEmpty) {
+      _rdNomr = prefillRdNomr;
+    }
+  }
 
   @override
   void dispose() {
