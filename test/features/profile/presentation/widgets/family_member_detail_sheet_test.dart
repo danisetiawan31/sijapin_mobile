@@ -103,7 +103,7 @@ void main() {
 
       // Action buttons
       expect(find.text('Buat Janji Temu'), findsOneWidget);
-      expect(find.text('Hapus Anggota'), findsOneWidget);
+      expect(find.text('Keluarkan Anggota'), findsOneWidget);
     });
 
     testWidgets(
@@ -128,7 +128,7 @@ void main() {
       },
     );
 
-    testWidgets('menekan Hapus Anggota memunculkan dialog konfirmasi', (
+    testWidgets('menekan Keluarkan Anggota memunculkan dialog konfirmasi', (
       tester,
     ) async {
       final container = ProviderContainer();
@@ -136,19 +136,21 @@ void main() {
 
       await pumpDetailSheet(tester, container: container);
 
-      // Tap Hapus Anggota
-      await tester.tap(find.text('Hapus Anggota'));
+      // Tap Keluarkan Anggota
+      await tester.tap(find.text('Keluarkan Anggota'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Hapus dari Perangkat?'), findsOneWidget);
+      // Dialog ekspel: data pasien di SIMRS tetap tersimpan, bukan penghapusan DB.
+      expect(find.text('Keluarkan dari Daftar?'), findsOneWidget);
       expect(find.text('Batal'), findsOneWidget);
-      expect(find.text('Hapus dari HP'), findsOneWidget);
+      expect(find.text('Keluarkan'), findsOneWidget);
+      expect(find.textContaining('tidak dihapus'), findsOneWidget);
 
-      // Konfirmasi Hapus
-      await tester.tap(find.widgetWithText(FilledButton, 'Hapus dari HP'));
+      // Konfirmasi keluarkan
+      await tester.tap(find.widgetWithText(FilledButton, 'Keluarkan'));
       await tester.pumpAndSettle();
 
-      // Verifikasi anggota terhapus dari state
+      // Verifikasi anggota dikeluarkan dari state
       final members = container.read(familyMembersProvider);
       expect(members.any((m) => m.id == testMember.id), isFalse);
     });

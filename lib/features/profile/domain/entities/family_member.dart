@@ -2,7 +2,7 @@ import 'package:sijapin_mobile/core/utils/app_date_time.dart';
 import 'package:sijapin_mobile/features/booking/domain/entities/patient_member.dart';
 
 /// Hubungan anggota keluarga dengan pemilik akun pasien.
-enum FamilyRelation { spouse, child, parent, sibling }
+enum FamilyRelation { spouse, child, parent, sibling, self }
 
 /// Jaminan kesehatan yang dipakai anggota keluarga saat berobat.
 enum FamilyInsurance { bpjs, umum, selfPay }
@@ -19,6 +19,8 @@ extension FamilyRelationLabel on FamilyRelation {
         return 'Orang Tua';
       case FamilyRelation.sibling:
         return 'Saudara';
+      case FamilyRelation.self:
+        return 'Diri Sendiri';
     }
   }
 }

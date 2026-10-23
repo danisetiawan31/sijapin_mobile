@@ -32,9 +32,23 @@ class FamilyMembersScreen extends ConsumerStatefulWidget {
 class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
   FamilyMemberFilter _filter = FamilyMemberFilter.semua;
 
-  void _openAddMemberSheet() {
+  @override
+  void initState() {
+    super.initState();
+    // Sinkronisasi DB saat layar dibuka: daftar tidak boleh berhenti pada
+    // cache/sisa data akun sebelumnya.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(familyMembersProvider.notifier).refreshOnEnter();
+    });
+  }
+
+  /// Membuka sheet tambah anggota; `initialMember` mengisi alur
+  /// "Tambahkan Diri Sendiri" dari data profil sesi.
+  void _openAddMemberSheet({FamilyMember? initialMember}) {
     AddFamilyMemberSheet.show(
       context,
+      initialMember: initialMember,
       onSave: (FamilyMember newMember) {
         ref.read(familyMembersProvider.notifier).addMember(newMember);
         ScaffoldMessenger.of(context)
@@ -66,6 +80,9 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                 (FamilyMember member) => member.relation == _filter.relation,
               )
               .toList();
+    // Kosong dinilai dari seluruh daftar (bukan hanya filter aktif):
+    // pintasan "Tambahkan Diri Sendiri" dari data profil tersedia di sini.
+    final bool hasZeroMembers = members.isEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBg,
@@ -101,7 +118,18 @@ class _FamilyMembersScreenState extends ConsumerState<FamilyMembersScreen> {
                                   'Tambahkan anggota agar bisa didaftarkan berobat '
                                   'tanpa didampingi langsung.',
                               icon: Icons.group_add_outlined,
-                              actionButton: _filter != FamilyMemberFilter.semua
+                              actionButton: hasZeroMembers
+                                  ? AppSecondaryButton(
+                                      label: 'Tambahkan Diri Sendiri',
+                                      icon: Icons.person_outline_rounded,
+                                      onPressed: () => _openAddMemberSheet(
+                                        initialMember:
+                                            AddFamilyMemberSheet.prefillSelfFromProfile(
+                                              profile.user,
+                                            ),
+                                      ),
+                                    )
+                                  : _filter != FamilyMemberFilter.semua
                                   ? AppSecondaryButton(
                                       label: 'Tampilkan Semua',
                                       width: 180,
