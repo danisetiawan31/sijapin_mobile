@@ -11,6 +11,24 @@ import 'package:sijapin_mobile/features/support/domain/entities/mcu_patient.dart
 import 'package:sijapin_mobile/features/support/presentation/controllers/mcu_patient_controller.dart';
 import 'package:sijapin_mobile/features/support/presentation/screens/mcu_catalog_screen.dart';
 import 'package:sijapin_mobile/features/support/presentation/screens/mcu_patient_step_screen.dart';
+import 'package:sijapin_mobile/features/profile/data/repositories/family_member_repository_impl.dart';
+import 'package:sijapin_mobile/features/profile/domain/entities/user_profile.dart';
+import 'package:sijapin_mobile/features/profile/presentation/controllers/profile_controller.dart';
+
+const _signedInUser = UserProfile(
+  fullName: 'Rina Puspita Sari',
+  email: 'rina.puspita@warga.go.id',
+  phone: '081234567890',
+);
+
+class _TestSessionNotifier extends ActiveSessionUserNotifier {
+  _TestSessionNotifier(this._user);
+
+  final UserProfile? _user;
+
+  @override
+  UserProfile? build() => _user;
+}
 
 class _MockDioClient implements DioClient {
   final List<String> paths = <String>[];
@@ -111,12 +129,20 @@ Map<String, dynamic> _catalogEnvelope() {
   };
 }
 
-Widget _wrapWithRemote(Widget home, {Object? remoteData, Object? error}) {
+Widget _wrapWithRemote(
+  Widget home, {
+  Object? remoteData,
+  Object? error,
+  bool signedIn = true,
+}) {
   final _MockDioClient mock = _MockDioClient()
     ..nextResponseData = remoteData
     ..nextError = error;
   return ProviderScope(
     overrides: [
+      activeSessionUserProvider.overrideWith(
+        () => _TestSessionNotifier(signedIn ? _signedInUser : null),
+      ),
       mcuRemoteDataSourceProvider.overrideWithValue(
         McuRemoteDataSource(dioClient: mock),
       ),
@@ -185,7 +211,9 @@ void main() {
       expect(find.text('Paket MCU Standar'), findsOneWidget);
     });
 
-    testWidgets('menampilkan ajakan masuk saat sesi CI3 401', (tester) async {
+    testWidgets('pengguna login dengan 401 tidak diminta masuk lagi', (
+      tester,
+    ) async {
       _useTallScreen(tester);
 
       await tester.pumpWidget(
@@ -203,12 +231,31 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      expect(find.text('Masuk untuk melihat Katalog Paket MCU'), findsNothing);
+      expect(find.text('Menampilkan contoh paket (offline)'), findsOneWidget);
+      expect(find.text('Paket MCU Standar'), findsOneWidget);
+    });
+
+    testWidgets('tamu langsung melihat gerbang masuk tanpa request', (
+      tester,
+    ) async {
+      _useTallScreen(tester);
+
+      await tester.pumpWidget(
+        _wrapWithRemote(
+          const McuCatalogScreen(),
+          remoteData: _catalogEnvelope(),
+          signedIn: false,
+        ),
+      );
+      await tester.pumpAndSettle();
+
       expect(
         find.text('Masuk untuk melihat Katalog Paket MCU'),
         findsOneWidget,
       );
       expect(find.text('Masuk'), findsOneWidget);
-      expect(find.text('Paket MCU Standar'), findsNothing);
+      expect(find.text('General Gold'), findsNothing);
     });
 
     testWidgets('tapping Pilih Paket membuka Langkah 1 MCU (Pilih Pasien)', (
@@ -241,6 +288,12 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            activeSessionUserProvider.overrideWith(
+              () => _TestSessionNotifier(_signedInUser),
+            ),
+            familyMemberRepositoryProvider.overrideWithValue(
+              FamilyMemberRepositoryImpl(),
+            ),
             mcuRemoteDataSourceProvider.overrideWithValue(
               McuRemoteDataSource(dioClient: mock),
             ),

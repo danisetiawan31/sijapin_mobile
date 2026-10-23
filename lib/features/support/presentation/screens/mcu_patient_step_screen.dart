@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/state_widgets.dart';
 import '../../../profile/domain/entities/family_member.dart';
 import '../../../profile/presentation/controllers/family_member_controller.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../../profile/presentation/widgets/add_family_member_sheet.dart';
 import '../../domain/entities/mcu_patient.dart';
 import '../controllers/mcu_patient_controller.dart';
@@ -31,6 +32,20 @@ class McuPatientStepScreen extends ConsumerStatefulWidget {
 
 class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
   String? _selectedMemberId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Segarkan pasien saat layar dibuka: daftar tidak boleh tertinggal dari
+    // menu Anggota Keluarga maupun perubahan terbaru di server.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(familyMembersProvider.notifier).refreshOnEnter();
+      if (ref.read(profileControllerProvider).isSignedIn) {
+        ref.invalidate(mcuPatientsProvider);
+      }
+    });
+  }
 
   McuPatient _fromFamilyMember(FamilyMember member) {
     return McuPatient(
@@ -71,9 +86,10 @@ class _McuPatientStepScreenState extends ConsumerState<McuPatientStepScreen> {
     AddFamilyMemberSheet.show(
       context,
       onSave: (FamilyMember newMember) {
+        // addMember sudah memperbarui state; invalidasi familyMembersProvider
+        // di sini akan membangun ulang sebelum tulis cache repositori selesai.
         ref.read(familyMembersProvider.notifier).addMember(newMember);
         ref.invalidate(mcuPatientsProvider);
-        ref.invalidate(familyMembersProvider);
         if (!mounted) return;
         _showSnackBar(
           'Anggota keluarga "${newMember.fullName}" berhasil ditambahkan.',
