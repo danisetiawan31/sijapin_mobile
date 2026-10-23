@@ -7,10 +7,15 @@ import '../../../../core/utils/app_date_time.dart';
 import '../../data/datasources/auth_remote_data_source.dart';
 import '../../data/datasources/auth_rest_data_source.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/storage/storage_constants.dart';
+import '../../../booking/presentation/controllers/booking_wizard_controller.dart';
+import '../../../profile/data/repositories/family_member_repository_impl.dart';
+import '../../../profile/presentation/controllers/family_member_controller.dart';
 import '../../../profile/data/datasources/profile_remote_data_source.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
+import '../../../ticket/presentation/controllers/ticket_controller.dart';
 import '../../domain/entities/auth_result.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -255,7 +260,25 @@ class AuthController extends Notifier<AuthControllerState> {
     } catch (_) {
       // Pembersihan lokal di bawah tetap berjalan.
     }
+    // Hapus data user di perangkat: tiket antrean, cache master, dan daftar
+    // anggota keluarga Hive. Box preferences dipertahankan: isinya hanya
+    // penanda id anggota yang dikeluarkan daftar (ekspel), berlaku juga
+    // pada login berikutnya. Passcode/biometrik bukan data akun, tetap ada.
+    final ILocalStorage storage = ref.read(localStorageServiceProvider);
+    try {
+      await storage.clearBox(boxName: StorageConstants.ticketsBox);
+      await storage.clearBox(boxName: StorageConstants.masterCacheBox);
+      await storage.clearBox(boxName: StorageConstants.familyMembersBox);
+    } catch (_) {
+      // Pembersihan sesi di Secure Storage dan cookie tetap dibersihkan.
+    }
     ref.read(activeSessionUserProvider.notifier).setUser(null);
+    // Invalidasi semua provider per-user agar akun berikutnya memuat ulang
+    // dari DB SIMRS (bukan mewarisi state memori akun sebelumnya).
+    ref.invalidate(familyMemberRepositoryProvider);
+    ref.invalidate(familyMembersProvider);
+    ref.invalidate(ticketControllerProvider);
+    ref.invalidate(bookingWizardControllerProvider);
     state = const AuthControllerState();
   }
 
